@@ -4,7 +4,8 @@
 
 A [Jenkins](https://jenkins-ci.org) slave using SSH to establish connection.
 
-See [Jenkins Distributed builds](https://wiki.jenkins-ci.org/display/JENKINS/Distributed+builds) for more info.
+See [GitHub docker-ssh-slave](https://github.com/jenkinsci/docker-ssh-slave) and
+[Jenkins Distributed builds](https://wiki.jenkins-ci.org/display/JENKINS/Distributed+builds) for more info.
 
 ## Running
 
