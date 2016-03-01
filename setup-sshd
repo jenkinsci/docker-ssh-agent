@@ -22,18 +22,28 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-# Usage : 
+# Usage:
 #  docker run jenkinsci/ssh-slave <public key>
+# or
+#  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=<public key>" jenkinsci/ssh-slave
 
-if [[ $# -gt 0 ]]; then
-  if [[ $1 == ssh-* ]]; then	
+write_key() {
 	mkdir /home/jenkins/.ssh
 	echo "$1" >> /home/jenkins/.ssh/authorized_keys
 	chown -Rf jenkins:jenkins /home/jenkins/.ssh
 	chmod 0700 -R /home/jenkins/.ssh
-	shift 1
+}
+
+if [[ $JENKINS_SLAVE_SSH_PUBKEY == ssh-* ]]; then
+  write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
+fi
+if [[ $# -gt 0 ]]; then
+  if [[ $1 == ssh-* ]]; then
+    write_key "$1"
+    shift 1
   else
-  	exec "$@"
+    exec "$@"
   fi
 fi
 exec /usr/sbin/sshd -D $@
+

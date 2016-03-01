@@ -73,3 +73,29 @@ function run_through_ssh {
 		rm -f $TMP_PRIV_KEY_FILE
 	fi
 }
+
+@test "clean test container" {
+	docker kill $SUT_CONTAINER &>/dev/null ||:
+	docker rm -fv $SUT_CONTAINER &>/dev/null ||:
+}
+
+@test "create slave container with pubkey as environment variable" {
+	docker run -e "JENKINS_SLAVE_SSH_PUBKEY=$PUBLIC_SSH_KEY" -d --name $SUT_CONTAINER -P $SUT_IMAGE
+}
+
+@test "slave container is running" {
+	sleep 1  # give time to sshd to eventually fail to initialize
+	retry 3 1 assert "true" docker inspect -f {{.State.Running}} $SUT_CONTAINER
+}
+
+@test "connection with ssh + private key" {
+	run_through_ssh echo f00
+
+	[ "$status" = "0" ] && [ "$output" = "f00" ] \
+		|| (\
+			echo "status: $status"; \
+			echo "output: $output"; \
+			false \
+		)
+}
+
