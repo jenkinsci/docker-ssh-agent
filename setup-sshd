@@ -28,7 +28,7 @@
 #  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=<public key>" jenkinsci/ssh-slave
 
 write_key() {
-	mkdir /home/jenkins/.ssh
+	mkdir -p /home/jenkins/.ssh
 	echo "$1" > /home/jenkins/.ssh/authorized_keys
 	chown -Rf jenkins:jenkins /home/jenkins/.ssh
 	chmod 0700 -R /home/jenkins/.ssh
