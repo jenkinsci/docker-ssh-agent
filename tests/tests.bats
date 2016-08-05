@@ -7,7 +7,7 @@ load test_helpers
 load keys
 
 @test "build image" {
-	cd $BATS_TEST_DIRNAME/..
+	cd "$BATS_TEST_DIRNAME"/..
 	docker build -t $SUT_IMAGE .
 }
 
@@ -57,7 +57,7 @@ function run_through_ssh {
 		echo "failed to get SSH port"
 		false
 	else
-		TMP_PRIV_KEY_FILE=$(mktemp -p $BATS_TMPDIR bats_private_ssh_key_XXXXXXX)
+		TMP_PRIV_KEY_FILE=$(mktemp "$BATS_TMPDIR"/bats_private_ssh_key_XXXXXXX)
 		echo "$PRIVATE_SSH_KEY" > $TMP_PRIV_KEY_FILE \
 		 	&& chmod 0600 $TMP_PRIV_KEY_FILE
 
