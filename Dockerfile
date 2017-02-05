@@ -35,7 +35,10 @@ RUN groupadd -g ${gid} ${group} \
     && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}"
 
 # setup SSH server
-RUN apt-get update && apt-get install -y openssh-server
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+        openssh-server \
+    && apt-get clean
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 RUN mkdir /var/run/sshd
 
