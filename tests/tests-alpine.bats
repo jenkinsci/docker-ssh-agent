@@ -77,3 +77,8 @@ load keys
 			false \
 		)
 }
+
+@test "clean test container" {
+	docker kill "${SUT_CONTAINER}" &>/dev/null ||:
+	docker rm -fv "${SUT_CONTAINER}" &>/dev/null ||:
+}
