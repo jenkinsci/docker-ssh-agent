@@ -47,4 +47,5 @@ if [[ $# -gt 0 ]]; then
     exec "$@"
   fi
 fi
-exec /usr/sbin/sshd -D "${@}"
+ssh-keygen -A
+exec /usr/sbin/sshd -D -e "${@}"
