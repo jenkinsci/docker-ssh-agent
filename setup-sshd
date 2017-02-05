@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 # The MIT License
 #
 #  Copyright (c) 2015, CloudBees, Inc.
@@ -45,5 +47,4 @@ if [[ $# -gt 0 ]]; then
     exec "$@"
   fi
 fi
-exec /usr/sbin/sshd -D $@
-
+exec /usr/sbin/sshd -D "${@}"
