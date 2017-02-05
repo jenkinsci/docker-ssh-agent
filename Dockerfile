@@ -23,20 +23,27 @@
 FROM openjdk:8-jdk
 LABEL MAINTAINER="Nicolas De Loof <nicolas.deloof@gmail.com>"
 
-ENV HOME /home/jenkins
-RUN useradd -c "Jenkins user" -d $HOME -m jenkins
+ARG user=jenkins
+ARG group=jenkins
+ARG uid=1000
+ARG gid=1000
+ARG JENKINS_AGENT_HOME=/home/${user}
 
 RUN curl --create-dirs -sSLo /usr/share/jenkins/slave.jar http://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/2.52/remoting-2.52.jar \
   && chmod 755 /usr/share/jenkins \
   && chmod 644 /usr/share/jenkins/slave.jar 
+ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
 
-VOLUME /home/jenkins
-WORKDIR /home/jenkins
+RUN groupadd -g ${gid} ${group} \
+    && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}"
 
 # setup SSH server
 RUN apt-get update && apt-get install -y openssh-server
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 RUN mkdir /var/run/sshd
+
+VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
+WORKDIR "${JENKINS_AGENT_HOME}"
 
 COPY setup-sshd /usr/local/bin/setup-sshd
 
