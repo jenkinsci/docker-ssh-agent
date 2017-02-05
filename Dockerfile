@@ -20,8 +20,8 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-MAINTAINER Nicolas De Loof <nicolas.deloof@gmail.com>
 FROM openjdk:8-jdk
+LABEL MAINTAINER="Nicolas De Loof <nicolas.deloof@gmail.com>"
 
 ENV HOME /home/jenkins
 RUN useradd -c "Jenkins user" -d $HOME -m jenkins
