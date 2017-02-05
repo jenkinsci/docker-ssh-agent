@@ -51,19 +51,6 @@ load keys
 		)
 }
 
-@test "slave.jar can be executed" {
-	run_through_ssh java -jar /usr/share/jenkins/slave.jar --help
-
-	[ "$status" = "0" ] \
-		&& [ "${lines[0]}" = '"--help" is not a valid option' ] \
-		&& [ "${lines[1]}" = 'java -jar slave.jar [options...]' ] \
-		|| (\
-			echo "status: $status"; \
-			echo "output: $output"; \
-			false \
-		)
-}
-
 # run a given command through ssh on the test container.
 # Use the $status, $output and $lines variables to make assertions
 function run_through_ssh {
