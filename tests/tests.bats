@@ -20,8 +20,8 @@ load keys
 }
 
 @test "clean test container" {
-	docker kill $SUT_CONTAINER &>/dev/null ||:
-	docker rm -fv $SUT_CONTAINER &>/dev/null ||:
+	docker kill "${SUT_CONTAINER}" &>/dev/null ||:
+	docker rm -fv "${SUT_CONTAINER}" &>/dev/null ||:
 }
 
 @test "create slave container" {
@@ -100,4 +100,3 @@ function run_through_ssh {
 			false \
 		)
 }
-
