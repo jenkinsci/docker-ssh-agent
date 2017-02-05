@@ -28,11 +28,13 @@ load keys
 	docker run -d --name "${SUT_CONTAINER}" -P $SUT_IMAGE "$PUBLIC_SSH_KEY"
 }
 
-@test "image has bash and java installed and in the PATH" {
+@test "image has bash, git and java installed and in the PATH" {
 	docker exec "${SUT_CONTAINER}" which bash
 	docker exec "${SUT_CONTAINER}" bash --version
 	docker exec "${SUT_CONTAINER}" which java
 	docker exec "${SUT_CONTAINER}" java -version
+	docker exec "${SUT_CONTAINER}" which git
+	docker exec "${SUT_CONTAINER}" git --version
 }
 
 @test "slave container is running" {
