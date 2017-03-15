@@ -12,7 +12,7 @@ load keys
 }
 
 @test "checking image metadatas" {
-	local VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' jenkins-ssh-slave)"
+	local VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' ${SUT_IMAGE})"
 	echo "${VOLUMES_MAP}" | grep '/tmp'
 	echo "${VOLUMES_MAP}" | grep '/home/jenkins'
 	echo "${VOLUMES_MAP}" | grep '/run'
