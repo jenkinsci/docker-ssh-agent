@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/bash -exu
+
+
 # check dependencies
 (
     type docker &>/dev/null || ( echo "docker is not available"; exit 1 )
