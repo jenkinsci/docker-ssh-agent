@@ -20,7 +20,7 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-FROM openjdk:8-jdk
+FROM openjdk:8-jdk-alpine
 LABEL MAINTAINER="Nicolas De Loof <nicolas.deloof@gmail.com>"
 
 ARG user=jenkins
@@ -31,20 +31,28 @@ ARG JENKINS_AGENT_HOME=/home/${user}
 
 ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
 
-RUN groupadd -g ${gid} ${group} \
-    && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}"
+RUN addgroup -g ${gid} ${group} \
+    && adduser \
+        -h "${JENKINS_AGENT_HOME}" \
+        -u "${uid}" \
+        -G "${group}" \
+        -s /bin/bash \
+        -D "${user}" \
+    && echo "${user}:${user}" | chpasswd
 
 # setup SSH server
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
-        openssh-server git \
-    && apt-get clean
+RUN apk add --update --no-cache \
+    bash \
+    git \
+    openssh
 RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
 RUN sed -i 's/#RSAAuthentication.*/RSAAuthentication yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
 RUN sed -i 's/#SyslogFacility.*/SyslogFacility AUTH/' /etc/ssh/sshd_config
 RUN sed -i 's/#LogLevel.*/LogLevel INFO/' /etc/ssh/sshd_config
+
 RUN mkdir /var/run/sshd
+RUN rm -f /var/log/auth.log && ln -s /dev/stdout /var/log/auth.log
 
 VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"

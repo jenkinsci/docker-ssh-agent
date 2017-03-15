@@ -1,4 +1,4 @@
-
+#!/bin/bash
 # check dependencies
 (
     type docker &>/dev/null || ( echo "docker is not available"; exit 1 )
@@ -33,11 +33,37 @@ function retry {
         sleep $delay
     done
 
-    echo "Command \"$@\" failed $attempts times. Status: $status. Output: $output" 
+    echo "Command \"$@\" failed $attempts times. Status: $status. Output: $output"
     false
 }
 
 # return the published port for given container port $1
 function get_port {
     docker port $SUT_CONTAINER $1 | cut -d: -f2
+}
+
+
+# run a given command through ssh on the test container.
+# Use the $status, $output and $lines variables to make assertions
+function run_through_ssh {
+	SSH_PORT=$(get_port 22)
+	if [ "$SSH_PORT" = "" ]; then
+		echo "failed to get SSH port"
+		false
+	else
+		TMP_PRIV_KEY_FILE=$(mktemp "$BATS_TMPDIR"/bats_private_ssh_key_XXXXXXX)
+		echo "$PRIVATE_SSH_KEY" > $TMP_PRIV_KEY_FILE \
+		 	&& chmod 0600 $TMP_PRIV_KEY_FILE
+
+		run ssh -i $TMP_PRIV_KEY_FILE \
+			-o LogLevel=quiet \
+			-o UserKnownHostsFile=/dev/null \
+			-o StrictHostKeyChecking=no \
+			-l jenkins \
+			localhost \
+			-p $SSH_PORT \
+			"$@"
+
+		rm -f $TMP_PRIV_KEY_FILE
+	fi
 }

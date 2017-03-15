@@ -1,14 +1,14 @@
 #!/usr/bin/env bats
 
-SUT_IMAGE=jenkins-ssh-slave
-SUT_CONTAINER=bats-jenkins-ssh-slave
+SUT_IMAGE=jenkins-ssh-slave:alpine
+SUT_CONTAINER=bats-jenkins-ssh-slave-alpine
 
 load test_helpers
 load keys
 
 @test "build image" {
-	cd "${BATS_TEST_DIRNAME}"/.. || false
-	docker build -t "${SUT_IMAGE}" .
+	cd "$BATS_TEST_DIRNAME"/..
+	docker build -t $SUT_IMAGE -f Dockerfile-alpine .
 }
 
 @test "checking image metadatas" {
@@ -52,6 +52,8 @@ load keys
 			false \
 		)
 }
+
+
 
 @test "clean test container" {
 	docker kill "${SUT_CONTAINER}" &>/dev/null ||:
