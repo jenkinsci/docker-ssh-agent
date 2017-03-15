@@ -7,12 +7,12 @@ load test_helpers
 load keys
 
 @test "build image" {
-	cd "$BATS_TEST_DIRNAME"/..
-	docker build -t $SUT_IMAGE .
+	cd "${BATS_TEST_DIRNAME}"/.. || false
+	docker build -t "${SUT_IMAGE}" .
 }
 
 @test "checking image metadatas" {
-	local VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' jenkins-ssh-slave)"
+	local VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' ${SUT_IMAGE})"
 	echo "${VOLUMES_MAP}" | grep '/tmp'
 	echo "${VOLUMES_MAP}" | grep '/home/jenkins'
 	echo "${VOLUMES_MAP}" | grep '/run'
