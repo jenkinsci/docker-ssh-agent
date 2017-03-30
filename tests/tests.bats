@@ -7,41 +7,43 @@ load test_helpers
 load keys
 
 @test "build image" {
-	cd "$BATS_TEST_DIRNAME"/..
-	docker build -t $SUT_IMAGE .
+	cd "${BATS_TEST_DIRNAME}"/.. || false
+	docker build -t "${SUT_IMAGE}" .
+}
+
+@test "checking image metadatas" {
+	local VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' ${SUT_IMAGE})"
+	echo "${VOLUMES_MAP}" | grep '/tmp'
+	echo "${VOLUMES_MAP}" | grep '/home/jenkins'
+	echo "${VOLUMES_MAP}" | grep '/run'
+	echo "${VOLUMES_MAP}" | grep '/var/run'
 }
 
 @test "clean test container" {
-	docker kill $SUT_CONTAINER &>/dev/null ||:
-	docker rm -fv $SUT_CONTAINER &>/dev/null ||:
+	docker kill "${SUT_CONTAINER}" &>/dev/null ||:
+	docker rm -fv "${SUT_CONTAINER}" &>/dev/null ||:
 }
 
 @test "create slave container" {
-	docker run -d --name $SUT_CONTAINER -P $SUT_IMAGE "$PUBLIC_SSH_KEY"
+	docker run -d --name "${SUT_CONTAINER}" -P $SUT_IMAGE "$PUBLIC_SSH_KEY"
+}
+
+@test "image has bash and java installed and in the PATH" {
+	docker exec "${SUT_CONTAINER}" which bash
+	docker exec "${SUT_CONTAINER}" bash --version
+	docker exec "${SUT_CONTAINER}" which java
+	docker exec "${SUT_CONTAINER}" java -version
 }
 
 @test "slave container is running" {
 	sleep 1  # give time to sshd to eventually fail to initialize
-	retry 3 1 assert "true" docker inspect -f {{.State.Running}} $SUT_CONTAINER
+	retry 3 1 assert "true" docker inspect -f {{.State.Running}} "${SUT_CONTAINER}"
 }
 
 @test "connection with ssh + private key" {
 	run_through_ssh echo f00
 
 	[ "$status" = "0" ] && [ "$output" = "f00" ] \
-		|| (\
-			echo "status: $status"; \
-			echo "output: $output"; \
-			false \
-		)
-}
-
-@test "slave.jar can be executed" {
-	run_through_ssh java -jar /usr/share/jenkins/slave.jar --help
-
-	[ "$status" = "0" ] \
-		&& [ "${lines[0]}" = '"--help" is not a valid option' ] \
-		&& [ "${lines[1]}" = 'java -jar slave.jar [options...]' ] \
 		|| (\
 			echo "status: $status"; \
 			echo "output: $output"; \
@@ -75,17 +77,17 @@ function run_through_ssh {
 }
 
 @test "clean test container" {
-	docker kill $SUT_CONTAINER &>/dev/null ||:
-	docker rm -fv $SUT_CONTAINER &>/dev/null ||:
+	docker kill "${SUT_CONTAINER}" &>/dev/null ||:
+	docker rm -fv "${SUT_CONTAINER}" &>/dev/null ||:
 }
 
 @test "create slave container with pubkey as environment variable" {
-	docker run -e "JENKINS_SLAVE_SSH_PUBKEY=$PUBLIC_SSH_KEY" -d --name $SUT_CONTAINER -P $SUT_IMAGE
+	docker run -e "JENKINS_SLAVE_SSH_PUBKEY=$PUBLIC_SSH_KEY" -d --name "${SUT_CONTAINER}" -P $SUT_IMAGE
 }
 
 @test "slave container is running" {
 	sleep 1  # give time to sshd to eventually fail to initialize
-	retry 3 1 assert "true" docker inspect -f {{.State.Running}} $SUT_CONTAINER
+	retry 3 1 assert "true" docker inspect -f {{.State.Running}} "${SUT_CONTAINER}"
 }
 
 @test "connection with ssh + private key" {
@@ -99,3 +101,7 @@ function run_through_ssh {
 		)
 }
 
+@test "clean test container" {
+	docker kill "${SUT_CONTAINER}" &>/dev/null ||:
+	docker rm -fv "${SUT_CONTAINER}" &>/dev/null ||:
+}

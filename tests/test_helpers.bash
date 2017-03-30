@@ -1,3 +1,5 @@
+#!/bin/bash -exu
+
 
 # check dependencies
 (
@@ -33,7 +35,7 @@ function retry {
         sleep $delay
     done
 
-    echo "Command \"$@\" failed $attempts times. Status: $status. Output: $output" 
+    echo "Command \"$@\" failed $attempts times. Status: $status. Output: $output"
     false
 }
 
