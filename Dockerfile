@@ -37,7 +37,7 @@ RUN groupadd -g ${gid} ${group} \
 # setup SSH server
 RUN apt-get update \
     && apt-get install --no-install-recommends -y openssh-server \
-    && apt-get clean
+    && rm -rf /var/lib/apt/lists/*
 RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
 RUN sed -i 's/#RSAAuthentication.*/RSAAuthentication yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
