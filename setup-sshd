@@ -25,9 +25,9 @@ set -ex
 #  THE SOFTWARE.
 
 # Usage:
-#  docker run jenkinsci/ssh-slave <public key>
+#  docker run -e JENKINS_AGENT_DOCKER_GID=<docker GID in host> papazogler/jenkins-ssh-agent <public key>
 # or
-#  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=<public key>" jenkinsci/ssh-slave
+#  docker run -e "JENKINS_AGENT_SSH_PUBKEY=<public key>" -e JENKINS_AGENT_DOCKER_GID=<docker GID in host> papazogler/jenkins-ssh-agent
 
 write_key() {
 	mkdir -p "${JENKINS_AGENT_HOME}/.ssh"
@@ -36,8 +36,8 @@ write_key() {
 	chmod 0700 -R "${JENKINS_AGENT_HOME}/.ssh"
 }
 
-if [[ $JENKINS_SLAVE_SSH_PUBKEY == ssh-* ]]; then
-  write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
+if [[ $JENKINS_AGENT_SSH_PUBKEY == ssh-* ]]; then
+  write_key "${JENKINS_AGENT_SSH_PUBKEY}"
 fi
 if [[ $# -gt 0 ]]; then
   if [[ $1 == ssh-* ]]; then
@@ -48,6 +48,7 @@ if [[ $# -gt 0 ]]; then
   fi
 fi
 
+groupadd --gid ${JENKINS_AGENT_DOCKER_GID} docker && usermod -aG docker jenkins
 
 # ensure variables passed to docker container are also exposed to ssh sessions
 env | grep _ >> /etc/environment

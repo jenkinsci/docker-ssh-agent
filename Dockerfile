@@ -21,7 +21,7 @@
 #  THE SOFTWARE.
 
 FROM openjdk:8-jdk
-LABEL MAINTAINER="Nicolas De Loof <nicolas.deloof@gmail.com>"
+LABEL MAINTAINER="Stavros Papazoglou <papazogler@gmail.com>"
 
 ARG user=jenkins
 ARG group=jenkins
