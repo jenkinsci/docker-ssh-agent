@@ -1,6 +1,6 @@
 # Jenkins SSH slave Docker image
 
-[`jenkinsci/ssh-slave`](https://hub.docker.com/r/jenkinsci/ssh-slave/)
+[`jenkins/ssh-slave`](https://hub.docker.com/r/jenkins/ssh-slave/)
 
 A [Jenkins](https://jenkins-ci.org) slave using SSH to establish connection.
 
@@ -11,7 +11,7 @@ See [Jenkins Distributed builds](https://wiki.jenkins-ci.org/display/JENKINS/Dis
 To run a Docker container
 
 ```bash
-docker run jenkinsci/ssh-slave "<public key>"
+docker run jenkins/ssh-slave "<public key>"
 ```
 
 You'll then be able to connect this slave using ssh-slaves-plugin as "jenkins" with the matching private key.
