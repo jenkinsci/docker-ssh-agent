@@ -67,3 +67,7 @@ if($args.Length -gt 0) {
 Get-ChildItem env: | ForEach-Object { setx /m $_.Name $_.Value | Out-Null }
 
 Start-Service sshd
+while($true) {
+    # if we don't do this endless loop, the container exits
+    Start-Sleep -Seconds 60
+}
