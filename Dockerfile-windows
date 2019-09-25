@@ -43,17 +43,18 @@ COPY CreateProfile.psm1 C:/
 
 #create jenkins user
 RUN Import-Module -Force C:/CreateProfile.psm1 ; `
-    New-UserWithProfile -UserName $env:user -Description 'Jenkins agent user' ; `
+    New-UserWithProfile -UserName $env:user -Description 'Jenkins Agent User' ; `
     Remove-Item -Force C:/CreateProfile.psm1 ; `
+    Set-LocalUser -Name $env:user -PasswordNeverExpires $true ; `
     New-Item -Type Directory -Path "C:\ProgramData\Jenkins" | Out-Null
 
 # setup SSH server
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
-    Invoke-WebRequest -Uri "https://github.com/PowerShell/Win32-OpenSSH/releases/download/${env:OPENSSH_VERSION}/OpenSSH-Win64.zip -OutFile c:/openssh.zip -UseBasicParsing ; `
-    Expand-Archive c:/openssh.zip 'c:/Program Files' ; `
-    Remove-Item c:/openssh.zip ; `
+    Invoke-WebRequest -Uri "https://github.com/PowerShell/Win32-OpenSSH/releases/download/${env:OPENSSH_VERSION}/OpenSSH-Win64.zip -OutFile C:/openssh.zip -UseBasicParsing ; `
+    Expand-Archive c:/openssh.zip 'C:/Program Files' ; `
+    Remove-Item C:/openssh.zip ; `
     $env:PATH = '{0};{1}' -f $env:PATH,'C:\Program Files\OpenSSH-Win64' ; `
-    & 'c:/Program Files/OpenSSH-Win64/Install-SSHd.ps1' ; `
+    & 'C:/Program Files/OpenSSH-Win64/Install-SSHd.ps1' ; `
     New-Item -Type Directory -Path 'C:\ProgramData\ssh' | Out-Null ; `
     Copy-Item 'C:\Program Files\OpenSSH-Win64\sshd_config_default' 'C:\ProgramData\ssh\sshd_config' ; `
     $content = Get-Content -Path "C:\ProgramData\ssh\sshd_config" ; `
