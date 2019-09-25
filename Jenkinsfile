@@ -20,12 +20,12 @@ pipeline {
             parallel {
                 stage('Windows') {
                     agent {
-                        label "windock&&windows"
+                        label "windock"
                     }
                     steps {
                         deleteDir()
                         checkout scm
-                        bat "powershell -File ./make.ps1"
+                        powershell "& ./make.ps1"
                     }
                 }
                 stage('Linux') {
