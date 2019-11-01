@@ -3,10 +3,9 @@
  * This is currently handled through Automated Builds using standard Docker Hub feature
 */
 pipeline {
-    agent { label 'linux' }
+    agent none
 
     options {
-        timeout(time: 2, unit: 'MINUTES')
         buildDiscarder(logRotator(daysToKeepStr: '10'))
         timestamps()
     }
@@ -22,8 +21,10 @@ pipeline {
                     agent {
                         label "windock"
                     }
+                    options {
+                        timeout(time: 60, unit: 'MINUTES')
+                    }
                     steps {
-                        deleteDir()
                         checkout scm
                         powershell "& ./make.ps1"
                     }
@@ -32,8 +33,10 @@ pipeline {
                     agent {
                         label "docker&&linux"
                     }
+                    options {
+                        timeout(time: 30, unit: 'MINUTES')
+                    }
                     steps {
-                        deleteDir()
                         checkout scm
                         sh "make build"
                     }
