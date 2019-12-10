@@ -1,7 +1,3 @@
-#!/usr/bin/env bash
-
-set -ex
-
 # The MIT License
 #
 #  Copyright (c) 2015, CloudBees, Inc.
@@ -24,36 +20,41 @@ set -ex
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-# Usage:
-#  docker run jenkinsci/ssh-slave <public key>
-# or
-#  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=<public key>" jenkinsci/ssh-slave
+FROM openjdk:8-jdk-alpine
+LABEL MAINTAINER="Fabio Kruger <krufab.jobs@gmail.com>"
 
-write_key() {
-	mkdir -p "${JENKINS_AGENT_HOME}/.ssh"
-	echo "$1" > "${JENKINS_AGENT_HOME}/.ssh/authorized_keys"
-	chown -Rf jenkins:jenkins "${JENKINS_AGENT_HOME}/.ssh"
-	chmod 0700 -R "${JENKINS_AGENT_HOME}/.ssh"
-}
+ARG user=jenkins
+ARG group=jenkins
+ARG uid=1000
+ARG gid=1000
+ARG JENKINS_AGENT_HOME=/home/${user}
 
-if [[ ${JENKINS_SLAVE_SSH_PUBKEY} == ssh-* ]]; then
-  write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
-fi
-if [[ $# -gt 0 ]]; then
-  if [[ $1 == ssh-* ]]; then
-    write_key "$1"
-    shift 1
-  else
-    exec "$@"
-  fi
-fi
+ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
 
+RUN mkdir -p "${JENKINS_AGENT_HOME}" \
+# Set the home directory (h), set user and group id (u, g), set the shell, don't ask for password (D)
+    && adduser -h "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -s /bin/bash -D "${user}" \
+# Unblock user
+    && passwd -u jenkins
 
-# ensure variables passed to docker container are also exposed to ssh sessions
-env | grep _ >> /etc/environment
+# setup SSH server
+RUN apk update --no-cache \
+    && apk add --no-cache \
+        bash \
+        openssh
 
-# generate host keys if not present
-ssh-keygen -A
+RUN sed -i /etc/ssh/sshd_config \
+        -e 's/#PermitRootLogin.*/PermitRootLogin no/' \
+        -e 's/#PasswordAuthentication.*/PasswordAuthentication no/' \
+        -e 's/#SyslogFacility.*/SyslogFacility AUTH/' \
+        -e 's/#LogLevel.*/LogLevel INFO/' \
+    && mkdir /var/run/sshd
 
-# do not detach (-D), log to stderr (-e), passthrough other arguments
-exec /usr/sbin/sshd -D -e "${@}"
+VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
+WORKDIR "${JENKINS_AGENT_HOME}"
+
+COPY setup-sshd /usr/local/bin/setup-sshd
+
+EXPOSE 22
+
+ENTRYPOINT ["setup-sshd"]
