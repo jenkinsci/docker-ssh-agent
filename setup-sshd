@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -ex
 
@@ -36,7 +36,7 @@ write_key() {
 	chmod 0700 -R "${JENKINS_AGENT_HOME}/.ssh"
 }
 
-if [[ $JENKINS_SLAVE_SSH_PUBKEY == ssh-* ]]; then
+if [[ ${JENKINS_SLAVE_SSH_PUBKEY} == ssh-* ]]; then
   write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
 fi
 if [[ $# -gt 0 ]]; then
@@ -52,5 +52,8 @@ fi
 # ensure variables passed to docker container are also exposed to ssh sessions
 env | grep _ >> /etc/environment
 
+# generate host keys if not present
 ssh-keygen -A
+
+# do not detach (-D), log to stderr (-e), passthrough other arguments
 exec /usr/sbin/sshd -D -e "${@}"
