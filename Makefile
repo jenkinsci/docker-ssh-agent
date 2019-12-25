@@ -12,3 +12,13 @@ build-alpine:
 build-debian:
 	docker build -t ${IMAGE_DEBIAN} --file Dockerfile .
 
+.PHONY: test
+test: test-alpine test-debian
+
+.PHONY: test-alpine
+test-alpine:
+	@FLAVOR=alpine bats tests/tests.bats
+
+.PHONY: test-debian
+test-debian:
+	@bats tests/tests.bats

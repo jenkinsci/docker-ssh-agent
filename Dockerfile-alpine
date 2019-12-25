@@ -32,10 +32,11 @@ ARG JENKINS_AGENT_HOME=/home/${user}
 ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
 
 RUN mkdir -p "${JENKINS_AGENT_HOME}" \
-# Set the home directory (h), set user and group id (u, g), set the shell, don't ask for password (D)
-    && adduser -h "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -s /bin/bash -D "${user}" \
+    && addgroup -g "${gid}" "${group}" \
+# Set the home directory (h), set user and group id (u, G), set the shell, don't ask for password (D)
+    && adduser -h "${JENKINS_AGENT_HOME}" -u "${uid}" -G "${group}" -s /bin/bash -D "${user}" \
 # Unblock user
-    && passwd -u jenkins
+    && passwd -u "${user}"
 
 # setup SSH server
 RUN apk update --no-cache \
