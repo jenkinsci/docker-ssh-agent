@@ -1,107 +1,112 @@
 #!/usr/bin/env bats
 
+DOCKERFILE=Dockerfile
 SUT_IMAGE=jenkins-ssh-slave
 SUT_CONTAINER=bats-jenkins-ssh-slave
+
+if [[ -z "${FLAVOR}" ]]
+then
+  FLAVOR="debian"
+else
+  DOCKERFILE+="-alpine"
+  SUT_IMAGE+=":alpine"
+  SUT_CONTAINER+="-alpine"
+fi
 
 load test_helpers
 load keys
 
-@test "build image" {
-	cd "${BATS_TEST_DIRNAME}"/.. || false
-	docker build -t "${SUT_IMAGE}" .
+clean_test_container
+
+@test "[${FLAVOR}] build image" {
+  cd "${BATS_TEST_DIRNAME}"/.. || false
+  docker build -t "${SUT_IMAGE}" -f "${DOCKERFILE}" .
 }
 
-@test "checking image metadatas" {
-	local VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' ${SUT_IMAGE})"
-	echo "${VOLUMES_MAP}" | grep '/tmp'
-	echo "${VOLUMES_MAP}" | grep '/home/jenkins'
-	echo "${VOLUMES_MAP}" | grep '/run'
-	echo "${VOLUMES_MAP}" | grep '/var/run'
+@test "[${FLAVOR}] checking image metadata" {
+  local VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' ${SUT_IMAGE})"
+
+  echo "${VOLUMES_MAP}" | grep '/tmp'
+  echo "${VOLUMES_MAP}" | grep '/home/jenkins'
+  echo "${VOLUMES_MAP}" | grep '/run'
+  echo "${VOLUMES_MAP}" | grep '/var/run'
 }
 
-@test "clean test container" {
-	docker kill "${SUT_CONTAINER}" &>/dev/null ||:
-	docker rm -fv "${SUT_CONTAINER}" &>/dev/null ||:
+@test "[${FLAVOR}] image has bash and java installed and in the PATH" {
+  docker run -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
+
+  docker exec "${SUT_CONTAINER}" which bash
+  docker exec "${SUT_CONTAINER}" bash --version
+  docker exec "${SUT_CONTAINER}" which java
+  docker exec "${SUT_CONTAINER}" java -version
+
+  clean_test_container
 }
 
-@test "create slave container" {
-	docker run -d --name "${SUT_CONTAINER}" -P $SUT_IMAGE "$PUBLIC_SSH_KEY"
+@test "[${FLAVOR}] create slave container with pubkey as argument" {
+  docker run -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
+
+  is_slave_container_running
+
+  run_through_ssh echo f00
+
+  [ "$status" = "0" ] && [ "$output" = "f00" ] \
+    || (\
+      echo "status: $status"; \
+      echo "output: $output"; \
+      false \
+    )
+
+  clean_test_container
 }
 
-@test "image has bash and java installed and in the PATH" {
-	docker exec "${SUT_CONTAINER}" which bash
-	docker exec "${SUT_CONTAINER}" bash --version
-	docker exec "${SUT_CONTAINER}" which java
-	docker exec "${SUT_CONTAINER}" java -version
+@test "[${FLAVOR}] create slave container with pubkey as environment variable" {
+  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}"
+
+  is_slave_container_running
+
+  run_through_ssh echo f00
+
+  [ "$status" = "0" ] && [ "$output" = "f00" ] \
+    || (\
+      echo "status: $status"; \
+      echo "output: $output"; \
+      false \
+    )
+
+  clean_test_container
 }
 
-@test "slave container is running" {
-	sleep 1  # give time to sshd to eventually fail to initialize
-	retry 3 1 assert "true" docker inspect -f {{.State.Running}} "${SUT_CONTAINER}"
-}
+@test "[${FLAVOR}] use build args correctly" {
+  cd "${BATS_TEST_DIRNAME}"/.. || false
 
-@test "connection with ssh + private key" {
-	run_through_ssh echo f00
+	local TEST_USER=test-user
+	local TEST_GROUP=test-group
+	local TEST_UID=2000
+	local TEST_GID=3000
+	local TEST_JAH=/home/something
 
-	[ "$status" = "0" ] && [ "$output" = "f00" ] \
-		|| (\
-			echo "status: $status"; \
-			echo "output: $output"; \
-			false \
-		)
-}
+  docker build \
+    --build-arg "user=${TEST_USER}" \
+    --build-arg "group=${TEST_GROUP}" \
+    --build-arg "uid=${TEST_UID}" \
+    --build-arg "gid=${TEST_GID}" \
+    --build-arg "JENKINS_AGENT_HOME=${TEST_JAH}" \
+    -t "${SUT_IMAGE}" \
+    -f "${DOCKERFILE}" .
 
-# run a given command through ssh on the test container.
-# Use the $status, $output and $lines variables to make assertions
-function run_through_ssh {
-	SSH_PORT=$(get_port 22)
-	if [ "$SSH_PORT" = "" ]; then
-		echo "failed to get SSH port"
-		false
-	else
-		TMP_PRIV_KEY_FILE=$(mktemp "$BATS_TMPDIR"/bats_private_ssh_key_XXXXXXX)
-		echo "$PRIVATE_SSH_KEY" > $TMP_PRIV_KEY_FILE \
-		 	&& chmod 0600 $TMP_PRIV_KEY_FILE
+  docker run -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
 
-		run ssh -i $TMP_PRIV_KEY_FILE \
-			-o LogLevel=quiet \
-			-o UserKnownHostsFile=/dev/null \
-			-o StrictHostKeyChecking=no \
-			-l jenkins \
-			localhost \
-			-p $SSH_PORT \
-			"$@"
+  RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -u -n ${TEST_USER}")
+  [ "${RESULT}" = "${TEST_USER}" ]
+  RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -g -n ${TEST_USER}")
+  [ "${RESULT}" = "${TEST_GROUP}" ]
+  RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -u ${TEST_USER}")
+  [ "${RESULT}" = "${TEST_UID}" ]
+  RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -g ${TEST_USER}")
+  [ "${RESULT}" = "${TEST_GID}" ]
+  RESULT=$(docker exec "${SUT_CONTAINER}" sh -c 'stat -c "%U:%G" "${JENKINS_AGENT_HOME}"')
+  [ "${RESULT}" = "${TEST_USER}:${TEST_GROUP}" ]
 
-		rm -f $TMP_PRIV_KEY_FILE
-	fi
-}
-
-@test "clean test container" {
-	docker kill "${SUT_CONTAINER}" &>/dev/null ||:
-	docker rm -fv "${SUT_CONTAINER}" &>/dev/null ||:
-}
-
-@test "create slave container with pubkey as environment variable" {
-	docker run -e "JENKINS_SLAVE_SSH_PUBKEY=$PUBLIC_SSH_KEY" -d --name "${SUT_CONTAINER}" -P $SUT_IMAGE
-}
-
-@test "slave container is running" {
-	sleep 1  # give time to sshd to eventually fail to initialize
-	retry 3 1 assert "true" docker inspect -f {{.State.Running}} "${SUT_CONTAINER}"
-}
-
-@test "connection with ssh + private key" {
-	run_through_ssh echo f00
-
-	[ "$status" = "0" ] && [ "$output" = "f00" ] \
-		|| (\
-			echo "status: $status"; \
-			echo "output: $output"; \
-			false \
-		)
-}
-
-@test "clean test container" {
-	docker kill "${SUT_CONTAINER}" &>/dev/null ||:
-	docker rm -fv "${SUT_CONTAINER}" &>/dev/null ||:
+  clean_test_container
 }

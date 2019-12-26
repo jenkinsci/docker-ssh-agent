@@ -1,8 +1,8 @@
-# Jenkins SSH slave Docker image
+# Jenkins SSH Build Agent Docker image
 
 [`jenkins/ssh-slave`](https://hub.docker.com/r/jenkins/ssh-slave/)
 
-A [Jenkins](https://jenkins-ci.org) slave using SSH to establish connection.
+A [Jenkins](https://jenkins-ci.org) agent using SSH to establish connection.
 
 See [Jenkins Distributed builds](https://wiki.jenkins-ci.org/display/JENKINS/Distributed+builds) for more info.
 
@@ -14,7 +14,7 @@ To run a Docker container
 docker run jenkins/ssh-slave "<public key>"
 ```
 
-You'll then be able to connect this slave using ssh-slaves-plugin as "jenkins" with the matching private key.
+You'll then be able to connect this agent using ssh-slaves-plugin as "jenkins" with the matching private key.
 
 ### How to use this image with Docker Plugin
 
