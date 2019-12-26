@@ -7,6 +7,11 @@ SUT_CONTAINER=bats-jenkins-ssh-slave
 if [[ -z "${FLAVOR}" ]]
 then
   FLAVOR="debian"
+elif [[ "${FLAVOR}" = "jdk11" ]]
+then
+  DOCKERFILE+="-jdk11"
+  SUT_IMAGE+=":jdk11"
+  SUT_CONTAINER+="-jdk11"
 else
   DOCKERFILE+="-alpine"
   SUT_IMAGE+=":alpine"
