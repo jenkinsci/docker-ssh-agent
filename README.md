@@ -4,9 +4,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/ssh-slave.svg)](https://hub.docker.com/r/jenkins/ssh-slave/)
 [![GitHub release](https://img.shields.io/github/release/jenkinsci/docker-ssh-slave.svg?label=changelog)
 
-[`jenkins/ssh-slave`](https://hub.docker.com/r/jenkins/ssh-slave/)
-
-A [Jenkins](https://jenkins-ci.org) agent using SSH to establish connection.
+A [Jenkins](https://jenkins.io) agent using SSH to establish connection.
 
 See [Jenkins Distributed builds](https://wiki.jenkins-ci.org/display/JENKINS/Distributed+builds) for more info.
 
@@ -18,7 +16,7 @@ To run a Docker container
 docker run jenkins/ssh-slave "<public key>"
 ```
 
-You'll then be able to connect this agent using ssh-slaves-plugin as "jenkins" with the matching private key.
+You'll then be able to connect this agent using the [SSH Build Agents plugin](https://plugins.jenkins.io/ssh-slaves) as "jenkins" with the matching private key.
 
 ### How to use this image with Docker Plugin
 
