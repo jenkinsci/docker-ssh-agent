@@ -1,8 +1,9 @@
 #!/usr/bin/env bats
 
 DOCKERFILE=Dockerfile
-SUT_IMAGE=jenkins-ssh-slave
-SUT_CONTAINER=bats-jenkins-ssh-slave
+JDK=8
+SLAVE_IMAGE=jenkins-ssh-slave
+SLAVE_CONTAINER=bats-jenkins-ssh-slave
 
 if [[ -z "${FLAVOR}" ]]
 then
@@ -10,12 +11,13 @@ then
 elif [[ "${FLAVOR}" = "jdk11" ]]
 then
   DOCKERFILE+="-jdk11"
-  SUT_IMAGE+=":jdk11"
-  SUT_CONTAINER+="-jdk11"
+  JDK=11
+  SLAVE_IMAGE+=":jdk11"
+  SLAVE_CONTAINER+="-jdk11"
 else
   DOCKERFILE+="-alpine"
-  SUT_IMAGE+=":alpine"
-  SUT_CONTAINER+="-alpine"
+  SLAVE_IMAGE+=":alpine"
+  SLAVE_CONTAINER+="-alpine"
 fi
 
 load test_helpers
@@ -23,13 +25,18 @@ load keys
 
 clean_test_container
 
+function teardown () {
+  clean_test_container
+}
+
 @test "[${FLAVOR}] build image" {
   cd "${BATS_TEST_DIRNAME}"/.. || false
-  docker build -t "${SUT_IMAGE}" -f "${DOCKERFILE}" .
+  docker build -t "${SLAVE_IMAGE}" -f "${DOCKERFILE}" .
 }
 
 @test "[${FLAVOR}] checking image metadata" {
-  local VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' ${SUT_IMAGE})"
+  local VOLUMES_MAP
+  VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' ${SLAVE_IMAGE})"
 
   echo "${VOLUMES_MAP}" | grep '/tmp'
   echo "${VOLUMES_MAP}" | grep '/home/jenkins'
@@ -38,18 +45,36 @@ clean_test_container
 }
 
 @test "[${FLAVOR}] image has bash and java installed and in the PATH" {
-  docker run -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
+  docker run -d --name "${SLAVE_CONTAINER}" -P "${SLAVE_IMAGE}" "${PUBLIC_SSH_KEY}"
 
-  docker exec "${SUT_CONTAINER}" which bash
-  docker exec "${SUT_CONTAINER}" bash --version
-  docker exec "${SUT_CONTAINER}" which java
-  docker exec "${SUT_CONTAINER}" java -version
+  run docker exec "${SLAVE_CONTAINER}" which bash
+  [ "${status}" -eq 0 ]
+  run docker exec "${SLAVE_CONTAINER}" bash --version
+  [ "${status}" -eq 0 ]
+  run docker exec "${SLAVE_CONTAINER}" which java
+  [ "${status}" -eq 0 ]
 
-  clean_test_container
+  if [[ "${JDK}" -eq 8 ]]
+  then
+    run docker exec "${SLAVE_CONTAINER}" sh -c "
+    java -version 2>&1 \
+      | grep -o -E '^openjdk version \"[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+.*\"' \
+      | grep -o -E '\.[[:digit:]]+\.' \
+      | grep -o -E '[[:digit:]]+'
+    "
+  else
+    run docker exec "${SLAVE_CONTAINER}" sh -c "
+    java -version 2>&1 \
+      | grep -o -E '^openjdk version \"[[:digit:]]+\.' \
+      | grep -o -E '\"[[:digit:]]+\.' \
+      | grep -o -E '[[:digit:]]+'
+    "
+  fi
+  [ "${JDK}" = "${lines[0]}" ]
 }
 
 @test "[${FLAVOR}] create slave container with pubkey as argument" {
-  docker run -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
+  docker run -d --name "${SLAVE_CONTAINER}" -P "${SLAVE_IMAGE}" "${PUBLIC_SSH_KEY}"
 
   is_slave_container_running
 
@@ -61,12 +86,10 @@ clean_test_container
       echo "output: $output"; \
       false \
     )
-
-  clean_test_container
 }
 
 @test "[${FLAVOR}] create slave container with pubkey as environment variable" {
-  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}"
+  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${SLAVE_CONTAINER}" -P "${SLAVE_IMAGE}"
 
   is_slave_container_running
 
@@ -78,8 +101,6 @@ clean_test_container
       echo "output: $output"; \
       false \
     )
-
-  clean_test_container
 }
 
 @test "[${FLAVOR}] use build args correctly" {
@@ -97,21 +118,19 @@ clean_test_container
     --build-arg "uid=${TEST_UID}" \
     --build-arg "gid=${TEST_GID}" \
     --build-arg "JENKINS_AGENT_HOME=${TEST_JAH}" \
-    -t "${SUT_IMAGE}" \
+    -t "${SLAVE_IMAGE}" \
     -f "${DOCKERFILE}" .
 
-  docker run -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
+  docker run -d --name "${SLAVE_CONTAINER}" -P "${SLAVE_IMAGE}" "${PUBLIC_SSH_KEY}"
 
-  RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -u -n ${TEST_USER}")
-  [ "${RESULT}" = "${TEST_USER}" ]
-  RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -g -n ${TEST_USER}")
-  [ "${RESULT}" = "${TEST_GROUP}" ]
-  RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -u ${TEST_USER}")
-  [ "${RESULT}" = "${TEST_UID}" ]
-  RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -g ${TEST_USER}")
-  [ "${RESULT}" = "${TEST_GID}" ]
-  RESULT=$(docker exec "${SUT_CONTAINER}" sh -c 'stat -c "%U:%G" "${JENKINS_AGENT_HOME}"')
-  [ "${RESULT}" = "${TEST_USER}:${TEST_GROUP}" ]
-
-  clean_test_container
+  run docker exec "${SLAVE_CONTAINER}" sh -c "id -u -n ${TEST_USER}"
+  [ "${TEST_USER}" = "${lines[0]}" ]
+  run docker exec "${SLAVE_CONTAINER}" sh -c "id -g -n ${TEST_USER}"
+  [ "${TEST_GROUP}" = "${lines[0]}" ]
+  run docker exec "${SLAVE_CONTAINER}" sh -c "id -u ${TEST_USER}"
+  [ "${TEST_UID}" = "${lines[0]}" ]
+  run docker exec "${SLAVE_CONTAINER}" sh -c "id -g ${TEST_USER}"
+  [ "${TEST_GID}" = "${lines[0]}" ]
+  run docker exec "${SLAVE_CONTAINER}" sh -c 'stat -c "%U:%G" "${JENKINS_AGENT_HOME}"'
+  [ "${TEST_USER}:${TEST_GROUP}" = "${lines[0]}" ]
 }
