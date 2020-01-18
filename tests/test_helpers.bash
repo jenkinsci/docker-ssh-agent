@@ -51,7 +51,7 @@ function retry {
 
 # return the published port for given container port $1
 function get_port {
-    docker port "${SLAVE_CONTAINER}" "${1}" | cut -d: -f2
+    docker port "${AGENT_CONTAINER}" "${1}" | cut -d: -f2
 }
 
 # run a given command through ssh on the test container.
@@ -80,11 +80,11 @@ function run_through_ssh {
 }
 
 function clean_test_container {
-	docker kill "${SLAVE_CONTAINER}" &>/dev/null ||:
-	docker rm -fv "${SLAVE_CONTAINER}" &>/dev/null ||:
+	docker kill "${AGENT_CONTAINER}" &>/dev/null ||:
+	docker rm -fv "${AGENT_CONTAINER}" &>/dev/null ||:
 }
 
 function is_slave_container_running {
 	sleep 1  # give time to sshd to eventually fail to initialize
-	retry 3 1 assert "true" docker inspect -f '{{.State.Running}}' "${SLAVE_CONTAINER}"
+	retry 3 1 assert "true" docker inspect -f '{{.State.Running}}' "${AGENT_CONTAINER}"
 }
