@@ -38,7 +38,8 @@ pipeline {
                     }
                     steps {
                         checkout scm
-                        sh 'make tests && make build'
+                        sh 'make build'
+                        sh 'make test'
                         sh 'docker system prune --force --all'
                     }
                 }
