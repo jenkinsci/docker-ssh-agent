@@ -1,4 +1,5 @@
 ROOT:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+
 IMAGE_NAME:=jenkins4eval/ssh-slave
 IMAGE_ALPINE:=${IMAGE_NAME}:alpine
 IMAGE_DEBIAN:=${IMAGE_NAME}:test
@@ -16,7 +17,7 @@ build-jdk11:
 	docker build -t ${IMAGE_JDK11} --file Dockerfile-jdk11 .
 
 .PHONY: test
-test: test-debian test-alpine test-jdk11
+test: test-alpine test-debian test-jdk11
 
 .PHONY: test-alpine
 test-alpine:
