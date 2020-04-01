@@ -1,21 +1,33 @@
 #!/usr/bin/env bats
 
-DOCKERFILE=Dockerfile
-SUT_IMAGE=jenkins-ssh-slave
-SUT_CONTAINER=bats-jenkins-ssh-slave
+SUT_IMAGE=jenkins-ssh-agent
+SUT_CONTAINER=bats-jenkins-ssh-agent
 
-if [[ -z "${FLAVOR}" ]]
+REGEX='^([0-9]+)/(.+)$'
+
+REAL_FOLDER=$(realpath "${BATS_TEST_DIRNAME}/../${FOLDER}")
+
+if [[ ${FOLDER} =~ ${REGEX} ]] && [[ -d "${REAL_FOLDER}" ]]
 then
-  FLAVOR="debian"
-elif [[ "${FLAVOR}" = "jdk11" ]]
+  JDK="${BASH_REMATCH[1]}"
+  FLAVOR="${BASH_REMATCH[2]}"
+else
+  echo "Wrong folder format or folder does not exist: ${FOLDER}"
+  exit 1
+fi
+
+if [[ "${JDK}" = "11" ]]
 then
-  DOCKERFILE+="-jdk11"
   SUT_IMAGE+=":jdk11"
   SUT_CONTAINER+="-jdk11"
 else
-  DOCKERFILE+="-alpine"
-  SUT_IMAGE+=":alpine"
-  SUT_CONTAINER+="-alpine"
+  if [[ "${FLAVOR}" = "alpine*" ]]
+  then
+    SUT_IMAGE+=":alpine"
+    SUT_CONTAINER+="-alpine"
+  else
+    SUT_IMAGE+=":latest"
+  fi
 fi
 
 load test_helpers
@@ -23,12 +35,12 @@ load keys
 
 clean_test_container
 
-@test "[${FLAVOR}] build image" {
+@test "[${JDK} ${FLAVOR}] build image" {
   cd "${BATS_TEST_DIRNAME}"/.. || false
-  docker build -t "${SUT_IMAGE}" -f "${DOCKERFILE}" .
+  docker build -t "${SUT_IMAGE}" "${FOLDER}"
 }
 
-@test "[${FLAVOR}] checking image metadata" {
+@test "[${JDK} ${FLAVOR}] checking image metadata" {
   local VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' ${SUT_IMAGE})"
 
   echo "${VOLUMES_MAP}" | grep '/tmp'
@@ -37,7 +49,7 @@ clean_test_container
   echo "${VOLUMES_MAP}" | grep '/var/run'
 }
 
-@test "[${FLAVOR}] image has bash and java installed and in the PATH" {
+@test "[${JDK} ${FLAVOR}] image has bash and java installed and in the PATH" {
   docker run -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
 
   docker exec "${SUT_CONTAINER}" which bash
@@ -48,7 +60,7 @@ clean_test_container
   clean_test_container
 }
 
-@test "[${FLAVOR}] create slave container with pubkey as argument" {
+@test "[${JDK} ${FLAVOR}] create slave container with pubkey as argument" {
   docker run -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
 
   is_slave_container_running
@@ -65,7 +77,7 @@ clean_test_container
   clean_test_container
 }
 
-@test "[${FLAVOR}] create slave container with pubkey as environment variable" {
+@test "[${JDK} ${FLAVOR}] create slave container with pubkey as environment variable" {
   docker run -e "JENKINS_SLAVE_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}"
 
   is_slave_container_running
@@ -82,7 +94,7 @@ clean_test_container
   clean_test_container
 }
 
-@test "[${FLAVOR}] use build args correctly" {
+@test "[${JDK} ${FLAVOR}] use build args correctly" {
   cd "${BATS_TEST_DIRNAME}"/.. || false
 
 	local TEST_USER=test-user
@@ -98,7 +110,7 @@ clean_test_container
     --build-arg "gid=${TEST_GID}" \
     --build-arg "JENKINS_AGENT_HOME=${TEST_JAH}" \
     -t "${SUT_IMAGE}" \
-    -f "${DOCKERFILE}" .
+    "${FOLDER}"
 
   docker run -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
 
