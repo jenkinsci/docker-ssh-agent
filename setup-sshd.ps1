@@ -1,6 +1,6 @@
 # The MIT License
 #
-#  Copyright (c) 2019, Alex Earl
+#  Copyright (c) 2019-2020, Alex Earl
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -21,52 +21,84 @@
 #  THE SOFTWARE.
 
 # Usage:
-#  docker run jenkins/ssh-agent:windows <public key>
+#  docker run jenkins/ssh-agent <public key>
 # or
-#  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=<public key>" jenkins/ssh-agent:windows
+#  docker run -e "JENKINS_AGENT_SSH_PUBKEY=<public key>" jenkins/ssh-agent
+# or
+#  docker run -e "JENKINS_AGENT_SSH_PUBKEY=<public key>" -e "JENKINS_AGENT_SSH_KNOWNHOST_0=<known host entry>" -e "JENKINS_AGENT_SSH_KNOWNHOST_n=<known host entry>" jenkins/ssh-agent
 
-function Write-Key($Key) {
-  # this writes the key and sets the permissions correctly for pubkey auth
-  $sshDir = '{0}\.ssh' -f $env:JENKINS_AGENT_HOME
-  $authorizedKeys = Join-Path $sshDir 'authorized_keys'
-  New-Item -Type Directory -Path $sshDir | Out-Null
-  icacls.exe $sshDir /setowner ${env:JENKINS_AGENT_USER} | Out-Null
-  icacls.exe $sshDir /grant "${env:JENKINS_AGENT_USER}:(CI)(OI)(F)" /grant "administrators:(CI)(OI)(F)" | Out-Null
-  icacls.exe $sshDir /inheritance:r | Out-Null
+[CmdletBinding()]
+Param(
+    [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
+    [string] $Cmd
+)
 
-  Set-Content -Path $authorizedKeys -Value "$Key" -Encoding UTF8
-  icacls.exe $authorizedKeys /setowner ${env:JENKINS_AGENT_USER} | Out-Null
+function Get-SSHDir {
+    return Join-Path $env:JENKINS_AGENT_HOME '.ssh'
 }
 
-# Even though we created a profile, the NTUSER.DAT file is missing
-# this needs to be in the directory or Windows will not load
-# the profile
-if(!(Test-Path (Join-Path $env:JENKINS_AGENT_HOME 'NTUSER.DAT'))) {
-  Copy-Item -Path 'C:\Users\Default\NTUSER.DAT' -Destination (Join-Path $env:JENKINS_AGENT_HOME 'NTUSER.DAT')
+function Check-SSHDir {
+    $sshDir = Get-SSHDir
+    if(-not (Test-Path $sshDir)) {
+        New-Item -Type Directory -Path $sshDir | Out-Null
+        icacls.exe $sshDir /setowner $env:JENKINS_AGENT_USER | Out-Null
+        icacls.exe $sshDir /grant $('{0}:(CI)(OI)(F)' -f $env:JENKINS_AGENT_USER) /grant "administrators:(CI)(OI)(F)" | Out-Null
+        icacls.exe $sshDir /inheritance:r | Out-Null
+    }
+}
+
+function Write-Key($Key) {
+    # this writes the key and sets the permissions correctly for pubkey auth
+    $authorizedKeys = Join-Path (Get-SSHDir) 'authorized_keys'
+    Set-Content -Path $authorizedKeys -Value "$Key" -Encoding UTF8
+
+    icacls.exe $authorizedKeys /setowner $env:JENKINS_AGENT_USER | Out-Null
+}
+
+function Write-HostKey($Key) {
+    # this writes the key and sets the permissions
+    $knownHosts = Join-Path (Get-SSHDir) 'known_hosts'
+    Set-Content -Path $knownHosts -Value "$Key" -Encoding UTF8
+
+    icacls.exe $knownHosts /setowner $env:JENKINS_AGENT_USER | Out-Null
 }
 
 # Give the user Full Access to the home directory
 icacls.exe $env:JENKINS_AGENT_HOME /grant "${env:JENKINS_AGENT_USER}:(CI)(OI)(F)" | Out-Null
 
-if($env:JENKINS_SLAVE_SSH_PUBKEY -match "^ssh-.*") {
-  Write-Key $env:JENKINS_SLAVE_SSH_PUBKEY
-} 
+# check the .ssh dir permissions
+Check-SSHDir
 
-if($args.Length -gt 0) {
-  if($args[0] -match "^ssh-.*") {
-    Write-Key "$($args[0]) $($args[1]) $($args[2])"
-    $null, $null, $null, $args = $args
-  } else {
-    & "$args"
-  }
+if($env:JENKINS_AGENT_SSH_PUBKEY -match "^ssh-.*") {
+    Write-Key $env:JENKINS_AGENT_SSH_PUBKEY
 }
 
+$index = 0
+$knownHostKeyVar = Get-ChildItem -Path "env:JENKINS_AGENT_SSH_KNOWNHOST_$index" -ErrorAction 'SilentlyContinue'
+while($null -ne $knownHostKeyVar) {
+    Write-HostKey $knownHostKeyVar.Value
+    $index++
+    $knownHostKeyVar = Get-ChildItem env: -Name "JENKINS_AGENT_SSH_KNOWNHOST_$index"
+}
 
+if(![System.String]::IsNullOrWhiteSpace($Cmd)) {
+    if($Cmd -match "^ssh-.*") {
+        Write-Key $Cmd
+    } else {
+        & $Cmd
+        exit
+    }
+}
 
 # ensure variables passed to docker container are also exposed to ssh sessions
 Get-ChildItem env: | ForEach-Object { setx /m $_.Name $_.Value | Out-Null }
 
 Start-Service sshd
+
+# dump network information
+ipconfig
+netstat -a
+
 while($true) {
     # if we don't do this endless loop, the container exits
     Start-Sleep -Seconds 60
