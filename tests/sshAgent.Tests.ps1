@@ -154,9 +154,10 @@ Describe "[$JDK $FLAVOR] build args" {
     }
 
     It 'uses build args correctly' {
-        $TEST_USER="foo"
+        $TEST_USER="testuser"
+        $TEST_JAW="C:/hamster"
 
-        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "build --build-arg user=$TEST_USER -t $AGENT_IMAGE $FOLDER"
+        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "build --build-arg `"user=$TEST_USER`" --build-arg `"JENKINS_AGENT_WORK=$TEST_JAW`" -t $AGENT_IMAGE $FOLDER"
         $exitCode | Should -Be 0
 
         $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -dit --name $AGENT_CONTAINER -P $AGENT_IMAGE $SHELL"
@@ -165,7 +166,11 @@ Describe "[$JDK $FLAVOR] build args" {
 
         $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "exec $AGENT_CONTAINER net user $TEST_USER"
         $exitCode | Should -Be 0
-        $stdout | Should -Match $TEST_USER
+        $stdout | Should -Match "User name\s*$TEST_USER"
+
+        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "exec $AGENT_CONTAINER $SHELL -C `"(Get-ChildItem env:\ | Where-Object { `$_.Name -eq 'JENKINS_AGENT_WORK' }).Value`""
+        $exitCode | Should -Be 0
+        $stdout.Trim() | Should -Match "$TEST_JAW"
     }
 
     AfterAll {
@@ -173,37 +178,3 @@ Describe "[$JDK $FLAVOR] build args" {
         Pop-Location -StackName 'agent'
     }
 }
-
-# @test "[${JDK} ${FLAVOR}] use build args correctly" {
-#   cd "${BATS_TEST_DIRNAME}"/.. || false
-
-# 	local TEST_USER=test-user
-# 	local TEST_GROUP=test-group
-# 	local TEST_UID=2000
-# 	local TEST_GID=3000
-# 	local TEST_JAH=/home/something
-
-#   docker build \
-#     --build-arg "user=${TEST_USER}" \
-#     --build-arg "group=${TEST_GROUP}" \
-#     --build-arg "uid=${TEST_UID}" \
-#     --build-arg "gid=${TEST_GID}" \
-#     --build-arg "JENKINS_AGENT_HOME=${TEST_JAH}" \
-#     -t "${SUT_IMAGE}" \
-#     "${FOLDER}"
-
-#   docker run -d --name "${SUT_CONTAINER}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
-
-#   RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -u -n ${TEST_USER}")
-#   [ "${RESULT}" = "${TEST_USER}" ]
-#   RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -g -n ${TEST_USER}")
-#   [ "${RESULT}" = "${TEST_GROUP}" ]
-#   RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -u ${TEST_USER}")
-#   [ "${RESULT}" = "${TEST_UID}" ]
-#   RESULT=$(docker exec "${SUT_CONTAINER}" sh -c "id -g ${TEST_USER}")
-#   [ "${RESULT}" = "${TEST_GID}" ]
-#   RESULT=$(docker exec "${SUT_CONTAINER}" sh -c 'stat -c "%U:%G" "${JENKINS_AGENT_HOME}"')
-#   [ "${RESULT}" = "${TEST_USER}:${TEST_GROUP}" ]
-
-#   clean_test_container
-# }

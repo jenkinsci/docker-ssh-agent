@@ -63,25 +63,13 @@ function New-UserWithProfile {
         [Parameter(Mandatory=$false,
                    ValueFromPipelineByPropertyName=$true,
                    Position=1)]
-        [string]$Description = '',
-
-        [Parameter(Mandatory=$false,
-                  ValueFromPipelineByPropertyName=$true,
-                  Position=2)]
-        [string]$HomeDir="C:\Users\$UserName"
+        [string]$Description = ''
     )
 
     Write-Verbose "Creating local user $Username";
 
     try {
-        if($HomeDir.ToLower().Replace('\', '/') -ne "C:/Users/$UserName".ToLower()) {
-            if(-not (Test-Path $HomeDir)) {
-                New-Item -ItemType Directory -Path $HomeDir
-            }
-            net user $UserName /ADD /ACTIVE:YES /EXPIRES:NEVER /FULLNAME:"$Description" /PASSWORDCHG:NO /PASSWORDREQ:NO /HOMEDIR:$HomeDir
-        } else {
-            net user $UserName /ADD /ACTIVE:YES /EXPIRES:NEVER /FULLNAME:"$Description" /PASSWORDCHG:NO /PASSWORDREQ:NO
-        }
+        net user $UserName /ADD /ACTIVE:YES /EXPIRES:NEVER /FULLNAME:"$Description" /PASSWORDCHG:NO /PASSWORDREQ:NO
         net localgroup Administrators /add $UserName
     } catch {
         Write-Error $_.Exception.Message;
@@ -89,29 +77,6 @@ function New-UserWithProfile {
     }
 
     $localUser = New-Object System.Security.Principal.NTAccount($UserName)
-    $administrators = New-Object System.Security.Principal.NTAccount('BUILTIN\Administrators')
-    $system = New-Object System.Security.Principal.NTAccount('NT AUTHORITY\SYSTEM')
-
-    if($HomeDir.ToLower().Replace('\', '/') -ne "C:/Users/$UserName".ToLower()) {
-        Write-Warning "Setting access on $HomeDir!!!"
-        $acl = Get-Acl $HomeDir
-        $acl.SetAccessRuleProtection($true,$false)
-        ForEach ($u in @($localUSer, $administrators, $system)) {
-            $acl.AddAccessRule(
-                [System.Security.AccessControl.FileSystemAccessRule]::new(
-                    $u,
-                    [System.Security.AccessControl.FileSystemRights]::FullControl,
-                    [System.Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit',
-                    [System.Security.AccessControl.PropagationFlags]::None,
-                    [System.Security.AccessControl.AccessControlType]::Allow
-                )
-            )
-        }
-        $acl.SetOwner($administrators)
-        $acl.SetGroup($administrators)
-        Set-Acl -Path $HomeDir -AclObject $acl
-        Get-Acl $HomeDir
-    }
 
     $methodName = 'UserEnvCP'
     $script:nativeMethods = @();

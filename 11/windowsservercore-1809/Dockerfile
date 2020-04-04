@@ -2,7 +2,7 @@
 
 # The MIT License
 #
-#  Copyright (c) 2019, Alex Earl
+#  Copyright (c) 2019-2020, Alex Earl
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,9 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPref
 ARG OPENSSH_VERSION=v8.1.0.0p1-Beta
 
 ARG user=jenkins
-ARG JENKINS_AGENT_HOME=C:/Users/${user}
+ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"
 ENV JENKINS_AGENT_USER ${user}
-ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
+ENV JENKINS_AGENT_WORK ${JENKINS_AGENT_WORK}
 
 USER ContainerAdministrator
 
@@ -60,7 +60,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value 'ChallengeResponseAuthentication no' ; `
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value 'HostKeyAgent \\.\pipe\openssh-ssh-agent' ; `
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('Match User {0}' -f $env:JENKINS_AGENT_USER) ; `
-    Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('       AuthorizedKeysFile {0}/.ssh/authorized_keys' -f $env:JENKINS_AGENT_HOME) ; `
+    Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('       AuthorizedKeysFile C:/Users/{0}/.ssh/authorized_keys' -f $env:JENKINS_AGENT_USER) ; `
     New-Item -Path HKLM:\SOFTWARE -Name OpenSSH -Force | Out-Null ; `
     New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -PropertyType string -Force | Out-Null
 
@@ -68,11 +68,11 @@ COPY CreateProfile.psm1 C:/
 
 # create user and user directory
 RUN Import-Module -Force C:/CreateProfile.psm1 ; `
-    New-UserWithProfile -UserName $env:JENKINS_AGENT_USER -Description 'Jenkins Agent User' -HomeDir $env:JENKINS_AGENT_HOME -Verbose ; `
+    New-UserWithProfile -UserName $env:JENKINS_AGENT_USER -Description 'Jenkins Agent User' ; `
     Remove-Item -Force C:/CreateProfile.psm1
 
-VOLUME "${JENKINS_AGENT_HOME}/Work" "${JENKINS_AGENT_HOME}/AppData/Local/Temp"
-WORKDIR "${JENKINS_AGENT_HOME}/Work"
+VOLUME "${JENKINS_AGENT_WORK}" "C:/Users/${user}/AppData/Local/Temp"
+WORKDIR "${JENKINS_AGENT_WORK}"
 
 COPY setup-sshd.ps1 C:/ProgramData/Jenkins/setup-sshd.ps1
 

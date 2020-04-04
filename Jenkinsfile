@@ -24,9 +24,35 @@ pipeline {
                     options {
                         timeout(time: 60, unit: 'MINUTES')
                     }
+                    environment {
+                        DOCKERHUB_ORGANISATION = "${infra.isTrusted() ? 'jenkins' : 'jenkins4eval'}"
+                    }
                     steps {
                         checkout scm
-                        powershell "& ./make.ps1"
+                        powershell "& ./make.ps1 build"
+                        powershell '& ./make.ps1 test'
+                        script {
+                            def branchName = "${env.BRANCH_NAME}"
+                            if (branchName ==~ 'master') {
+                                // we can't use dockerhub builds for windows
+                                // so we publish here
+                                infra.withDockerCredentials {
+                                    powershell '& ./make.ps1 publish'
+                                }
+                            }
+
+                            if (env.TAG_NAME != null) {
+                                def tagItems = env.TAG_NAME.split('-')
+                                if(tagItems.length == 2) {
+                                    // we need to build and publish the tag version
+                                    infra.withDockerCredentials {
+                                        powershell "& ./make.ps1 -PushVersions -Tag ${env.TAG_NAME} publish"
+                                    }
+                                }
+                            }
+                        }
+
+                        powershell '& docker system prune --force --all'
                     }
                 }
                 stage('Linux') {
@@ -37,8 +63,17 @@ pipeline {
                         timeout(time: 30, unit: 'MINUTES')
                     }
                     steps {
-                        checkout scm
-                        sh "make build"
+                        script {
+                            if(!infra.isTrusted()) {
+                                deleteDir()
+                                checkout scm
+                                sh '''
+                                make build
+                                make test
+                                docker system prune --force --all
+                                '''
+                            }
+                        }
                     }
                 }
             }

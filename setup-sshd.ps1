@@ -34,7 +34,7 @@ Param(
 )
 
 function Get-SSHDir {
-    return Join-Path $env:JENKINS_AGENT_HOME '.ssh'
+    return Join-Path "C:/Users/$env:JENKINS_AGENT_USER" '.ssh'
 }
 
 function Check-SSHDir {
@@ -64,7 +64,7 @@ function Write-HostKey($Key) {
 }
 
 # Give the user Full Access to the home directory
-icacls.exe $env:JENKINS_AGENT_HOME /grant "${env:JENKINS_AGENT_USER}:(CI)(OI)(F)" | Out-Null
+icacls.exe "C:/Users/$env:JENKINS_AGENT_USER" /grant "${env:JENKINS_AGENT_USER}:(CI)(OI)(F)" | Out-Null
 
 # check the .ssh dir permissions
 Check-SSHDir
