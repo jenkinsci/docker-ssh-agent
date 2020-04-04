@@ -28,8 +28,6 @@ pipeline {
                         DOCKERHUB_ORGANISATION = "${infra.isTrusted() ? 'jenkins' : 'jenkins4eval'}"
                     }
                     steps {
-                        checkout scm
-                        powershell "& ./make.ps1 build"
                         powershell '& ./make.ps1 test'
                         script {
                             def branchName = "${env.BRANCH_NAME}"
