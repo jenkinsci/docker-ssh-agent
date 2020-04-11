@@ -14,7 +14,7 @@ build-alpine:
 build-debian:
 	cp -f setup-sshd 8/debian/
 	docker build -t ${IMAGE_DEBIAN} 8/debian
-	
+
 build-jdk11:
 	cp -f setup-sshd 11/debian/
 	docker build -t ${IMAGE_JDK11} 11/debian
