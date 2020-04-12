@@ -9,40 +9,49 @@ set -eu
     type ssh &>/dev/null || ( echo "ssh is not available"; exit 1 )
 )>&2
 
+function printMessage {
+  echo "# ${@}" >&3
+}
+
 # Assert that $1 is the output of a command $2
 function assert {
-    local expected_output=$1
+    local expected_output
+    local actual_output
+    expected_output="${1}"
     shift
-    actual_output=$("$@")
-    if ! [[ "$actual_output" = "$expected_output" ]]; then
-        echo "expected: '$expected_output', actual: '$actual_output'"
+    actual_output=$("${@}")
+    if ! [[ "${actual_output}" = "${expected_output}" ]]; then
+        printMessage "Expected: '${expected_output}', actual: '${actual_output}'"
         false
     fi
 }
 
 # Retry a command $1 times until it succeeds. Wait $2 seconds between retries.
 function retry {
-    local attempts=$1
-    shift
-    local delay=$1
-    shift
+    local attempts
+    local delay
     local i
+    attempts="${1}"
+    shift
+    delay="${1}"
+    shift
 
     for ((i=0; i < attempts; i++)); do
-        run "$@"
-        if [[ "$status" -eq 0 ]]; then
+        run "${@}"
+        if [[ "${status}" -eq 0 ]]; then
             return 0
         fi
-        sleep "$delay"
+        sleep "${delay}"
     done
 
-    echo "Command '$*' failed $attempts times. Status: $status. Output: $output"
+    printMessage "Command '${*}' failed $attempts times. Status: ${status}. Output: ${output}"
+
     false
 }
 
 # return the published port for given container port $1
 function get_port {
-    docker port "${SUT_CONTAINER}" "$1" | cut -d: -f2
+    docker port "${AGENT_CONTAINER}" "${1}" | cut -d: -f2
 }
 
 # run a given command through ssh on the test container.
@@ -50,7 +59,7 @@ function get_port {
 function run_through_ssh {
 	SSH_PORT=$(get_port 22)
 	if [[ "${SSH_PORT}" = "" ]]; then
-		echo "failed to get SSH port"
+		printMessage "failed to get SSH port"
 		false
 	else
 		TMP_PRIV_KEY_FILE=$(mktemp "${BATS_TMPDIR}"/bats_private_ssh_key_XXXXXXX)
@@ -64,18 +73,18 @@ function run_through_ssh {
 			-l jenkins \
 			localhost \
 			-p "${SSH_PORT}" \
-			"$@"
+			"${@}"
 
 		rm -f "${TMP_PRIV_KEY_FILE}"
 	fi
 }
 
 function clean_test_container {
-	docker kill "${SUT_CONTAINER}" &>/dev/null ||:
-	docker rm -fv "${SUT_CONTAINER}" &>/dev/null ||:
+	docker kill "${AGENT_CONTAINER}" &>/dev/null ||:
+	docker rm -fv "${AGENT_CONTAINER}" &>/dev/null ||:
 }
 
-function is_slave_container_running {
+function is_agent_container_running {
 	sleep 1  # give time to sshd to eventually fail to initialize
-	retry 3 1 assert "true" docker inspect -f '{{.State.Running}}' "${SUT_CONTAINER}"
+	retry 3 1 assert "true" docker inspect -f '{{.State.Running}}' "${AGENT_CONTAINER}"
 }

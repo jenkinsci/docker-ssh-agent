@@ -1,1 +1,8 @@
 .DS_Store
+bats-core/
+11/*/setup-sshd*
+8/*/setup-sshd*
+*/CreateProfile.psm1
+
+/*/**/CreateProfile.psm1
+/.vscode/
