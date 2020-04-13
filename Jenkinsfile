@@ -39,13 +39,11 @@ pipeline {
                                 }
                             }
 
-                            if (env.TAG_NAME != null) {
-                                def tagItems = env.TAG_NAME.split('-')
-                                if(tagItems.length == 2) {
-                                    // we need to build and publish the tag version
-                                    infra.withDockerCredentials {
-                                        powershell "& ./make.ps1 -PushVersions -Tag ${env.TAG_NAME} publish"
-                                    }
+                            def tagName = "${env.TAG_NAME}"
+                            if (tagName ==~ '\\d\\.\\d\\.\\d') {
+                                // we need to build and publish the tag version
+                                infra.withDockerCredentials {
+                                    powershell "& ./make.ps1 -PushVersions -VersionTag ${env.TAG_NAME} publish"
                                 }
                             }
                         }

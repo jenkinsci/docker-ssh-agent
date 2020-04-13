@@ -4,7 +4,7 @@ Param(
     [String] $Target = "build",
     [String] $AdditionalArgs = '',
     [String] $Build = '',
-    [String] $Tag = '1.0-1',
+    [String] $VersionTag = '1.0-1',
     [switch] $PushVersions = $false
 )
 
@@ -47,9 +47,9 @@ if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)
         Invoke-Expression $cmd
 
         if($PushVersions) {
-            $buildTag = "$Tag-$tag"
+            $buildTag = "$VersionTag-$tag"
             if($tag -eq 'latest') {
-                $buildTag = "$Tag"
+                $buildTag = "$VersionTag"
             }
             Write-Host "Building $Build => tag=$buildTag"
             $cmd = "docker build -t {0}/{1}:{2} {3} {4}" -f $Organization, $Repository, $buildTag, $AdditionalArgs, $builds[$Build]['Folder']
@@ -66,9 +66,9 @@ if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)
             Invoke-Expression $cmd
 
             if($PushVersions) {
-                $buildTag = "$Tag-$tag"
+                $buildTag = "$VersionTag-$tag"
                 if($tag -eq 'latest') {
-                    $buildTag = "$Tag"
+                    $buildTag = "$VersionTag"
                 }
                 Write-Host "Building $Build => tag=$buildTag"
                 $cmd = "docker build -t {0}/{1}:{2} {3} {4}" -f $Organization, $Repository, $buildTag, $AdditionalArgs, $builds[$b]['Folder']
@@ -95,14 +95,14 @@ if($Target -eq "test") {
 
     if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
         $env:FOLDER = $builds[$Build]['Folder']
-        $env:VERSION = "$RemotingVersion-$BuildNumber"
+        $env:VERSION = "$VersionTag"
         Invoke-Pester -Path tests -EnableExit
         Remove-Item env:\FOLDER
         Remove-Item env:\VERSION
     } else {
         foreach($b in $builds.Keys) {
             $env:FOLDER = $builds[$b]['Folder']
-            $env:VERSION = "$RemotingVersion-$BuildNumber"
+            $env:VERSION = "$VersionTag"
             Invoke-Pester -Path tests -EnableExit
             Remove-Item env:\FOLDER
             Remove-Item env:\VERSION
@@ -118,9 +118,9 @@ if($Target -eq "publish") {
             Invoke-Expression $cmd
 
             if($PushVersions) {
-                $buildTag = "$RemotingVersion-$BuildNumber-$tag"
+                $buildTag = "$VersionTag-$tag"
                 if($tag -eq 'latest') {
-                    $buildTag = "$RemotingVersion-$BuildNumber"
+                    $buildTag = "$VersionTag"
                 }
                 Write-Host "Publishing $Build => tag=$buildTag"
                 $cmd = "docker push {0}/{1}:{2}" -f $Organization, $Repository, $buildTag
@@ -135,9 +135,9 @@ if($Target -eq "publish") {
                 Invoke-Expression $cmd
 
                 if($PushVersions) {
-                    $buildTag = "$RemotingVersion-$BuildNumber-$tag"
+                    $buildTag = "$VersionTag-$tag"
                     if($tag -eq 'latest') {
-                        $buildTag = "$RemotingVersion-$BuildNumber"
+                        $buildTag = "$VersionTag"
                     }
                     Write-Host "Publishing $Build => tag=$buildTag"
                     $cmd = "docker push {0}/{1}:{2}" -f $Organization, $Repository, $buildTag
