@@ -14,7 +14,7 @@ See [Jenkins Distributed builds](https://wiki.jenkins-ci.org/display/JENKINS/Dis
 To run a Docker container
 
 ```bash
-docker run jenkins/ssh-build-agent "<public key>"
+docker run jenkins/ssh-agent "<public key>"
 ```
 
 You'll then be able to connect this agent using the [SSH Build Agents plugin](https://plugins.jenkins.io/ssh-slaves) as "jenkins" with the matching private key.
