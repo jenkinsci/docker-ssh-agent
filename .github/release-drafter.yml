@@ -2,5 +2,5 @@
 _extends: .github
 # Semantic versioning: https://semver.org/
 version-template: $MAJOR.$MINOR.$PATCH
-tag-template: v$NEXT_MINOR_VERSION
-name-template: v$NEXT_MINOR_VERSION
+tag-template: $NEXT_MINOR_VERSION
+name-template: $NEXT_MINOR_VERSION
