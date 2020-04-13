@@ -43,7 +43,7 @@ pipeline {
                             if (tagName ==~ '\\d\\.\\d\\.\\d') {
                                 // we need to build and publish the tag version
                                 infra.withDockerCredentials {
-                                    powershell "& ./make.ps1 -PushVersions -VersionTag ${env.TAG_NAME} publish"
+                                    powershell "& ./make.ps1 -PushVersions -VersionTag ${tagName} publish"
                                 }
                             }
                         }
