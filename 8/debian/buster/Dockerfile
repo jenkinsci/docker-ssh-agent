@@ -20,8 +20,7 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-FROM openjdk:8-jdk
-LABEL MAINTAINER="Nicolas De Loof <nicolas.deloof@gmail.com>"
+FROM openjdk:8-jdk-buster
 
 ARG user=jenkins
 ARG group=jenkins

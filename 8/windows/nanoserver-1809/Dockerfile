@@ -55,8 +55,6 @@ ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"
 ENV JENKINS_AGENT_USER ${user}
 ENV JENKINS_AGENT_WORK ${JENKINS_AGENT_WORK}
 
-USER ContainerAdministrator
-
 # setup SSH server
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
     $url = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/{0}/OpenSSH-Win64.zip' -f $env:OPENSSH_VERSION ; `
