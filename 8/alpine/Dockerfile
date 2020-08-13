@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2019 Fabio Kruger
+# Copyright (c) 2019-2020 Fabio Kruger and other contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM openjdk:8-jdk-alpine3.9
+# FIXME(oleg_nenashev): This is not an official AdoptOpenJDK Docker Image.
+# There is no official Alpine images at the moment.
+# Needs upgrade when/if there is an official alpine image.
+FROM adoptopenjdk/openjdk8:jdk8u262-b10-alpine
 
 ARG user=jenkins
 ARG group=jenkins
