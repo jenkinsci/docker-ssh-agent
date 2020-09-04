@@ -50,10 +50,14 @@ if [[ ${JENKINS_SLAVE_SSH_PUBKEY} == ssh-* ]]; then
   write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
 fi
 if [[ $# -gt 0 ]]; then
+  echo "${0##*/} params: $@"
+
   if [[ $1 == ssh-* ]]; then
+    echo "Authorizing ssh pubkey found in params."
     write_key "$1"
     shift 1
   else
+    echo "Executing params: '$@'"
     exec "$@"
   fi
 fi

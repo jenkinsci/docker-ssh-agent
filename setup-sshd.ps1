@@ -82,9 +82,12 @@ while($null -ne $knownHostKeyVar) {
 }
 
 if(![System.String]::IsNullOrWhiteSpace($Cmd)) {
+    Write-Host "$($MyInvocation.MyCommand.Name) param: '$Cmd'"
     if($Cmd -match "^ssh-.*") {
+        Write-Host "Authorizing ssh pubkey found in params."
         Write-Key $Cmd
     } else {
+        Write-Host "Executing param: $Cmd"
         & $Cmd
         exit
     }
