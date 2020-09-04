@@ -86,6 +86,10 @@ if(![System.String]::IsNullOrWhiteSpace($Cmd)) {
     if($Cmd -match "^ssh-.*") {
         Write-Host "Authorizing ssh pubkey found in params."
         Write-Key $Cmd
+    } elseif($Cmd -match "^/usr/sbin/sshd") {
+        # neutralize default jenkins docker-plugin command
+        # we will run sshd at the end anyway
+        Write-Host "Ignoring provided (linux) sshd command."
     } else {
         Write-Host "Executing param: $Cmd"
         & $Cmd

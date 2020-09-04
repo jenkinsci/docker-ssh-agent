@@ -56,6 +56,11 @@ if [[ $# -gt 0 ]]; then
     echo "Authorizing ssh pubkey found in params."
     write_key "$1"
     shift 1
+  elif [[ "$@" == "/usr/sbin/sshd -D -p 22" ]]; then
+    # neutralize default jenkins docker-plugin command
+    # we will run sshd at the end anyway
+    echo "Ignoring provided sshd command."
+    shift 4
   else
     echo "Executing params: '$@'"
     exec "$@"
