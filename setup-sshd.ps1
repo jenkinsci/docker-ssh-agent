@@ -102,7 +102,5 @@ Start-Service sshd
 ipconfig
 netstat -a
 
-while($true) {
-    # if we don't do this endless loop, the container exits
-    Start-Sleep -Seconds 60
-}
+# aside from forwarding ssh logs, this keeps the container open
+Get-Content -Path "C:\ProgramData\ssh\logs\sshd.log" -Wait
