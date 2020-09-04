@@ -81,6 +81,9 @@ while($null -ne $knownHostKeyVar) {
     $knownHostKeyVar = Get-ChildItem env: -Name "JENKINS_AGENT_SSH_KNOWNHOST_$index"
 }
 
+# ensure variables passed to docker container are also exposed to ssh sessions
+Get-ChildItem env: | ForEach-Object { setx /m $_.Name $_.Value | Out-Null }
+
 if(![System.String]::IsNullOrWhiteSpace($Cmd)) {
     Write-Host "$($MyInvocation.MyCommand.Name) param: '$Cmd'"
     if($Cmd -match "^ssh-.*") {
@@ -96,9 +99,6 @@ if(![System.String]::IsNullOrWhiteSpace($Cmd)) {
         exit
     }
 }
-
-# ensure variables passed to docker container are also exposed to ssh sessions
-Get-ChildItem env: | ForEach-Object { setx /m $_.Name $_.Value | Out-Null }
 
 Start-Service sshd
 

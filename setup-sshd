@@ -49,6 +49,10 @@ fi
 if [[ ${JENKINS_SLAVE_SSH_PUBKEY} == ssh-* ]]; then
   write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
 fi
+
+# ensure variables passed to docker container are also exposed to ssh sessions
+env | grep _ >> /etc/environment
+
 if [[ $# -gt 0 ]]; then
   echo "${0##*/} params: $@"
 
@@ -66,10 +70,6 @@ if [[ $# -gt 0 ]]; then
     exec "$@"
   fi
 fi
-
-
-# ensure variables passed to docker container are also exposed to ssh sessions
-env | grep _ >> /etc/environment
 
 # generate host keys if not present
 ssh-keygen -A
