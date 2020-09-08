@@ -148,6 +148,42 @@ Describe "[$JDK $FLAVOR] create agent container with pubkey as argument" {
     }
 }
 
+Describe "[$JDK $FLAVOR] create agent container with pubkey as envvar" {
+    BeforeAll {
+        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -dit -e `"JENKINS_AGENT_SSH_PUBKEY=$PUBLIC_SSH_KEY`" --name $AGENT_CONTAINER -P $AGENT_IMAGE"
+        Is-ContainerRunning $AGENT_CONTAINER | Should -BeTrue
+    }
+
+    It 'runs commands via ssh' {
+        $exitCode, $stdout, $stderr = Run-ThruSSH $AGENT_CONTAINER "$PRIVATE_SSH_KEY" "$SHELL -NoLogo -C `"Write-Host 'f00'`""
+        $exitCode | Should -Be 0
+        $stdout | Should -Match "f00"
+    }
+
+    AfterAll {
+        Cleanup($AGENT_CONTAINER)
+    }
+}
+
+$DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
+Describe "[$JDK $FLAVOR] create agent container like docker-plugin with '$DOCKER_PLUGIN_DEFAULT_ARG' as argument" {
+    BeforeAll {
+        [string]::IsNullOrWhiteSpace($DOCKER_PLUGIN_DEFAULT_ARG) | Should -BeFalse
+        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "run -dit -e `"JENKINS_AGENT_SSH_PUBKEY=$PUBLIC_SSH_KEY`" --name $AGENT_CONTAINER -P $AGENT_IMAGE `"$DOCKER_PLUGIN_DEFAULT_ARG`""
+        Is-ContainerRunning $AGENT_CONTAINER | Should -BeTrue
+    }
+
+    It 'runs commands via ssh' {
+        $exitCode, $stdout, $stderr = Run-ThruSSH $AGENT_CONTAINER "$PRIVATE_SSH_KEY" "$SHELL -NoLogo -C `"Write-Host 'f00'`""
+        $exitCode | Should -Be 0
+        $stdout | Should -Match "f00"
+    }
+
+    AfterAll {
+        Cleanup($AGENT_CONTAINER)
+    }
+}
+
 Describe "[$JDK $FLAVOR] build args" {
     BeforeAll {
         Push-Location -StackName 'agent' -Path "$PSScriptRoot/.."
