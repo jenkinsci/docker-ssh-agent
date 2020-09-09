@@ -64,7 +64,11 @@ if [[ $# -gt 0 ]]; then
     # neutralize default jenkins docker-plugin command
     # we will run sshd at the end anyway
     echo "Ignoring provided sshd command."
-    shift 4
+
+    # if unquoted (4 tokens) shift extra 3
+    [[ "$2" == "-D" ]] && shift 3
+
+    shift 1
   else
     echo "Executing params: '$@'"
     exec "$@"
