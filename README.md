@@ -22,7 +22,7 @@ You'll then be able to connect this agent using the [SSH Build Agents plugin](ht
 
 ### How to use this image with Docker Plugin
 
-To use this image with [Docker Plugin](https://plugins.jenkins.io/docker), you need to
+To use this image with [Docker Plugin](https://plugins.jenkins.io/docker-plugin), you need to
 pass the public SSH key using environment variable `JENKINS_AGENT_SSH_PUBKEY` and not as a startup argument.
 
 In _Environment_ field of the Docker Template (advanced section), just add:
