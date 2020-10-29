@@ -5,6 +5,9 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/ssh-agent.svg)](https://hub.docker.com/r/jenkins/ssh-agent/)
 [![GitHub release](https://img.shields.io/github/release/jenkinsci/docker-ssh-agent.svg?label=changelog)](https://github.com/jenkinsci/docker-ssh-agent/releases)
 
+:exclamation: **Warning!** This image used to be published as [jenkinsci/ssh-slave](https://hub.docker.com/r/jenkinsci/ssh-slave/) and [jenkins/ssh-slave](https://hub.docker.com/r/jenkins/ssh-slave/).
+These images are deprecated, use [jenkins/ssh-agent](https://hub.docker.com/r/jenkins/ssh-agent/).
+
 A [Jenkins](https://jenkins.io) agent image which allows using SSH to establish the connection.
 It can be used together with the [SSH Build Agents plugin](https://plugins.jenkins.io/ssh-slaves) or other similar plugins.
 

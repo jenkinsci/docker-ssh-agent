@@ -25,9 +25,9 @@ set -ex
 #  THE SOFTWARE.
 
 # Usage:
-#  docker run jenkinsci/ssh-slave <public key>
+#  docker run jenkins/ssh-agent <public key>
 # or
-#  docker run -e "JENKINS_AGENT_SSH_PUBKEY=<public key>" jenkinsci/ssh-slave
+#  docker run -e "JENKINS_AGENT_SSH_PUBKEY=<public key>" jenkins/ssh-agent
 
 write_key() {
   local ID_GROUP
