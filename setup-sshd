@@ -60,7 +60,7 @@ fi
 
 
 # ensure variables passed to docker container are also exposed to ssh sessions
-env | grep _ >> /etc/environment
+env | grep -Ev "^(HOME=|USER=|MAIL=|LC_ALL=|LS_COLORS=|LANG=|HOSTNAME=|PWD=|TERM=|SHLVL=|LANGUAGE=|_=)" >> /etc/environment
 
 # generate host keys if not present
 ssh-keygen -A
