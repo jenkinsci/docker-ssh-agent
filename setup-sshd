@@ -49,18 +49,31 @@ fi
 if [[ ${JENKINS_SLAVE_SSH_PUBKEY} == ssh-* ]]; then
   write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
 fi
-if [[ $# -gt 0 ]]; then
-  if [[ $1 == ssh-* ]]; then
-    write_key "$1"
-    shift 1
-  else
-    exec "$@"
-  fi
-fi
-
 
 # ensure variables passed to docker container are also exposed to ssh sessions
 env | grep _ >> /etc/environment
+
+if [[ $# -gt 0 ]]; then
+  echo "${0##*/} params: $@"
+
+  if [[ $1 == ssh-* ]]; then
+    echo "Authorizing ssh pubkey found in params."
+    write_key "$1"
+    shift 1
+  elif [[ "$@" == "/usr/sbin/sshd -D -p 22" ]]; then
+    # neutralize default jenkins docker-plugin command
+    # we will run sshd at the end anyway
+    echo "Ignoring provided sshd command."
+
+    # if unquoted (4 tokens) shift extra 3
+    [[ "$2" == "-D" ]] && shift 3
+
+    shift 1
+  else
+    echo "Executing params: '$@'"
+    exec "$@"
+  fi
+fi
 
 # generate host keys if not present
 ssh-keygen -A

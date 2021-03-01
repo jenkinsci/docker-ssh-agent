@@ -127,6 +127,41 @@ function teardown () {
     )
 }
 
+DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
+@test "[${JDK} ${FLAVOR}] create agent container like docker-plugin with '${DOCKER_PLUGIN_DEFAULT_ARG}' (unquoted) as argument" {
+  [ ! -z "$DOCKER_PLUGIN_DEFAULT_ARG" ]
+
+  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${AGENT_CONTAINER}" -P "${AGENT_IMAGE}" ${DOCKER_PLUGIN_DEFAULT_ARG}
+
+  is_agent_container_running
+
+  run_through_ssh echo f00
+
+  [ "$status" = "0" ] && [ "$output" = "f00" ] \
+    || (\
+      echo "status: $status"; \
+      echo "output: $output"; \
+      false \
+    )
+}
+
+@test "[${JDK} ${FLAVOR}] create agent container with '${DOCKER_PLUGIN_DEFAULT_ARG}' (quoted) as argument" {
+  [ ! -z "$DOCKER_PLUGIN_DEFAULT_ARG" ]
+
+  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${AGENT_CONTAINER}" -P "${AGENT_IMAGE}" "${DOCKER_PLUGIN_DEFAULT_ARG}"
+
+  is_agent_container_running
+
+  run_through_ssh echo f00
+
+  [ "$status" = "0" ] && [ "$output" = "f00" ] \
+    || (\
+      echo "status: $status"; \
+      echo "output: $output"; \
+      false \
+    )
+}
+
 @test "[${JDK} ${FLAVOR}] use build args correctly" {
   cd "${BATS_TEST_DIRNAME}"/.. || false
 

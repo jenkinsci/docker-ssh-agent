@@ -81,17 +81,24 @@ while($null -ne $knownHostKeyVar) {
     $knownHostKeyVar = Get-ChildItem env: -Name "JENKINS_AGENT_SSH_KNOWNHOST_$index"
 }
 
+# ensure variables passed to docker container are also exposed to ssh sessions
+Get-ChildItem env: | ForEach-Object { setx /m $_.Name $_.Value | Out-Null }
+
 if(![System.String]::IsNullOrWhiteSpace($Cmd)) {
+    Write-Host "$($MyInvocation.MyCommand.Name) param: '$Cmd'"
     if($Cmd -match "^ssh-.*") {
+        Write-Host "Authorizing ssh pubkey found in params."
         Write-Key $Cmd
+    } elseif($Cmd -match "^/usr/sbin/sshd") {
+        # neutralize default jenkins docker-plugin command
+        # we will run sshd at the end anyway
+        Write-Host "Ignoring provided (linux) sshd command."
     } else {
+        Write-Host "Executing param: $Cmd"
         & $Cmd
         exit
     }
 }
-
-# ensure variables passed to docker container are also exposed to ssh sessions
-Get-ChildItem env: | ForEach-Object { setx /m $_.Name $_.Value | Out-Null }
 
 Start-Service sshd
 
@@ -99,7 +106,5 @@ Start-Service sshd
 ipconfig
 netstat -a
 
-while($true) {
-    # if we don't do this endless loop, the container exits
-    Start-Sleep -Seconds 60
-}
+# aside from forwarding ssh logs, this keeps the container open
+Get-Content -Path "C:\ProgramData\ssh\logs\sshd.log" -Wait
