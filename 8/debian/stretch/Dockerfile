@@ -48,6 +48,7 @@ RUN sed -i /etc/ssh/sshd_config \
 VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
 
+RUN echo "PATH=${PATH}" >> /etc/environment
 COPY setup-sshd /usr/local/bin/setup-sshd
 
 EXPOSE 22
