@@ -51,6 +51,12 @@ WORKDIR "${JENKINS_AGENT_HOME}"
 
 COPY setup-sshd /usr/local/bin/setup-sshd
 
+RUN echo -e "JAVA_HOME=${JAVA_HOME}\nexport JAVA_VERSION=${JAVA_VERSION}\nexport JENKINS_AGENT_HOME=${JENKINS_AGENT_HOME}" >> /etc/environment
+
+RUN ln -s ${JAVA_HOME}/bin/java /usr/local/bin/java && \
+    ln -s ${JAVA_HOME}/bin/javac /usr/local/bin/javac
+
+
 EXPOSE 22
 
 ENTRYPOINT ["setup-sshd"]

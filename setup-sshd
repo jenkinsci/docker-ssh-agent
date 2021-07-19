@@ -51,7 +51,7 @@ if [[ ${JENKINS_SLAVE_SSH_PUBKEY} == ssh-* ]]; then
 fi
 
 # ensure variables passed to docker container are also exposed to ssh sessions
-env | grep _ >> /etc/environment
+# env | grep _ >> /etc/environment
 
 if [[ $# -gt 0 ]]; then
   echo "${0##*/} params: $@"
