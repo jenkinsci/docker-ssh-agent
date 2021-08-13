@@ -65,14 +65,14 @@ function teardown () {
 
   if [[ "${JDK}" -eq 8 ]]
   then
-    run docker exec "${AGENT_CONTAINER}" sh -c "
+    run docker exec -u 1000:1000 "${AGENT_CONTAINER}" sh -c "
     java -version 2>&1 \
       | grep -o -E '^openjdk version \"[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+.*\"' \
       | grep -o -E '\.[[:digit:]]+\.' \
       | grep -o -E '[[:digit:]]+'
     "
   else
-    run docker exec "${AGENT_CONTAINER}" sh -c "
+    run docker exec -u 1000:1000 "${AGENT_CONTAINER}" sh -c "
     java -version 2>&1 \
       | grep -o -E '^openjdk version \"[[:digit:]]+\.' \
       | grep -o -E '\"[[:digit:]]+\.' \
