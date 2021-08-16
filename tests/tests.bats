@@ -127,6 +127,31 @@ function teardown () {
     )
 }
 
+@test "[${JDK} ${FLAVOR}] Run Java in a SSH connection" {
+  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${AGENT_CONTAINER}" -P "${AGENT_IMAGE}"
+
+  is_agent_container_running
+
+  if [[ "${FLAVOR}" = "alpine"* ]]
+  then
+    run_through_ssh "/bin/bash --login -c 'java -version'"
+  else
+    run_through_ssh java -version
+  fi
+
+  echo "$output"
+  ret=0
+  echo "$output" | grep -o -E '^openjdk version \"[[:digit:]]+\.' || ret=$?
+
+  [ "$status" = "0" ] && [ "$ret" = "0" ] \
+    || (\
+      echo "status: $status"; \
+      echo "ret: $ret"; \
+      echo "output: $output"; \
+      false \
+    )
+}
+
 DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 @test "[${JDK} ${FLAVOR}] create agent container like docker-plugin with '${DOCKER_PLUGIN_DEFAULT_ARG}' (unquoted) as argument" {
   [ ! -z "$DOCKER_PLUGIN_DEFAULT_ARG" ]
