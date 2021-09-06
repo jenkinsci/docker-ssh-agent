@@ -20,7 +20,18 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-FROM openjdk:11-jdk-buster
+FROM eclipse-temurin:11.0.12_7-jdk-focal AS jre-build
+
+# Generate smaller java runtime without unneeded files
+# for now we include the full module path to maintain compatibility
+# while still saving space
+RUN jlink \
+         --add-modules ALL-MODULE-PATH \
+         --no-man-pages \
+         --compress=2 \
+         --output /javaruntime
+
+FROM debian:bullseye
 
 ARG user=jenkins
 ARG group=jenkins
@@ -47,6 +58,12 @@ RUN sed -i /etc/ssh/sshd_config \
 
 VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
+
+ENV LANG C.UTF-8
+
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /javaruntime $JAVA_HOME
 
 RUN echo "PATH=${PATH}" >> /etc/environment
 COPY setup-sshd /usr/local/bin/setup-sshd
