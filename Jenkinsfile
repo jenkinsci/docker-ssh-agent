@@ -47,8 +47,6 @@ pipeline {
                                 }
                             }
                         }
-
-                        powershell '& docker system prune --force --all'
                     }
                 }
                 stage('Linux') {
@@ -66,7 +64,6 @@ pipeline {
                                 sh '''
                                 make build
                                 make test
-                                docker system prune --force --all
                                 '''
                             }
                         }
