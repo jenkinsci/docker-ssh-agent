@@ -22,11 +22,11 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-FROM jenkins/openjdk:8-jdk-hotspot-windowsservercore-ltsc2019
+FROM eclipse-temurin:8-jdk-windowsservercore-1809
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG OPENSSH_VERSION=v8.1.0.0p1-Beta
+ARG OPENSSH_VERSION=V8.6.0.0p1-Beta
 
 ARG user=jenkins
 ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"

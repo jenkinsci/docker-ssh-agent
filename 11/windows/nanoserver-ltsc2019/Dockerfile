@@ -2,7 +2,7 @@
 
 # The MIT License
 #
-#  Copyright (c) 2019-2020, Alex Earl
+#  Copyright (c) 2019-2020, Alex Earl and other Jenkins Contributors
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +22,33 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-FROM adoptopenjdk:11-jdk-hotspot-windowsservercore-1809
+# If you pass in a POWERSHELL_VERSION, make sure it ends with a hyphen, leaving it empty will
+# use the 'latest'
+ARG POWERSHELL_VERSION=
+FROM mcr.microsoft.com/powershell:${POWERSHELL_VERSION}nanoserver-1809
 
-SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG OPENSSH_VERSION=v8.1.0.0p1-Beta
+ARG JAVA_VERSION=11.0.6+10
+ARG JAVA_SHA256=6fb8b6c254ec0e1091acd421ac79c1bb07b295de0b679c0595fd284caf7734e5
+ARG JAVA_HOME=C:\jdk-${JAVA_VERSION}
+
+USER ContainerAdministrator
+
+RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
+    $javaRoot = 'OpenJDK11U-jdk_x64_windows_hotspot_{0}' -f $env:JAVA_VERSION.Replace('+', '_') ; `
+    $url = 'https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-{0}/{1}.zip' -f [System.Uri]::EscapeDataString($env:JAVA_VERSION), $javaRoot ; `
+    Write-Host "Retrieving $url..." ; `
+    Invoke-WebRequest $url -OutFile 'openjdk.zip' -UseBasicParsing ; `
+    if ((Get-FileHash openjdk.zip -Algorithm sha256).Hash -ne $env:JAVA_SHA256) { Write-Error 'Java SHA256 mismatch' ; exit 1} ; `
+    Expand-Archive openjdk.zip -DestinationPath C:/ ; `
+    Remove-Item -Path openjdk.zip
+
+ENV ProgramFiles="C:\Program Files"
+ENV WindowsPATH="C:\Windows\system32;C:\Windows"
+ENV PATH="${WindowsPATH};${ProgramFiles}\PowerShell;${JAVA_HOME}\bin"
+
+ARG OPENSSH_VERSION=V8.6.0.0p1-Beta
 
 ARG user=jenkins
 ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"
@@ -62,7 +84,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('Match User {0}' -f $env:JENKINS_AGENT_USER) ; `
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('       AuthorizedKeysFile C:/Users/{0}/.ssh/authorized_keys' -f $env:JENKINS_AGENT_USER) ; `
     New-Item -Path HKLM:\SOFTWARE -Name OpenSSH -Force | Out-Null ; `
-    New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -PropertyType string -Force | Out-Null
+    New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\Program Files\Powershell\pwsh.exe' -PropertyType string -Force | Out-Null
 
 COPY CreateProfile.psm1 C:/
 
@@ -78,4 +100,4 @@ COPY setup-sshd.ps1 C:/ProgramData/Jenkins/setup-sshd.ps1
 
 EXPOSE 22
 
-ENTRYPOINT ["powershell.exe", "-NoExit", "-Command", "& C:/ProgramData/Jenkins/setup-sshd.ps1"]
+ENTRYPOINT ["pwsh.exe", "-NoExit", "-Command", "& C:/ProgramData/Jenkins/setup-sshd.ps1"]

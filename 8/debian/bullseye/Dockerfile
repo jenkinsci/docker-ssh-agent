@@ -20,7 +20,9 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-FROM openjdk:8-jdk-buster
+FROM eclipse-temurin:8u302-b08-jdk-focal AS jre-build
+
+FROM debian:bullseye
 
 ARG user=jenkins
 ARG group=jenkins
@@ -47,6 +49,12 @@ RUN sed -i /etc/ssh/sshd_config \
 
 VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
+
+ENV LANG C.UTF-8
+
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH "${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /opt/java/openjdk $JAVA_HOME
 
 RUN echo "PATH=${PATH}" >> /etc/environment
 COPY setup-sshd /usr/local/bin/setup-sshd
