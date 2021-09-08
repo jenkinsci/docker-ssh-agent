@@ -47,9 +47,9 @@ AGENT_CONTAINER=bats-jenkins-ssh-agent
   is_agent_container_running "${test_container_name}"
 
   run_through_ssh "${test_container_name}" echo f00
-#  assert_success
+  assert_success
   assert_equal "${output}" "f00"
-  
+
   clean_test_container "${test_container_name}"
 }
 
@@ -63,7 +63,7 @@ AGENT_CONTAINER=bats-jenkins-ssh-agent
   run_through_ssh "${test_container_name}" echo f00
   assert_success
   assert_equal "${output}" "f00"
-  
+
   clean_test_container "${test_container_name}"
 }
 
@@ -77,7 +77,7 @@ AGENT_CONTAINER=bats-jenkins-ssh-agent
   run_through_ssh "${test_container_name}" echo f00
   assert_success
   assert_equal "${output}" "f00"
-  
+
   clean_test_container "${test_container_name}"
 }
 
@@ -96,7 +96,7 @@ AGENT_CONTAINER=bats-jenkins-ssh-agent
   fi
   assert_success
   assert_output --regexp '^openjdk version \"[[:digit:]]+\.'
-  
+
   clean_test_container "${test_container_name}"
 }
 
@@ -113,7 +113,7 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
   run_through_ssh "${test_container_name}" echo f00
   assert_success
   assert_equal "${output}" "f00"
-  
+
   clean_test_container "${test_container_name}"
 }
 
@@ -129,7 +129,7 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
   run_through_ssh "${test_container_name}" echo f00
   assert_success
   assert_equal "${output}" "f00"
-  
+
   clean_test_container "${test_container_name}"
 }
 
@@ -171,6 +171,6 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
   assert_line --index 0 "${TEST_GID}"
   run docker exec "${test_container_name}" sh -c 'stat -c "%U:%G" "${JENKINS_AGENT_HOME}"'
   assert_line --index 0 "${TEST_USER}:${TEST_GROUP}"
-  
+
   clean_test_container "${test_container_name}"
 }
