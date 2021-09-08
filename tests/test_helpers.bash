@@ -60,13 +60,17 @@ function retry {
 
 # return the published port for given container port $1
 function get_port {
-    docker port "${AGENT_CONTAINER}" "${1}" | cut -d: -f2
+  local agent_container_name="${1}"
+  local port="${2}"
+  docker port "${agent_container_name}" "${port}" | cut -d: -f2
 }
 
 # run a given command through ssh on the test container.
 # Use the $status, $output and $lines variables to make assertions
 function run_through_ssh {
-	SSH_PORT=$(get_port 22)
+  local agent_container_name="${1}"
+  shift 1
+  SSH_PORT=$(get_port "${agent_container_name}" 22)
 	if [[ "${SSH_PORT}" = "" ]]; then
 		printMessage "failed to get SSH port"
 		false
@@ -89,11 +93,13 @@ function run_through_ssh {
 }
 
 function clean_test_container {
-	docker kill "${AGENT_CONTAINER}" &>/dev/null ||:
-	docker rm -fv "${AGENT_CONTAINER}" &>/dev/null ||:
+  local agent_container=$1
+  docker kill "${agent_container}" &>/dev/null ||:
+  docker rm -fv "${agent_container}" &>/dev/null ||:
 }
 
 function is_agent_container_running {
+  local agent_container=$1
 	sleep 1  # give time to sshd to eventually fail to initialize
-	retry 3 1 assert "true" docker inspect -f '{{.State.Running}}' "${AGENT_CONTAINER}"
+	retry 3 1 assert "true" docker inspect -f '{{.State.Running}}' "${agent_container}"
 }
