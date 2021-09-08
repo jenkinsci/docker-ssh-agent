@@ -1,51 +1,19 @@
 #!/usr/bin/env bats
 
-AGENT_IMAGE=jenkins-ssh-agent
-AGENT_CONTAINER=bats-jenkins-ssh-agent
-
-REGEX='^([0-9]+)/(.+)$'
-
-REAL_FOLDER=$(realpath "${BATS_TEST_DIRNAME}/../${FOLDER}")
-
-if [[ ${FOLDER} =~ ${REGEX} ]] && [[ -d "${REAL_FOLDER}" ]]
-then
-  JDK="${BASH_REMATCH[1]}"
-  FLAVOR="${BASH_REMATCH[2]}"
-else
-  echo "Wrong folder format or folder does not exist: ${FOLDER}"
-  exit 1
-fi
-
-if [[ "${JDK}" = "11" ]]
-then
-  AGENT_IMAGE+=":jdk11"
-  AGENT_CONTAINER+="-jdk11"
-else
-  if [[ "${FLAVOR}" = "alpine*" ]]
-  then
-    AGENT_IMAGE+=":alpine"
-    AGENT_CONTAINER+="-alpine"
-  else
-    AGENT_IMAGE+=":latest"
-  fi
-fi
-
 load test_helpers
+load 'test_helper/bats-support/load' # this is required by bats-assert!
+load 'test_helper/bats-assert/load'
 load keys
 
-clean_test_container
+IMAGE=${IMAGE:-debian_jdk11}
+SUT_IMAGE=$(get_sut_image)
 
-function teardown () {
-  clean_test_container
-}
+ARCH=${ARCH:-x86_64}
+AGENT_CONTAINER=bats-jenkins-ssh-agent
 
-@test "[${JDK} ${FLAVOR}] build image" {
-  cd "${BATS_TEST_DIRNAME}"/.. || false
-  docker build -t "${AGENT_IMAGE}" "${FOLDER}"
-}
-
-@test "[${JDK} ${FLAVOR}] checking image metadata" {
-  local VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' ${AGENT_IMAGE})"
+@test "[${SUT_IMAGE}] checking image metadata" {
+  local VOLUMES_MAP
+  VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' "${SUT_IMAGE}")"
 
   echo "${VOLUMES_MAP}" | grep '/tmp'
   echo "${VOLUMES_MAP}" | grep '/home/jenkins'
@@ -53,141 +21,119 @@ function teardown () {
   echo "${VOLUMES_MAP}" | grep '/var/run'
 }
 
-@test "[${JDK} ${FLAVOR}] image has bash and java installed and in the PATH" {
-  docker run -d --name "${AGENT_CONTAINER}" -P "${AGENT_IMAGE}" "${PUBLIC_SSH_KEY}"
+@test "[${SUT_IMAGE}] image has bash and java installed and in the PATH" {
+  local test_container_name=${AGENT_CONTAINER}-bash-java
+  clean_test_container "${test_container_name}"
+  docker run -d --name "${test_container_name}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
 
-  run docker exec "${AGENT_CONTAINER}" which bash
-  [ "${status}" -eq 0 ]
-  run docker exec "${AGENT_CONTAINER}" bash --version
-  [ "${status}" -eq 0 ]
-  run docker exec "${AGENT_CONTAINER}" which java
-  [ "${status}" -eq 0 ]
+  run docker exec "${test_container_name}" which bash
+  assert_success
+  run docker exec "${test_container_name}" bash --version
+  assert_success
+  run docker exec "${test_container_name}" which java
+  assert_success
 
-  if [[ "${JDK}" -eq 8 ]]
+  run docker exec "${test_container_name}" sh -c "java -version"
+  assert_success
+
+  clean_test_container "${test_container_name}"
+}
+
+@test "[${SUT_IMAGE}] create agent container with pubkey as argument" {
+  local test_container_name=${AGENT_CONTAINER}-pubkey-arg
+  clean_test_container "${test_container_name}"
+  docker run -d --name "${test_container_name}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
+
+  is_agent_container_running "${test_container_name}"
+
+  run_through_ssh "${test_container_name}" echo f00
+  assert_success
+  assert_equal "${output}" "f00"
+
+  clean_test_container "${test_container_name}"
+}
+
+@test "[${SUT_IMAGE}] create agent container with pubkey as environment variable (legacy environment variable)" {
+  local test_container_name=${AGENT_CONTAINER}-pubkey-legacy-env
+  clean_test_container "${test_container_name}"
+  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${test_container_name}" -P "${SUT_IMAGE}"
+
+  is_agent_container_running "${test_container_name}"
+
+  run_through_ssh "${test_container_name}" echo f00
+  assert_success
+  assert_equal "${output}" "f00"
+
+  clean_test_container "${test_container_name}"
+}
+
+@test "[${SUT_IMAGE}] create agent container with pubkey as environment variable (JENKINS_AGENT_SSH_PUBKEY)" {
+  local test_container_name=${AGENT_CONTAINER}-pubkey-env
+  clean_test_container "${test_container_name}"
+  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${test_container_name}" -P "${SUT_IMAGE}"
+
+  is_agent_container_running "${test_container_name}"
+
+  run_through_ssh "${test_container_name}" echo f00
+  assert_success
+  assert_equal "${output}" "f00"
+
+  clean_test_container "${test_container_name}"
+}
+
+@test "[${SUT_IMAGE}] Run Java in a SSH connection" {
+  local test_container_name=${AGENT_CONTAINER}-java-in-ssh
+  clean_test_container "${test_container_name}"
+  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${test_container_name}" -P "${SUT_IMAGE}"
+
+  is_agent_container_running "${test_container_name}"
+
+  if [[ "${SUT_IMAGE}" == *"alpine"*  ]]
   then
-    run docker exec -u 1000:1000 "${AGENT_CONTAINER}" sh -c "
-    java -version 2>&1 \
-      | grep -o -E '^openjdk version \"[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+.*\"' \
-      | grep -o -E '\.[[:digit:]]+\.' \
-      | grep -o -E '[[:digit:]]+'
-    "
+    run_through_ssh "${test_container_name}" "/bin/bash --login -c 'java -version'"
   else
-    run docker exec -u 1000:1000 "${AGENT_CONTAINER}" sh -c "
-    java -version 2>&1 \
-      | grep -o -E '^openjdk version \"[[:digit:]]+\.' \
-      | grep -o -E '\"[[:digit:]]+\.' \
-      | grep -o -E '[[:digit:]]+'
-    "
+    run_through_ssh "${test_container_name}" java -version
   fi
-  [ "${JDK}" = "${lines[0]}" ]
-}
+  assert_success
+  assert_output --regexp '^openjdk version \"[[:digit:]]+\.'
 
-@test "[${JDK} ${FLAVOR}] create agent container with pubkey as argument" {
-  docker run -d --name "${AGENT_CONTAINER}" -P "${AGENT_IMAGE}" "${PUBLIC_SSH_KEY}"
-
-  is_agent_container_running
-
-  run_through_ssh echo f00
-
-  [ "$status" = "0" ] && [ "$output" = "f00" ] \
-    || (\
-      echo "status: $status"; \
-      echo "output: $output"; \
-      false \
-    )
-}
-
-@test "[${JDK} ${FLAVOR}] create agent container with pubkey as environment variable (legacy environment variable)" {
-  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${AGENT_CONTAINER}" -P "${AGENT_IMAGE}"
-
-  is_agent_container_running
-
-  run_through_ssh echo f00
-
-  [ "$status" = "0" ] && [ "$output" = "f00" ] \
-    || (\
-      echo "status: $status"; \
-      echo "output: $output"; \
-      false \
-    )
-}
-
-@test "[${JDK} ${FLAVOR}] create agent container with pubkey as environment variable (JENKINS_AGENT_SSH_PUBKEY)" {
-  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${AGENT_CONTAINER}" -P "${AGENT_IMAGE}"
-
-  is_agent_container_running
-
-  run_through_ssh echo f00
-
-  [ "$status" = "0" ] && [ "$output" = "f00" ] \
-    || (\
-      echo "status: $status"; \
-      echo "output: $output"; \
-      false \
-    )
-}
-
-@test "[${JDK} ${FLAVOR}] Run Java in a SSH connection" {
-  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${AGENT_CONTAINER}" -P "${AGENT_IMAGE}"
-
-  is_agent_container_running
-
-  if [[ "${FLAVOR}" = "alpine"* ]]
-  then
-    run_through_ssh "/bin/bash --login -c 'java -version'"
-  else
-    run_through_ssh java -version
-  fi
-
-  echo "$output"
-  ret=0
-  echo "$output" | grep -o -E '^openjdk version \"[[:digit:]]+\.' || ret=$?
-
-  [ "$status" = "0" ] && [ "$ret" = "0" ] \
-    || (\
-      echo "status: $status"; \
-      echo "ret: $ret"; \
-      echo "output: $output"; \
-      false \
-    )
+  clean_test_container "${test_container_name}"
 }
 
 DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
-@test "[${JDK} ${FLAVOR}] create agent container like docker-plugin with '${DOCKER_PLUGIN_DEFAULT_ARG}' (unquoted) as argument" {
-  [ ! -z "$DOCKER_PLUGIN_DEFAULT_ARG" ]
+@test "[${SUT_IMAGE}] create agent container like docker-plugin with '${DOCKER_PLUGIN_DEFAULT_ARG}' (unquoted) as argument" {
+  [ -n "$DOCKER_PLUGIN_DEFAULT_ARG" ]
 
-  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${AGENT_CONTAINER}" -P "${AGENT_IMAGE}" ${DOCKER_PLUGIN_DEFAULT_ARG}
+  local test_container_name=${AGENT_CONTAINER}-docker-plugin
+  clean_test_container "${test_container_name}"
+  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${test_container_name}" -P "${SUT_IMAGE}" ${DOCKER_PLUGIN_DEFAULT_ARG}
 
-  is_agent_container_running
+  is_agent_container_running "${test_container_name}"
 
-  run_through_ssh echo f00
+  run_through_ssh "${test_container_name}" echo f00
+  assert_success
+  assert_equal "${output}" "f00"
 
-  [ "$status" = "0" ] && [ "$output" = "f00" ] \
-    || (\
-      echo "status: $status"; \
-      echo "output: $output"; \
-      false \
-    )
+  clean_test_container "${test_container_name}"
 }
 
-@test "[${JDK} ${FLAVOR}] create agent container with '${DOCKER_PLUGIN_DEFAULT_ARG}' (quoted) as argument" {
-  [ ! -z "$DOCKER_PLUGIN_DEFAULT_ARG" ]
+@test "[${SUT_IMAGE}] create agent container with '${DOCKER_PLUGIN_DEFAULT_ARG}' (quoted) as argument" {
+  [ -n "$DOCKER_PLUGIN_DEFAULT_ARG" ]
 
-  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${AGENT_CONTAINER}" -P "${AGENT_IMAGE}" "${DOCKER_PLUGIN_DEFAULT_ARG}"
+  local test_container_name=${AGENT_CONTAINER}-docker-plugin-quoted
+  clean_test_container "${test_container_name}"
+  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${test_container_name}" -P "${SUT_IMAGE}" "${DOCKER_PLUGIN_DEFAULT_ARG}"
 
-  is_agent_container_running
+  is_agent_container_running "${test_container_name}"
 
-  run_through_ssh echo f00
+  run_through_ssh "${test_container_name}" echo f00
+  assert_success
+  assert_equal "${output}" "f00"
 
-  [ "$status" = "0" ] && [ "$output" = "f00" ] \
-    || (\
-      echo "status: $status"; \
-      echo "output: $output"; \
-      false \
-    )
+  clean_test_container "${test_container_name}"
 }
 
-@test "[${JDK} ${FLAVOR}] use build args correctly" {
+@test "[${SUT_IMAGE}] use build args correctly" {
   cd "${BATS_TEST_DIRNAME}"/.. || false
 
 	local TEST_USER=test-user
@@ -196,25 +142,35 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 	local TEST_GID=3000
 	local TEST_JAH=/home/something
 
-  docker build \
-    --build-arg "user=${TEST_USER}" \
-    --build-arg "group=${TEST_GROUP}" \
-    --build-arg "uid=${TEST_UID}" \
-    --build-arg "gid=${TEST_GID}" \
-    --build-arg "JENKINS_AGENT_HOME=${TEST_JAH}" \
-    -t "${AGENT_IMAGE}" \
-    "${FOLDER}"
+	local sut_image="${SUT_IMAGE}-tests-${BATS_TEST_NUMBER}"
 
-  docker run -d --name "${AGENT_CONTAINER}" -P "${AGENT_IMAGE}" "${PUBLIC_SSH_KEY}"
+  # false positive detecting platform
+  # shellcheck disable=SC2140
+  docker buildx bake \
+    --set "${IMAGE}".args.user="${TEST_USER}" \
+    --set "${IMAGE}".args.group="${TEST_GROUP}" \
+    --set "${IMAGE}".args.uid="${TEST_UID}" \
+    --set "${IMAGE}".args.gid="${TEST_GID}" \
+    --set "${IMAGE}".args.JENKINS_AGENT_HOME="${TEST_JAH}" \
+    --set "${IMAGE}".platform="linux/${ARCH}" \
+    --set "${IMAGE}".tags="${sut_image}" \
+      --load `# Image should be loaded on the Docker engine`\
+      "${IMAGE}"
 
-  run docker exec "${AGENT_CONTAINER}" sh -c "id -u -n ${TEST_USER}"
-  [ "${TEST_USER}" = "${lines[0]}" ]
-  run docker exec "${AGENT_CONTAINER}" sh -c "id -g -n ${TEST_USER}"
-  [ "${TEST_GROUP}" = "${lines[0]}" ]
-  run docker exec "${AGENT_CONTAINER}" sh -c "id -u ${TEST_USER}"
-  [ "${TEST_UID}" = "${lines[0]}" ]
-  run docker exec "${AGENT_CONTAINER}" sh -c "id -g ${TEST_USER}"
-  [ "${TEST_GID}" = "${lines[0]}" ]
-  run docker exec "${AGENT_CONTAINER}" sh -c 'stat -c "%U:%G" "${JENKINS_AGENT_HOME}"'
-  [ "${TEST_USER}:${TEST_GROUP}" = "${lines[0]}" ]
+  local test_container_name=${AGENT_CONTAINER}-build-args
+  clean_test_container "${test_container_name}"
+  docker run -d --name "${test_container_name}" -P "${sut_image}" "${PUBLIC_SSH_KEY}"
+
+  run docker exec "${test_container_name}" sh -c "id -u -n ${TEST_USER}"
+  assert_line --index 0 "${TEST_USER}"
+  run docker exec "${test_container_name}" sh -c "id -g -n ${TEST_USER}"
+  assert_line --index 0 "${TEST_GROUP}"
+  run docker exec "${test_container_name}" sh -c "id -u ${TEST_USER}"
+  assert_line --index 0 "${TEST_UID}"
+  run docker exec "${test_container_name}" sh -c "id -g ${TEST_USER}"
+  assert_line --index 0 "${TEST_GID}"
+  run docker exec "${test_container_name}" sh -c 'stat -c "%U:%G" "${JENKINS_AGENT_HOME}"'
+  assert_line --index 0 "${TEST_USER}:${TEST_GROUP}"
+
+  clean_test_container "${test_container_name}"
 }

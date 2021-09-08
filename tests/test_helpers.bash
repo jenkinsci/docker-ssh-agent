@@ -26,6 +26,15 @@ function assert {
     fi
 }
 
+function get_sut_image {
+    test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
+    ## Retrieve the SUT image name from buildx
+    # Option --print for 'docker buildx bake' prints the JSON configuration on the stdout
+    # Option --silent for 'make' suppresses the echoing of command so the output is valid JSON
+    # The image name is the 1st of the "tags" array, on the first "image" found
+    make --silent show | jq -r ".target.${IMAGE}.tags[0]"
+}
+
 # Retry a command $1 times until it succeeds. Wait $2 seconds between retries.
 function retry {
     local attempts
@@ -51,13 +60,17 @@ function retry {
 
 # return the published port for given container port $1
 function get_port {
-    docker port "${AGENT_CONTAINER}" "${1}" | cut -d: -f2
+  local agent_container_name="${1}"
+  local port="${2}"
+  docker port "${agent_container_name}" "${port}" | cut -d: -f2
 }
 
 # run a given command through ssh on the test container.
 # Use the $status, $output and $lines variables to make assertions
 function run_through_ssh {
-	SSH_PORT=$(get_port 22)
+  local agent_container_name="${1}"
+  shift 1
+  SSH_PORT=$(get_port "${agent_container_name}" 22)
 	if [[ "${SSH_PORT}" = "" ]]; then
 		printMessage "failed to get SSH port"
 		false
@@ -71,7 +84,7 @@ function run_through_ssh {
 			-o UserKnownHostsFile=/dev/null \
 			-o StrictHostKeyChecking=no \
 			-l jenkins \
-			localhost \
+			127.0.0.1 \
 			-p "${SSH_PORT}" \
 			"${@}"
 
@@ -80,11 +93,13 @@ function run_through_ssh {
 }
 
 function clean_test_container {
-	docker kill "${AGENT_CONTAINER}" &>/dev/null ||:
-	docker rm -fv "${AGENT_CONTAINER}" &>/dev/null ||:
+  local agent_container=$1
+  docker kill "${agent_container}" &>/dev/null ||:
+  docker rm -fv "${agent_container}" &>/dev/null ||:
 }
 
 function is_agent_container_running {
+  local agent_container=$1
 	sleep 1  # give time to sshd to eventually fail to initialize
-	retry 3 1 assert "true" docker inspect -f '{{.State.Running}}' "${AGENT_CONTAINER}"
+	retry 3 1 assert "true" docker inspect -f '{{.State.Running}}' "${agent_container}"
 }
