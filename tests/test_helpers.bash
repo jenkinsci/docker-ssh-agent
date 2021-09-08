@@ -26,6 +26,15 @@ function assert {
     fi
 }
 
+function get_sut_image {
+    test -n "${IMAGE:?"[sut_image] Please set the variable 'IMAGE' to the name of the image to test in 'docker-bake.hcl'."}"
+    ## Retrieve the SUT image name from buildx
+    # Option --print for 'docker buildx bake' prints the JSON configuration on the stdout
+    # Option --silent for 'make' suppresses the echoing of command so the output is valid JSON
+    # The image name is the 1st of the "tags" array, on the first "image" found
+    make --silent show | jq -r ".target.${IMAGE}.tags[0]"
+}
+
 # Retry a command $1 times until it succeeds. Wait $2 seconds between retries.
 function retry {
     local attempts
@@ -71,7 +80,7 @@ function run_through_ssh {
 			-o UserKnownHostsFile=/dev/null \
 			-o StrictHostKeyChecking=no \
 			-l jenkins \
-			localhost \
+			127.0.0.1 \
 			-p "${SSH_PORT}" \
 			"${@}"
 
