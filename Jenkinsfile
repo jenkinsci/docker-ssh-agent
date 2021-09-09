@@ -1,7 +1,3 @@
-/* NOTE: this Pipeline mainly aims at catching mistakes (wrongly formed Dockerfile, etc.)
- * This Pipeline is *not* used for actual image publishing.
- * This is currently handled through Automated Builds using standard Docker Hub feature
-*/
 pipeline {
     agent none
 
@@ -58,19 +54,38 @@ pipeline {
                     }
                     steps {
                         script {
-                            if(!infra.isTrusted()) {
-                                deleteDir()
-                                checkout scm
-                                sh '''
-                                make build
-                                make test
-                                '''
+                            infra.withDockerCredentials {
+                                def branchName = "${env.BRANCH_NAME}"
+                                if (infra.isTrusted()) {
+                                    if (branchName ==~ 'master') {
+                                        sh '''
+                                            docker buildx create --use
+                                            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                                            docker buildx bake --push --file docker-bake.hcl linux
+                                        '''
+                                    } else if (env.TAG_NAME != null)  {
+                                        sh """
+                                            export ON_TAG=true
+                                            export VERSION=$TAG_NAME
+                                            docker buildx create --use
+                                            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                                            docker buildx bake --push --file docker-bake.hcl linux
+                                        """
+                                    }
+                                } else {
+                                    sh 'make build'
+                                    try {
+                                        sh 'make test'
+                                    } finally {
+                                        junit('target/*.xml')
+                                    }
+                                    sh '''
+                                        docker buildx create --use
+                                        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                                        docker buildx bake --file docker-bake.hcl linux
+                                    '''
+                                }
                             }
-                        }
-                    }
-                    post {
-                        always {
-                            junit('target/*.xml')
                         }
                     }
                 }
