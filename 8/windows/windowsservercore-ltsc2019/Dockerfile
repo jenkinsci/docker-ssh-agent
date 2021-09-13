@@ -79,3 +79,11 @@ COPY setup-sshd.ps1 C:/ProgramData/Jenkins/setup-sshd.ps1
 EXPOSE 22
 
 ENTRYPOINT ["powershell.exe", "-NoExit", "-Command", "& C:/ProgramData/Jenkins/setup-sshd.ps1"]
+
+LABEL `
+    org.opencontainers.image.vendor="Jenkins project" `
+    org.opencontainers.image.title="Official Jenkins SSH Agent Docker image" `
+    org.opencontainers.image.description="A Jenkins agent image which allows using SSH to establish the connection" `
+    org.opencontainers.image.url="https://www.jenkins.io/" `
+    org.opencontainers.image.source="https://github.com/jenkinsci/docker-ssh-agent" `
+    org.opencontainers.image.licenses="MIT"

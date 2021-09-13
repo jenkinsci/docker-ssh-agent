@@ -62,3 +62,11 @@ COPY setup-sshd /usr/local/bin/setup-sshd
 EXPOSE 22
 
 ENTRYPOINT ["setup-sshd"]
+
+LABEL \
+    org.opencontainers.image.vendor="Jenkins project" \
+    org.opencontainers.image.title="Official Jenkins SSH Agent Docker image" \
+    org.opencontainers.image.description="A Jenkins agent image which allows using SSH to establish the connection" \
+    org.opencontainers.image.url="https://www.jenkins.io/" \
+    org.opencontainers.image.source="https://github.com/jenkinsci/docker-ssh-agent" \
+    org.opencontainers.image.licenses="MIT"

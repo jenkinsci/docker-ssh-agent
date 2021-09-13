@@ -11,6 +11,15 @@ SUT_IMAGE=$(get_sut_image)
 ARCH=${ARCH:-x86_64}
 AGENT_CONTAINER=bats-jenkins-ssh-agent
 
+@test "[${SUT_IMAGE}] test label in docker metadata" {
+  local expected_source="https://github.com/jenkinsci/docker-ssh-agent"
+
+  local actual_source
+  actual_source=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.source"}}' "${SUT_IMAGE}")
+
+  assert_equal "${expected_source}" "${actual_source}"
+}
+
 @test "[${SUT_IMAGE}] checking image metadata" {
   local VOLUMES_MAP
   VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' "${SUT_IMAGE}")"

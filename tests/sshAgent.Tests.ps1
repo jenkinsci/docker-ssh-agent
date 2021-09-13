@@ -100,6 +100,12 @@ Describe "[$JDK $FLAVOR] checking image metadata" {
         $stdout | Should -Match 'C:/Users/jenkins/AppData/Local/Temp'
         $stdout | Should -Match 'C:/Users/jenkins/Work'
     }
+
+    It 'source in docker metadata' {
+        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect -f `"{{index .Config.Labels \`"org.opencontainers.image.source\`"}}`" $AGENT_IMAGE"
+        $exitCode | Should -Be 0
+        $stdout.Trim() | Should -Match 'https://github.com/jenkinsci/docker-ssh-agent'
+    }
 }
 
 Describe "[${JDK} ${FLAVOR}] image has correct version of java installed and in the PATH" {
