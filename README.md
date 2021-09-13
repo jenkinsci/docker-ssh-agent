@@ -5,9 +5,6 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/ssh-agent.svg)](https://hub.docker.com/r/jenkins/ssh-agent/)
 [![GitHub release](https://img.shields.io/github/release/jenkinsci/docker-ssh-agent.svg?label=changelog)](https://github.com/jenkinsci/docker-ssh-agent/releases)
 
-:exclamation: **Warning!** This image used to be published as [jenkinsci/ssh-slave](https://hub.docker.com/r/jenkinsci/ssh-slave/) and [jenkins/ssh-slave](https://hub.docker.com/r/jenkins/ssh-slave/).
-These images are deprecated, use [jenkins/ssh-agent](https://hub.docker.com/r/jenkins/ssh-agent/).
-
 A [Jenkins](https://jenkins.io) agent image which allows using SSH to establish the connection.
 It can be used together with the [SSH Build Agents plugin](https://plugins.jenkins.io/ssh-slaves) or other similar plugins.
 
@@ -38,16 +35,18 @@ Don't put quotes around the public key. You should be all set.
 
 The image has several supported configurations, which can be accessed via the following tags:
 
-* `latest`: Latest version with the newest remoting (based on `openjdk:8-jdk`)
-* `jdk11`: Latest version with the newest remoting and Java 11 (based on `openjdk:11-jdk`)
-* `alpine`: Small image based on Alpine Linux (based on `adoptopenjdk/openjdk8:jdk8u${version}-alpine`)
-* `jdk8-windowsservercore-1809`: Latest version with the newest remoting (based on `adoptopenjdk:8-jdk-hotspot-windowsservercore-1809`)
-* `jdk11-windowsservercore-1809`: Latest version with the newest remoting and Java 11 (based on `adoptopenjdk:11-jdk-hotspot-windowsservercore-1809`)
-* `jdk8-nanoserver-1809`: Latest version with the newest remoting with Windows Nano Server
-* `jdk11-nanoserver-1809`: Latest version with the newest remoting with Windows Nano Server and Java 11
+`${IMAGE_VERSION}` can be found on the [releases](https://github.com/jenkinsci/docker-ssh-agent/releases) page.
+
+* `latest`, `latest-jdk11`, `jdk11`, `latest-bullseye-jdk11`, `bullseye-jdk11`, `${IMAGE_VERSION}`, `${IMAGE_VERSION}-jdk11`, ([Dockerfile](11/bullseye/Dockerfile))
+* `latest-jdk8`, `jdk8`, `latest-bullseye-jdk8`, `bullseye-jdk8`, `${IMAGE_VERSION}-jdk8`, ([Dockerfile](8/bullseye/Dockerfile))
+* `latest-alpine-jdk8`, `alpine-jdk8`, `${IMAGE_VERSION}-jdk8`, ([Dockerfile](8/alpine/Dockerfile))
+* `nanoserver-1809`, `nanoserver-ltsc2019`, `nanoserver-1809-jdk11`, `nanoserver-ltsc2019-jdk11`, `${IMAGE_VERSION}-nanoserver-1809`, `${IMAGE_VERSION}-nanoserver-ltsc2019`, `${IMAGE_VERSION}-nanoserver-1809-jdk11`, `${IMAGE_VERSION}-nanoserver-ltsc2019-jdk11` ([Dockerfile](11/windows/nanoserver-ltsc2019/Dockerfile))
+* `nanoserver-1809-jdk8`, `nanoserver-ltsc2019-jdk8`, `${IMAGE_VERSION}-nanoserver-1809-jdk8`, `${IMAGE_VERSION}-nanoserver-ltsc2019-jdk8` ([Dockerfile](8/windows/nanoserver-ltsc2019/Dockerfile))
+* `windowsservercore-1809`, `windowsservercore-ltsc2019`, `windowsservercore-1809-jdk11`, `windowsservercore-ltsc2019-jdk11`, `${IMAGE_VERSION}-windowsservercore-1809`, `${IMAGE_VERSION}-windowsservercore-ltsc2019`, `${IMAGE_VERSION}-windowsservercore-1809-jdk11`, `${IMAGE_VERSION}-windowsservercore-ltsc2019-jdk11` ([Dockerfile](11/windows/windowsservercore-ltsc2019/Dockerfile))
+* `windowsservercore-1809-jdk8`, `windowsservercore-ltsc2019-jdk8`, `${IMAGE_VERSION}-windowsservercore-1809-jdk8`, `${IMAGE_VERSION}-windowsservercore-ltsc2019-jdk8` ([Dockerfile](8/windows/windowsservercore-ltsc2019/Dockerfile))
 
 ## Changelog
 
 See [GitHub Releases](https://github.com/jenkinsci/docker-ssh-agent/releases/latest).
-Note that the changelogs and release tags were introduced in Dec 2019, and there is no entries for previous patches.
+Note that the changelogs and release tags were introduced in Dec 2019, and there are no entries for previous releases.
 Please consult with the commit history if needed.
