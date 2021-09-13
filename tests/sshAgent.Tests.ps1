@@ -102,7 +102,7 @@ Describe "[$JDK $FLAVOR] checking image metadata" {
     }
 
     It 'source in docker metadata' {
-        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect -f `"{{index .Config.Labels \`"org.opencontainers.image.source\`"}}`" $SUT_IMAGE"
+        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect -f `"{{index .Config.Labels \`"org.opencontainers.image.source\`"}}`" $AGENT_IMAGE"
         $exitCode | Should -Be 0
         $stdout.Trim() | Should -Match 'https://github.com/jenkinsci/docker-ssh-agent'
     }
