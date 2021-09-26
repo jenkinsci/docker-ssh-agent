@@ -104,7 +104,7 @@ AGENT_CONTAINER=bats-jenkins-ssh-agent
     run_through_ssh "${test_container_name}" java -version
   fi
   assert_success
-  assert_output --regexp '^openjdk version \"[[:digit:]]+\.'
+  assert_output --regexp '^openjdk version \"[[:digit:]]+'
 
   clean_test_container "${test_container_name}"
 }
