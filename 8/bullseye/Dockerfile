@@ -20,9 +20,9 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-FROM eclipse-temurin:8u302-b08-jdk-focal AS jre-build
+FROM eclipse-temurin:8u312-b07-jdk-focal AS jre-build
 
-FROM debian:bullseye
+FROM debian:bullseye-20211011
 
 ARG user=jenkins
 ARG group=jenkins

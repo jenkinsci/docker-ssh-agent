@@ -29,15 +29,15 @@ FROM mcr.microsoft.com/powershell:${POWERSHELL_VERSION}nanoserver-1809
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG JAVA_VERSION=11.0.6+10
-ARG JAVA_SHA256=6fb8b6c254ec0e1091acd421ac79c1bb07b295de0b679c0595fd284caf7734e5
+ARG JAVA_VERSION=11.0.13+8
+ARG JAVA_SHA256=40a6805672064b2af62cb4bcacce400caba40e39499015e2ed3e24ba8f9dddcb
 ARG JAVA_HOME=C:\jdk-${JAVA_VERSION}
 
 USER ContainerAdministrator
 
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
     $javaRoot = 'OpenJDK11U-jdk_x64_windows_hotspot_{0}' -f $env:JAVA_VERSION.Replace('+', '_') ; `
-    $url = 'https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-{0}/{1}.zip' -f [System.Uri]::EscapeDataString($env:JAVA_VERSION), $javaRoot ; `
+    $url = 'https://github.com/adoptium/temurin11-binaries/releases/download/jdk-{0}/{1}.zip' -f [System.Uri]::EscapeDataString($env:JAVA_VERSION), $javaRoot ; `
     Write-Host "Retrieving $url..." ; `
     Invoke-WebRequest $url -OutFile 'openjdk.zip' -UseBasicParsing ; `
     if ((Get-FileHash openjdk.zip -Algorithm sha256).Hash -ne $env:JAVA_SHA256) { Write-Error 'Java SHA256 mismatch' ; exit 1} ; `

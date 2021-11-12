@@ -29,8 +29,8 @@ FROM mcr.microsoft.com/powershell:${POWERSHELL_VERSION}nanoserver-1809
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG JAVA_VERSION=8u302-b08
-ARG JAVA_SHA256=3df3ebee978f5c9e9b4e34a74ce8d4b0c8f5bb7dfa83f2b315129c1eee6b70c4
+ARG JAVA_VERSION=8u312-b07
+ARG JAVA_SHA256=d957ada22f53d201d78f0ad3844e9e55da0b279e67c1e6c9366276cb5d8a981a
 ARG JAVA_HOME=C:\jdk${JAVA_VERSION}
 
 USER ContainerAdministrator
