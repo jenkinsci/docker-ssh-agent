@@ -39,6 +39,7 @@ The image has several supported configurations, which can be accessed via the fo
 
 * `latest`, `latest-jdk11`, `jdk11`, `latest-bullseye-jdk11`, `bullseye-jdk11`, `${IMAGE_VERSION}`, `${IMAGE_VERSION}-jdk11`, ([Dockerfile](11/bullseye/Dockerfile))
 * `latest-jdk8`, `jdk8`, `latest-bullseye-jdk8`, `bullseye-jdk8`, `${IMAGE_VERSION}-jdk8`, ([Dockerfile](8/bullseye/Dockerfile))
+* `latest-jdk17-preview`, `jdk17-preview`, `latest-bullseye-jdk17-preview`, `bullseye-jdk17-preview`, `${IMAGE_VERSION}-jdk17-preview`, ([Dockerfile](17/bullseye/Dockerfile))
 * `latest-alpine-jdk8`, `alpine-jdk8`, `${IMAGE_VERSION}-jdk8`, ([Dockerfile](8/alpine/Dockerfile))
 * `nanoserver-1809`, `nanoserver-ltsc2019`, `nanoserver-1809-jdk11`, `nanoserver-ltsc2019-jdk11`, `${IMAGE_VERSION}-nanoserver-1809`, `${IMAGE_VERSION}-nanoserver-ltsc2019`, `${IMAGE_VERSION}-nanoserver-1809-jdk11`, `${IMAGE_VERSION}-nanoserver-ltsc2019-jdk11` ([Dockerfile](11/windows/nanoserver-ltsc2019/Dockerfile))
 * `nanoserver-1809-jdk8`, `nanoserver-ltsc2019-jdk8`, `${IMAGE_VERSION}-nanoserver-1809-jdk8`, `${IMAGE_VERSION}-nanoserver-ltsc2019-jdk8` ([Dockerfile](8/windows/nanoserver-ltsc2019/Dockerfile))

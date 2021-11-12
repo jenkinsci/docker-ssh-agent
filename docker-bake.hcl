@@ -3,12 +3,14 @@ group "linux" {
     "alpine_jdk8",
     "debian_jdk8",
     "debian_jdk11",
+    "debian_jdk17",
   ]
 }
 
 group "linux-arm64" {
   targets = [
     "debian_jdk11",
+    "debian_jdk17",
   ]
 }
 
@@ -75,4 +77,17 @@ target "debian_jdk11" {
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk11",
   ]
   platforms = ["linux/amd64", "linux/arm64", "linux/s390x"]
+}
+
+target "debian_jdk17" {
+  dockerfile = "17/bullseye/Dockerfile"
+  context = "."
+  tags = [
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk17-preview": "",
+    "${REGISTRY}/${JENKINS_REPO}:bullseye-jdk17-preview",
+    "${REGISTRY}/${JENKINS_REPO}:jdk17-preview",
+    "${REGISTRY}/${JENKINS_REPO}:latest-bullseye-jdk17-preview",
+    "${REGISTRY}/${JENKINS_REPO}:latest-jdk17-preview",
+  ]
+  platforms = ["linux/amd64", "linux/arm64"]
 }
