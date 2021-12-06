@@ -22,7 +22,7 @@
 
 FROM eclipse-temurin:8u312-b07-jdk-focal AS jre-build
 
-FROM debian:bullseye-20211115
+FROM debian:bullseye-20211201
 
 ARG user=jenkins
 ARG group=jenkins
