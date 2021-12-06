@@ -44,9 +44,27 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Expand-Archive openjdk.zip -DestinationPath C:/ ; `
     Remove-Item -Path openjdk.zip
 
+ARG GIT_VERSION=2.33.1
+ARG GIT_PATCH_VERSION=1
+RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
+    $url = $('https://github.com/git-for-windows/git/releases/download/v{0}.windows.{1}/MinGit-{0}-64-bit.zip' -f $env:GIT_VERSION, $env:GIT_PATCH_VERSION) ; `
+    Write-Host "Retrieving $url..." ; `
+    Invoke-WebRequest $url -OutFile 'mingit.zip' -UseBasicParsing ; `
+    Expand-Archive mingit.zip -DestinationPath c:\mingit ; `
+    Remove-Item mingit.zip -Force
+
+ARG GIT_LFS_VERSION=3.0.2
+RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
+    $url = $('https://github.com/git-lfs/git-lfs/releases/download/v{0}/git-lfs-windows-amd64-v{0}.zip' -f $env:GIT_LFS_VERSION) ; `
+    Write-Host "Retrieving $url..." ; `
+    Invoke-WebRequest $url -OutFile 'GitLfs.zip' -UseBasicParsing ; `
+    Expand-Archive GitLfs.zip -DestinationPath c:\mingit\mingw64\bin ; `
+    Remove-Item GitLfs.zip -Force ; `
+    & C:\mingit\cmd\git.exe lfs install
+
 ENV ProgramFiles="C:\Program Files"
 ENV WindowsPATH="C:\Windows\system32;C:\Windows"
-ENV PATH="${WindowsPATH};${ProgramFiles}\PowerShell;${JAVA_HOME}\bin"
+ENV PATH="${WindowsPATH};${ProgramFiles}\PowerShell;${JAVA_HOME}\bin;C:\mingit\cmd"
 
 ARG OPENSSH_VERSION=V8.6.0.0p1-Beta
 
