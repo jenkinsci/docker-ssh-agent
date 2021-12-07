@@ -40,12 +40,13 @@ RUN mkdir -p "${JENKINS_AGENT_HOME}" \
 # Unblock user
     && passwd -u "${user}"
 
-# setup SSH server
 RUN apk update --no-cache \
     && apk add --no-cache \
         bash \
-        openssh
+        openssh \
+        git-lfs
 
+# setup SSH server
 RUN sed -i /etc/ssh/sshd_config \
         -e 's/#PermitRootLogin.*/PermitRootLogin no/' \
         -e 's/#PasswordAuthentication.*/PasswordAuthentication no/' \
