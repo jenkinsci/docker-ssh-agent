@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17_35-jdk-focal AS jre-build
+FROM eclipse-temurin:17.0.2_8-jdk-focal AS jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
