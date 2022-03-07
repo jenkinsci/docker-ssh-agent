@@ -11,6 +11,7 @@ group "linux-arm64" {
   targets = [
     "debian_jdk11",
     "debian_jdk17",
+    "debian_jdk8",
   ]
 }
 
@@ -61,7 +62,7 @@ target "debian_jdk8" {
     "${REGISTRY}/${JENKINS_REPO}:latest-bullseye-jdk8",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk8",
   ]
-  platforms = ["linux/amd64"]
+  platforms = ["linux/amd64", "linux/arm64",]
 }
 
 target "debian_jdk11" {
