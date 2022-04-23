@@ -71,7 +71,7 @@ function run_through_ssh {
   local agent_container_name="${1}"
   shift 1
   SSH_PORT=$(get_port "${agent_container_name}" 22)
-  echo "*** SSH_PORT is $(SSH_PORT)"
+  echo "*** SSH_PORT is ${SSH_PORT}"
 	if [[ "${SSH_PORT}" = "" ]]; then
 		printMessage "failed to get SSH port"
 		false
