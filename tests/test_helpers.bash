@@ -83,7 +83,7 @@ function run_through_ssh {
 
 		echo "*** Running ssh command"
 		run ssh -i "${TMP_PRIV_KEY_FILE}" \
-			-v \
+			-o LogLevel=quiet \
 			-o UserKnownHostsFile=/dev/null \
 			-o StrictHostKeyChecking=no \
 			-l jenkins \
