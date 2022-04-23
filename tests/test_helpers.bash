@@ -71,16 +71,19 @@ function run_through_ssh {
   local agent_container_name="${1}"
   shift 1
   SSH_PORT=$(get_port "${agent_container_name}" 22)
+  echo "*** SSH_PORT is $(SSH_PORT)"
 	if [[ "${SSH_PORT}" = "" ]]; then
 		printMessage "failed to get SSH port"
 		false
 	else
 		TMP_PRIV_KEY_FILE=$(mktemp "${BATS_TMPDIR}"/bats_private_ssh_key_XXXXXXX)
+		echo "*** TMP_PRIV_KEY_FILE is ${TMP_PRIV_KEY_FILE}"
 		echo "${PRIVATE_SSH_KEY}" > "${TMP_PRIV_KEY_FILE}" \
 		 	&& chmod 0600 "${TMP_PRIV_KEY_FILE}"
 
+		echo "*** Running ssh command"
 		run ssh -i "${TMP_PRIV_KEY_FILE}" \
-			-o LogLevel=quiet \
+			-vvv \
 			-o UserKnownHostsFile=/dev/null \
 			-o StrictHostKeyChecking=no \
 			-l jenkins \
