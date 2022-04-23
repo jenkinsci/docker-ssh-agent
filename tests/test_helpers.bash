@@ -79,6 +79,7 @@ function run_through_ssh {
 		echo "${PRIVATE_SSH_KEY}" > "${TMP_PRIV_KEY_FILE}" \
 		 	&& chmod 0600 "${TMP_PRIV_KEY_FILE}"
 
+		echo "*** Running ssh command"
 		run ssh -i "${TMP_PRIV_KEY_FILE}" \
 			-o LogLevel=quiet \
 			-o UserKnownHostsFile=/dev/null \
