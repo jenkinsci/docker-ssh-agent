@@ -23,7 +23,7 @@
 # FIXME(oleg_nenashev): This is not an official AdoptOpenJDK Docker Image.
 # There is no official Alpine images at the moment.
 # Needs upgrade when/if there is an official alpine image.
-FROM adoptopenjdk/openjdk8:x86_64-alpine-jdk8u322-b06
+FROM eclipse-temurin:8u322-b06-jdk-alpine
 
 ARG user=jenkins
 ARG group=jenkins
