@@ -185,10 +185,6 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 }
 
 @test "[${SUT_IMAGE}] has utf-8 locale" {
-  if [[ "${SUT_IMAGE}" == *"alpine"*  ]]; then
-    run docker run --entrypoint sh --rm "${SUT_IMAGE}" -c '/usr/glibc-compat/bin/locale charmap'
-  else
-    run docker run --entrypoint sh --rm "${SUT_IMAGE}" -c 'locale charmap'
-  fi
+  run docker run --entrypoint sh --rm "${SUT_IMAGE}" -c 'locale charmap'
   assert_equal "${output}" "UTF-8"
 }
