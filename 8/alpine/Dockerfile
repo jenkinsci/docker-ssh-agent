@@ -40,7 +40,8 @@ RUN mkdir -p "${JENKINS_AGENT_HOME}" \
 RUN apk add --no-cache \
     bash \
     openssh \
-    git-lfs
+    git-lfs \
+    netcat-openbsd
 
 # setup SSH server
 RUN sed -i /etc/ssh/sshd_config \

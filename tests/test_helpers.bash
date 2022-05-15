@@ -14,16 +14,13 @@ function printMessage {
 }
 
 # Assert that $1 is the output of a command $2
-function assert {
+function assert_run_cmd_output_equal {
     local expected_output
     local actual_output
     expected_output="${1}"
     shift
-    actual_output=$("${@}")
-    if ! [[ "${actual_output}" = "${expected_output}" ]]; then
-        printMessage "Expected: '${expected_output}', actual: '${actual_output}'"
-        false
-    fi
+    run "${@}"
+    assert_output "${expected_output}"
 }
 
 function get_sut_image {
@@ -36,6 +33,7 @@ function get_sut_image {
 }
 
 # Retry a command $1 times until it succeeds. Wait $2 seconds between retries.
+# Command is passed as the "rest" of arguments: $3 $4 $5 ...
 function retry {
     local attempts
     local delay
@@ -47,13 +45,13 @@ function retry {
 
     for ((i=0; i < attempts; i++)); do
         run "${@}"
-        if [[ "${status}" -eq 0 ]]; then
+        if assert_success; then
             return 0
         fi
         sleep "${delay}"
     done
 
-    printMessage "Command '${*}' failed $attempts times. Status: ${status}. Output: ${output}"
+    printMessage "Command '${BATS_RUN_COMMAND}' failed ${attempts} times. Status: ${status}. Output: ${output}"
 
     false
 }
@@ -77,9 +75,9 @@ function run_through_ssh {
 	else
 		TMP_PRIV_KEY_FILE=$(mktemp "${BATS_TMPDIR}"/bats_private_ssh_key_XXXXXXX)
 		echo "${PRIVATE_SSH_KEY}" > "${TMP_PRIV_KEY_FILE}" \
-		 	&& chmod 0600 "${TMP_PRIV_KEY_FILE}"
+			&& chmod 0600 "${TMP_PRIV_KEY_FILE}"
 
-		echo "*** Running ssh command"
+		echo "[DEBUG] *** Running ssh command"
 		run ssh -i "${TMP_PRIV_KEY_FILE}" \
 			-o LogLevel=quiet \
 			-o UserKnownHostsFile=/dev/null \
@@ -88,6 +86,7 @@ function run_through_ssh {
 			127.0.0.1 \
 			-p "${SSH_PORT}" \
 			"${@}"
+    echo "[DEBUG] *** Command was: ${BATS_RUN_COMMAND}"
 
 		rm -f "${TMP_PRIV_KEY_FILE}"
 	fi
@@ -96,11 +95,11 @@ function run_through_ssh {
 function clean_test_container {
   local agent_container=$1
   docker kill "${agent_container}" &>/dev/null ||:
-  docker rm -fv "${agent_container}" &>/dev/null ||:
+  docker rm --force --volumes "${agent_container}" &>/dev/null ||:
 }
 
 function is_agent_container_running {
   local agent_container=$1
-	sleep 1  # give time to sshd to eventually fail to initialize
-	retry 3 1 assert "true" docker inspect -f '{{.State.Running}}' "${agent_container}"
+  # 30s is considered enough for the SSH server to start, even under constraint
+	retry 15 2 assert_run_cmd_output_equal healthy docker inspect -f '{{.State.Health.Status}}' "${agent_container}"
 }

@@ -11,6 +11,10 @@ SUT_IMAGE=$(get_sut_image)
 ARCH=${ARCH:-x86_64}
 AGENT_CONTAINER=bats-jenkins-ssh-agent
 
+# About the health CMD: the netcat command (`nc`) needs the options `-w1` to return 1s after reaches EOF. It's a portable option of `nc` (on BSD, Debian, Windows, busybox).
+# Of course, to reach EOF, you need to provide something to the stding: it's the reason of the `echo` piped command
+docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhost 22' '--health-start-period=2s' '--health-interval=2s' '--health-retries=10' '--health-timeout=2s' "${SUT_IMAGE}")
+
 @test "[${SUT_IMAGE}] test label in docker metadata" {
   local expected_source="https://github.com/jenkinsci/docker-ssh-agent"
 
@@ -33,7 +37,7 @@ AGENT_CONTAINER=bats-jenkins-ssh-agent
 @test "[${SUT_IMAGE}] image has bash and java installed and in the PATH" {
   local test_container_name=${AGENT_CONTAINER}-bash-java
   clean_test_container "${test_container_name}"
-  docker run -d --name "${test_container_name}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
+  docker run --name="${test_container_name}" --name="${test_container_name}" "${docker_run_opts[@]}" "${PUBLIC_SSH_KEY}"
 
   run docker exec "${test_container_name}" which bash
   assert_success
@@ -51,7 +55,7 @@ AGENT_CONTAINER=bats-jenkins-ssh-agent
 @test "[${SUT_IMAGE}] create agent container with pubkey as argument" {
   local test_container_name=${AGENT_CONTAINER}-pubkey-arg
   clean_test_container "${test_container_name}"
-  docker run -d --name "${test_container_name}" -P "${SUT_IMAGE}" "${PUBLIC_SSH_KEY}"
+  docker run --name="${test_container_name}" "${docker_run_opts[@]}" "${PUBLIC_SSH_KEY}"
 
   is_agent_container_running "${test_container_name}"
 
@@ -65,7 +69,7 @@ AGENT_CONTAINER=bats-jenkins-ssh-agent
 @test "[${SUT_IMAGE}] create agent container with pubkey as environment variable (legacy environment variable)" {
   local test_container_name=${AGENT_CONTAINER}-pubkey-legacy-env
   clean_test_container "${test_container_name}"
-  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${test_container_name}" -P "${SUT_IMAGE}"
+  docker run --env="JENKINS_SLAVE_SSH_PUBKEY=${PUBLIC_SSH_KEY}" --name="${test_container_name}" "${docker_run_opts[@]}"
 
   is_agent_container_running "${test_container_name}"
 
@@ -79,7 +83,7 @@ AGENT_CONTAINER=bats-jenkins-ssh-agent
 @test "[${SUT_IMAGE}] create agent container with pubkey as environment variable (JENKINS_AGENT_SSH_PUBKEY)" {
   local test_container_name=${AGENT_CONTAINER}-pubkey-env
   clean_test_container "${test_container_name}"
-  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${test_container_name}" -P "${SUT_IMAGE}"
+  docker run --env="JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" --name="${test_container_name}" "${docker_run_opts[@]}"
 
   is_agent_container_running "${test_container_name}"
 
@@ -93,7 +97,7 @@ AGENT_CONTAINER=bats-jenkins-ssh-agent
 @test "[${SUT_IMAGE}] Run Java in a SSH connection" {
   local test_container_name=${AGENT_CONTAINER}-java-in-ssh
   clean_test_container "${test_container_name}"
-  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${test_container_name}" -P "${SUT_IMAGE}"
+  docker run --env="JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" --name="${test_container_name}" "${docker_run_opts[@]}"
 
   is_agent_container_running "${test_container_name}"
 
@@ -115,7 +119,7 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 
   local test_container_name=${AGENT_CONTAINER}-docker-plugin
   clean_test_container "${test_container_name}"
-  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${test_container_name}" -P "${SUT_IMAGE}" ${DOCKER_PLUGIN_DEFAULT_ARG}
+  docker run --env="JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" --name="${test_container_name}" "${docker_run_opts[@]}" ${DOCKER_PLUGIN_DEFAULT_ARG}
 
   is_agent_container_running "${test_container_name}"
 
@@ -131,7 +135,7 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 
   local test_container_name=${AGENT_CONTAINER}-docker-plugin-quoted
   clean_test_container "${test_container_name}"
-  docker run -e "JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" -d --name "${test_container_name}" -P "${SUT_IMAGE}" "${DOCKER_PLUGIN_DEFAULT_ARG}"
+  docker run --env="JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" --name="${test_container_name}" "${docker_run_opts[@]}" "${DOCKER_PLUGIN_DEFAULT_ARG}"
 
   is_agent_container_running "${test_container_name}"
 
@@ -168,7 +172,7 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 
   local test_container_name=${AGENT_CONTAINER}-build-args
   clean_test_container "${test_container_name}"
-  docker run -d --name "${test_container_name}" -P "${sut_image}" "${PUBLIC_SSH_KEY}"
+  docker run --detach --name="${test_container_name}" --publish-all "${sut_image}" "${PUBLIC_SSH_KEY}"
 
   run docker exec "${test_container_name}" sh -c "id -u -n ${TEST_USER}"
   assert_line --index 0 "${TEST_USER}"
