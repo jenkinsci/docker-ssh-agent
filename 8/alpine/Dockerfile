@@ -20,9 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# FIXME(oleg_nenashev): This is not an official AdoptOpenJDK Docker Image.
-# There is no official Alpine images at the moment.
-# Needs upgrade when/if there is an official alpine image.
 FROM eclipse-temurin:8u332-b09-jdk-alpine
 
 ARG user=jenkins
@@ -40,11 +37,10 @@ RUN mkdir -p "${JENKINS_AGENT_HOME}" \
 # Unblock user
     && passwd -u "${user}"
 
-RUN apk update --no-cache \
-    && apk add --no-cache \
-        bash \
-        openssh \
-        git-lfs
+RUN apk add --no-cache \
+    bash \
+    openssh \
+    git-lfs
 
 # setup SSH server
 RUN sed -i /etc/ssh/sshd_config \
