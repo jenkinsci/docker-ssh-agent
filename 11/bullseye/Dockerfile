@@ -45,7 +45,7 @@ RUN groupadd -g ${gid} ${group} \
     && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}"
 
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y openssh-server git-lfs \
+    && apt-get install --no-install-recommends -y openssh-server git-lfs netcat-traditional \
     && rm -rf /var/lib/apt/lists/*
 
 # setup SSH server
@@ -60,7 +60,7 @@ RUN sed -i /etc/ssh/sshd_config \
 VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
 
-ENV LANG C.UTF-8
+ENV LANG='C.UTF-8' LC_ALL='C.UTF-8'
 
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
