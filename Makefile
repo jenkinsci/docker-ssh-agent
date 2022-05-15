@@ -53,7 +53,7 @@ list: check-reqs
 bats:
 	git clone https://github.com/bats-core/bats-core bats ;\
 	cd bats ;\
-	git checkout v1.4.1
+	git checkout v1.7.0
 
 prepare-test: bats check-reqs
 	git submodule update --init --recursive
