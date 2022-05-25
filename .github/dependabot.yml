@@ -21,6 +21,16 @@ updates:
     interval: weekly
   open-pull-requests-limit: 10
 - package-ecosystem: docker
+  directory: "/11/alpine"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+- package-ecosystem: docker
+  directory: "/17/alpine"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+- package-ecosystem: docker
   directory: "/8/bullseye"
   schedule:
     interval: weekly
