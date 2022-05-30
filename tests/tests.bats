@@ -101,12 +101,7 @@ docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhos
 
   is_agent_container_running "${test_container_name}"
 
-  if [[ "${SUT_IMAGE}" == *"alpine"*  ]]
-  then
-    run_through_ssh "${test_container_name}" "/bin/bash --login -c 'java -version'"
-  else
-    run_through_ssh "${test_container_name}" java -version
-  fi
+  run_through_ssh "${test_container_name}" java -version
   assert_success
   assert_output --regexp '^openjdk version \"[[:digit:]]+'
 
