@@ -54,7 +54,8 @@ RUN sed -i /etc/ssh/sshd_config \
 VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
 
-RUN echo "export PATH=${PATH}" >> /etc/environment
+RUN mkdir -p ${JENKINS_AGENT_HOME}/.ssh/ && echo "PATH=${PATH}" >> ${JENKINS_AGENT_HOME}/.ssh/environment && \
+    printf "\nPermitUserEnvironment yes" >> /etc/ssh/sshd_config
 COPY setup-sshd /usr/local/bin/setup-sshd
 
 EXPOSE 22
