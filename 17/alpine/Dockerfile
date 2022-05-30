@@ -30,7 +30,7 @@ ARG JENKINS_AGENT_HOME=/home/${user}
 
 ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
 
-RUN mkdir -p "${JENKINS_AGENT_HOME}" \
+RUN mkdir -p "${JENKINS_AGENT_HOME}/.ssh/" \
     && addgroup -g "${gid}" "${group}" \
 # Set the home directory (h), set user and group id (u, G), set the shell, don't ask for password (D)
     && adduser -h "${JENKINS_AGENT_HOME}" -u "${uid}" -G "${group}" -s /bin/bash -D "${user}" \
@@ -49,13 +49,16 @@ RUN sed -i /etc/ssh/sshd_config \
         -e 's/#PasswordAuthentication.*/PasswordAuthentication no/' \
         -e 's/#SyslogFacility.*/SyslogFacility AUTH/' \
         -e 's/#LogLevel.*/LogLevel INFO/' \
+        -e 's/#PermitUserEnvironment.*/PermitUserEnvironment yes/' \
     && mkdir /var/run/sshd
 
 VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
 
-RUN mkdir -p ${JENKINS_AGENT_HOME}/.ssh/ && echo "PATH=${PATH}" >> ${JENKINS_AGENT_HOME}/.ssh/environment && \
-    printf "\nPermitUserEnvironment yes" >> /etc/ssh/sshd_config
+# Alpine's ssh doesn't use $PATH defined in /etc/environment, so we define `$PATH` in `~/.ssh/environment`
+# The file path has been created earlier in the file by `mkdir -p` and we also have configured sshd so that it will
+# allow environment variables to be sourced (see `sed` command related to `PermitUserEnvironment`)
+RUN echo "PATH=${PATH}" >> ${JENKINS_AGENT_HOME}/.ssh/environment
 COPY setup-sshd /usr/local/bin/setup-sshd
 
 EXPOSE 22
