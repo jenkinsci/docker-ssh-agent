@@ -31,7 +31,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM debian:bullseye-20220527
+FROM debian:bullseye-20220622
 
 ARG user=jenkins
 ARG group=jenkins
