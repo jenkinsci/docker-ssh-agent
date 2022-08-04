@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.2_8-jdk-focal AS jre-build
+FROM eclipse-temurin:17.0.4_8-jdk-focal as jre-build
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
@@ -9,7 +9,7 @@ RUN jlink \
          --compress=2 \
          --output /javaruntime
 
-FROM debian:bullseye
+FROM debian:bullseye-20220801
 
 ARG user=jenkins
 ARG group=jenkins

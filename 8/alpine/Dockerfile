@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM eclipse-temurin:8u332-b09-jdk-alpine
+FROM eclipse-temurin:8u342-b07-jdk-alpine
 
 ARG user=jenkins
 ARG group=jenkins
