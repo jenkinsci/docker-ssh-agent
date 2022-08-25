@@ -107,11 +107,11 @@ target "debian_jdk17" {
   dockerfile = "17/bullseye/Dockerfile"
   context = "."
   tags = [
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk17-preview": "",
-    "${REGISTRY}/${JENKINS_REPO}:bullseye-jdk17-preview",
-    "${REGISTRY}/${JENKINS_REPO}:jdk17-preview",
-    "${REGISTRY}/${JENKINS_REPO}:latest-bullseye-jdk17-preview",
-    "${REGISTRY}/${JENKINS_REPO}:latest-jdk17-preview",
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk17": "",
+    "${REGISTRY}/${JENKINS_REPO}:bullseye-jdk17",
+    "${REGISTRY}/${JENKINS_REPO}:jdk17",
+    "${REGISTRY}/${JENKINS_REPO}:latest-bullseye-jdk17",
+    "${REGISTRY}/${JENKINS_REPO}:latest-jdk17",
   ]
   platforms = ["linux/amd64", "linux/arm64"]
 }
