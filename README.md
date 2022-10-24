@@ -12,24 +12,63 @@ See [Jenkins Distributed builds](https://wiki.jenkins-ci.org/display/JENKINS/Dis
 
 ## Running
 
+### Running with the SSH Build Agents plugin
+
 To run a Docker container
 
 ```bash
 docker run jenkins/ssh-agent "<public key>"
 ```
 
-You'll then be able to connect this agent using the [SSH Build Agents plugin](https://plugins.jenkins.io/ssh-slaves) as "jenkins" with the matching private key.
+You will then be able to connect this agent using the [SSH Build Agents plugin](https://plugins.jenkins.io/ssh-slaves) as "jenkins" with the matching private key.
+
+When using the Linux image, you have to set the value of the `Remote root directory` to `/home/jenkins/agent` in the agent configuration UI.
+
+![Remote root directory with a Linux agent](docs/ssh-plugin-remote-root-directory-linux.png "Remote root directory with a Linux agent")
+
+When using the Windows image, you have to set the value of the `Remote root directory` to `C:/Users/jenkins/Work` in the agent configuration UI.
+
+![Remote root directory with a Windows agent](docs/ssh-plugin-remote-root-directory-windows.png "Remote root directory with a Windows agent")
+
+If you intend to use another directory than `/home/jenkins/agent` under Linux or `C:/Users/jenkins/Work` under Windows, don't forget to add it as a data volume.
+
+```bash
+docker run -v my-local-dir:path-on-the-jenkins-ssh-agent:rw jenkins/ssh-agent "<public key>"
+```
 
 ### How to use this image with Docker Plugin
 
-To use this image with [Docker Plugin](https://plugins.jenkins.io/docker-plugin), you need to
-pass the public SSH key using environment variable `JENKINS_AGENT_SSH_PUBKEY` and not as a startup argument.
+Même chose ici;, il faut décrire le remote file system root dans le docker template
+
+To use this image with [Docker Plugin](https://plugins.jenkins.io/docker-plugin), you need to pass the public SSH key using environment variable `JENKINS_AGENT_SSH_PUBKEY` and not as a startup argument.
 
 In _Environment_ field of the Docker Template (advanced section), just add:
 
     JENKINS_AGENT_SSH_PUBKEY=<YOUR PUBLIC SSH KEY HERE>
 
-Don't put quotes around the public key. You should be all set.
+Don't put quotes around the public key.
+
+Please note that you have to set the value of the `Remote File System Root` to `/home/jenkins/agent` in the Docker Agent Template configuration UI.
+
+![Remote File System Root](docs/docker-plugin-remote-filesystem-root.png "Remote File System Root directory")
+
+If you intend to use another directory than `/home/jenkins/agent`, don't forget to add it as a data volume.
+
+![Docker Volumes mounts](docs/docker-plugin-volumes.png "Docker Volumes mounts")
+
+You should be all set.
+
+## Extending the image
+
+Should you need to extend the image, you could use something along those lines:
+
+```Dockerfile
+FROM jenkins/ssh-agent:bullseye-jdk17 as ssh-agent
+[...]
+RUN mkdir -p "${JENKINS_AGENT_HOME}"/.ssh
+COPY mykey "${JENKINS_AGENT_HOME}"/.ssh/mykey
+[...]
+``` 
 
 ## Configurations
 
