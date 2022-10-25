@@ -40,7 +40,7 @@ When using the Windows image, you have to set the value of the `Remote root dire
 If you intend to use another directory than `/home/jenkins/agent` under Linux or `C:/Users/jenkins/Work` under Windows, don't forget to add it as a data volume.
 
 ```bash
-docker run -v my-local-dir:path-on-the-jenkins-ssh-agent:rw jenkins/ssh-agent "<public key>"
+docker run -v docker-volume-for-jenkins-ssh-agent:/home/jenkins/agent:rw jenkins/ssh-agent "<public key>"
 ```
 
 ### How to use this image with Docker Plugin
