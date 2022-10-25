@@ -17,8 +17,15 @@ See [Jenkins Distributed builds](https://wiki.jenkins-ci.org/display/JENKINS/Dis
 To run a Docker container
 
 ```bash
-docker run jenkins/ssh-agent "<public key>"
+docker run -d --rm --name=agent -p 4444:22 -e "JENKINS_AGENT_SSH_PUBKEY=<public_key>" jenkins/ssh-agent
 ```
+
+ - `-d`: To start a container in detached mode, `-d` option. Containers started in detached mode exit when the root process used to run the container exits, unless you also specify the --rm option.
+ - `--rm`: If you use -d with --rm, the container is removed when it exits or when the daemon exits, whichever happens first.
+ - `--name`: Assigns a name to the container
+ - `-p`: Publishes a container's port(s) to the host. Here, we publish the container SSH port 22 to the host port 4444.
+
+Please note none of these options are mandatory, they are just examples.
 
 You will then be able to connect this agent using the [SSH Build Agents plugin](https://plugins.jenkins.io/ssh-slaves) as "jenkins" with the matching private key.
 
@@ -37,8 +44,6 @@ docker run -v my-local-dir:path-on-the-jenkins-ssh-agent:rw jenkins/ssh-agent "<
 ```
 
 ### How to use this image with Docker Plugin
-
-Même chose ici;, il faut décrire le remote file system root dans le docker template
 
 To use this image with [Docker Plugin](https://plugins.jenkins.io/docker-plugin), you need to pass the public SSH key using environment variable `JENKINS_AGENT_SSH_PUBKEY` and not as a startup argument.
 
