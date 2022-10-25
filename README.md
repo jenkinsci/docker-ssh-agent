@@ -69,10 +69,9 @@ Should you need to extend the image, you could use something along those lines:
 
 ```Dockerfile
 FROM jenkins/ssh-agent:bullseye-jdk17 as ssh-agent
-[...]
-RUN mkdir -p "${JENKINS_AGENT_HOME}"/.ssh
-COPY mykey "${JENKINS_AGENT_HOME}"/.ssh/mykey
-[...]
+# [...]
+COPY --chown=jenkins mykey "${JENKINS_AGENT_HOME}"/.ssh/mykey
+# [...]
 ``` 
 
 ## Configurations
