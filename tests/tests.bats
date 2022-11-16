@@ -190,15 +190,14 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 
 
 @test "[${SUT_IMAGE}] image has ssh client installed and in the PATH" {
-  local cid
-  cid="$(docker run -d -it -P "${SUT_IMAGE}" /bin/bash)"
+  local test_container_name=${AGENT_CONTAINER}-bash-java
+  clean_test_container "${test_container_name}"
+  docker run --name="${test_container_name}" --name="${test_container_name}" "${docker_run_opts[@]}" "${PUBLIC_SSH_KEY}"
 
-  is_agent_container_running "${cid}"
-
-  run docker exec "${cid}" sh -c "command -v ssh"
+  run docker exec "${test_container_name}" sh -c "command -v ssh"
   assert_success
-  run docker exec "${cid}" ssh -V
+  run docker exec "${test_container_name}" ssh -V
   assert_success
 
-  cleanup "$cid"
+  clean_test_container "${test_container_name}"
 }
