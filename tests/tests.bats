@@ -187,3 +187,18 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
   run docker run --entrypoint sh --rm "${SUT_IMAGE}" -c 'locale charmap'
   assert_equal "${output}" "UTF-8"
 }
+
+
+@test "[${SUT_IMAGE}] image has ssh client installed and in the PATH" {
+  local cid
+  cid="$(docker run -d -it -P "${SUT_IMAGE}" /bin/bash)"
+
+  is_agent_container_running "${cid}"
+
+  run docker exec "${cid}" sh -c "command -v ssh"
+  assert_success
+  run docker exec "${cid}" ssh -V
+  assert_success
+
+  cleanup "$cid"
+}
