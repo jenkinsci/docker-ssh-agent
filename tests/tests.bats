@@ -189,7 +189,7 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 }
 
 
-@test "[${SUT_IMAGE}] image has git and SSH client installed and present in the PATH" {
+@test "[${SUT_IMAGE}] image has required tools installed and present in the PATH" {
   local test_container_name=${AGENT_CONTAINER}-bash-java
   clean_test_container "${test_container_name}"
   docker run --name="${test_container_name}" --name="${test_container_name}" "${docker_run_opts[@]}" "${PUBLIC_SSH_KEY}"
@@ -202,6 +202,15 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
   run docker exec "${test_container_name}" sh -c "command -v git"
   assert_success
   run docker exec "${test_container_name}" git --version
+  assert_success
+
+  run docker exec "${test_container_name}" sh -c "command -v less"
+  assert_success
+  run docker exec "${test_container_name}" less -V
+  assert_success
+  run docker exec "${test_container_name}" sh -c "command -v patch"
+  assert_success
+  run docker exec "${test_container_name}" patch --version
   assert_success
 
   clean_test_container "${test_container_name}"

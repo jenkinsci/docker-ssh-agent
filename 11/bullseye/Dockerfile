@@ -47,8 +47,10 @@ RUN groupadd -g ${gid} ${group} \
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
        git-lfs \
+       less \
        netcat-traditional \
        openssh-server \
+       patch \
     && rm -rf /var/lib/apt/lists/*
 
 # setup SSH server
