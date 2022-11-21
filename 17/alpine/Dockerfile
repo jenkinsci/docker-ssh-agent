@@ -39,10 +39,10 @@ RUN mkdir -p "${JENKINS_AGENT_HOME}/.ssh/" \
 
 RUN apk add --no-cache \
     bash \
-    openssh \
     git-lfs \
-    netcat-openbsd
-
+    netcat-openbsd \
+    openssh
+    
 # setup SSH server
 RUN sed -i /etc/ssh/sshd_config \
         -e 's/#PermitRootLogin.*/PermitRootLogin no/' \

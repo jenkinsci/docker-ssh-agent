@@ -45,7 +45,10 @@ RUN groupadd -g ${gid} ${group} \
     && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}"
 
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y openssh-server git-lfs netcat-traditional \
+    && apt-get install --no-install-recommends -y \
+       git-lfs \
+       netcat-traditional \
+       openssh-server \
     && rm -rf /var/lib/apt/lists/*
 
 # setup SSH server
