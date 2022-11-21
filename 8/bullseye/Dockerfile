@@ -48,7 +48,10 @@ RUN sed -i /etc/ssh/sshd_config \
         -e 's/#LogLevel.*/LogLevel INFO/' && \
     mkdir /var/run/sshd
 
-VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
+ARG AGENT_WORKDIR="${JENKINS_AGENT_HOME}"/agent
+# Persist agent workdir path through an environment variable for people extending the image
+ENV AGENT_WORKDIR=${AGENT_WORKDIR}
+VOLUME "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}"/.jenkins "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
 
 ENV LANG='C.UTF-8' LC_ALL='C.UTF-8'
