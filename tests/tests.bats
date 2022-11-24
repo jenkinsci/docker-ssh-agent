@@ -188,6 +188,10 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
   assert_equal "${output}" "UTF-8"
 }
 
+@test "[${SUT_IMAGE}] the default 'jenkins' user is allowed to write in the default agent directory" {
+  run docker run --user=jenkins --entrypoint='' --rm "${SUT_IMAGE}" touch /home/jenkins/agent/test.txt
+  assert_success
+}
 
 @test "[${SUT_IMAGE}] image has required tools installed and present in the PATH" {
   local test_container_name=${AGENT_CONTAINER}-bash-java
