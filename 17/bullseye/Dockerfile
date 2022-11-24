@@ -46,6 +46,9 @@ ENV AGENT_WORKDIR=${AGENT_WORKDIR}
 VOLUME "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}"/.jenkins "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
 
+# The new volumes have to be owned by the jenkins user
+RUN chown -R "${user}":"${group}" "${JENKINS_AGENT_HOME}/.ssh/" "${JENKINS_AGENT_HOME}/.jenkins/" "${AGENT_WORKDIR}"
+
 ENV LANG='C.UTF-8' LC_ALL='C.UTF-8'
 
 ENV JAVA_HOME=/opt/java/openjdk

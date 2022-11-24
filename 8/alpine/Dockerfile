@@ -60,6 +60,9 @@ ENV AGENT_WORKDIR=${AGENT_WORKDIR}
 VOLUME "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}"/.jenkins "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
 
+# The new volumes have to be owned by the jenkins user
+RUN chown -R "${user}":"${group}" "${JENKINS_AGENT_HOME}/.ssh/" "${JENKINS_AGENT_HOME}/.jenkins/" "${AGENT_WORKDIR}"
+
 # Alpine's ssh doesn't use $PATH defined in /etc/environment, so we define `$PATH` in `~/.ssh/environment`
 # The file path has been created earlier in the file by `mkdir -p` and we also have configured sshd so that it will
 # allow environment variables to be sourced (see `sed` command related to `PermitUserEnvironment`)
