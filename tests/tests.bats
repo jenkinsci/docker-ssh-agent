@@ -189,7 +189,7 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 }
 
 @test "[${SUT_IMAGE}] the default 'jenkins' user is allowed to write in the default agent directory" {
-  run docker run --user=jenkins --entrypoint='' --rm "${SUT_IMAGE}" touch "${AGENT_WORKDIR}"/test.txt
+  run docker run --user=jenkins --entrypoint='' --rm "${SUT_IMAGE}" touch /home/jenkins/agent/test.txt
   assert_success
 }
 
