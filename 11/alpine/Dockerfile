@@ -41,7 +41,7 @@ RUN addgroup -g "${gid}" "${group}" \
     # Unblock user
     && passwd -u "${user}" \
     # Prepare subdirectories
-    && mkdir -p "${JENKINS_AGENT_HOME}" "${AGENT_WORKDIR}" \
+    && mkdir -p "${JENKINS_AGENT_HOME}/.ssh" "${JENKINS_AGENT_HOME}/.jenkins" "${AGENT_WORKDIR}"  \
     # Make sure that user 'jenkins' own these directories and their content
     && chown -R "${uid}":"${gid}" "${JENKINS_AGENT_HOME}" "${AGENT_WORKDIR}"
 
