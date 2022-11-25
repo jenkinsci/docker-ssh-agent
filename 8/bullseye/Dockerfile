@@ -56,12 +56,13 @@ RUN sed -i /etc/ssh/sshd_config \
 ARG AGENT_WORKDIR="${JENKINS_AGENT_HOME}"/agent
 # Persist agent workdir path through an environment variable for people extending the image
 ENV AGENT_WORKDIR=${AGENT_WORKDIR}
-VOLUME "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}"/.jenkins "/tmp" "/run" "/var/run"
-WORKDIR "${JENKINS_AGENT_HOME}"
 
 # The new volumes have to be owned by the jenkins user
 RUN mkdir -p "${JENKINS_AGENT_HOME}/.ssh/" "${JENKINS_AGENT_HOME}/.jenkins/" "${AGENT_WORKDIR}" && \
     chown -R "${user}":"${group}" "${JENKINS_AGENT_HOME}/.ssh/" "${JENKINS_AGENT_HOME}/.jenkins/" "${AGENT_WORKDIR}"
+
+VOLUME "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}"/.jenkins "/tmp" "/run" "/var/run"
+WORKDIR "${JENKINS_AGENT_HOME}"
 
 ENV LANG='C.UTF-8' LC_ALL='C.UTF-8'
 
