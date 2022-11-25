@@ -49,17 +49,18 @@ ENV AGENT_WORKDIR=${AGENT_WORKDIR}
 RUN groupadd -g ${gid} ${group} \
     && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}" \
     # Prepare subdirectories
-    && mkdir -p "${JENKINS_AGENT_HOME}/.ssh/" "${JENKINS_AGENT_HOME}" "${JENKINS_AGENT_HOME}/.jenkins" \
-    && chown -R "${uid}":"${gid}" "${JENKINS_AGENT_HOME}/.ssh/" "${JENKINS_AGENT_HOME}" "${JENKINS_AGENT_HOME}/.jenkins"
+    && mkdir -p "${JENKINS_AGENT_HOME}/.ssh/" "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}/.jenkins" \
+    # Make sure that user 'jenkins' own these directories and their content
+    && chown -R "${uid}":"${gid}" "${JENKINS_AGENT_HOME}" "${AGENT_WORKDIR}"
 
 
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-       git-lfs \
-       less \
-       netcat-traditional \
-       openssh-server \
-       patch \
+        git-lfs \
+        less \
+        netcat-traditional \
+        openssh-server \
+        patch \
     && rm -rf /var/lib/apt/lists/*
 
 # setup SSH server
