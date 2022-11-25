@@ -30,10 +30,17 @@ ARG uid=1000
 ARG gid=1000
 ARG JENKINS_AGENT_HOME=/home/${user}
 
-ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
+ENV JENKINS_AGENT_HOME=${JENKINS_AGENT_HOME}
+ARG AGENT_WORKDIR="${JENKINS_AGENT_HOME}"/agent
+# Persist agent workdir path through an environment variable for people extending the image
+ENV AGENT_WORKDIR=${AGENT_WORKDIR}
 
 RUN groupadd -g ${gid} ${group} \
-    && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}"
+    && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}" \
+    # Prepare subdirectories
+    && mkdir -p "${JENKINS_AGENT_HOME}/.ssh/" "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}/.jenkins" \
+    # Make sure that user 'jenkins' own these directories and their content
+    && chown -R "${uid}":"${gid}" "${JENKINS_AGENT_HOME}" "${AGENT_WORKDIR}"
 
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
@@ -53,19 +60,18 @@ RUN sed -i /etc/ssh/sshd_config \
         -e 's/#LogLevel.*/LogLevel INFO/' && \
     mkdir /var/run/sshd
 
-ARG AGENT_WORKDIR="${JENKINS_AGENT_HOME}"/agent
-# Persist agent workdir path through an environment variable for people extending the image
-ENV AGENT_WORKDIR=${AGENT_WORKDIR}
+# VOLUME directive must happen after setting up permissions and content
 VOLUME "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}"/.jenkins "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
 
 ENV LANG='C.UTF-8' LC_ALL='C.UTF-8'
 
 ENV JAVA_HOME=/opt/java/openjdk
-ENV PATH "${JAVA_HOME}/bin:${PATH}"
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /opt/java/openjdk $JAVA_HOME
 
 RUN echo "PATH=${PATH}" >> /etc/environment
+
 COPY setup-sshd /usr/local/bin/setup-sshd
 
 EXPOSE 22
