@@ -108,7 +108,7 @@ Should you want to build this image on your machine (before submitting a pull re
 If you want to see the target images that will be built, you can issue the following command:
 
 ```bash
-$ make list
+make list
 alpine_jdk11
 alpine_jdk17
 alpine_jdk8
@@ -122,20 +122,20 @@ debian_jdk8
 If you want to build a specific image, you can issue the following command:
 
 ```bash
-$ make build-<OS>_<JDK_VERSION>
+make build-<OS>_<JDK_VERSION>
 ```
 
 That would give for JDK 11 on Alpine Linux:
 
 ```bash
-$ make test-alpine_jdk11
+make test-alpine_jdk11
 ```
 
 #### Building all images
 Then, you can build all the images by running:
 
 ```bash
-$ make build
+make build
 ```
 
 #### Testing all images
@@ -143,20 +143,20 @@ $ make build
 If you want to test the images, you can run:
 
 ```bash
-$ make test
+make test
 ```
 #### Testing a specific image
 
 If you want to test a specific image, you can run:
 
 ```bash
-$ make test-<OS>_<JDK_VERSION>
+make test-<OS>_<JDK_VERSION>
 ```
 
 That would give for JDK 11 on Alpine Linux:
 
 ```bash
-$ make test-alpine_jdk11
+make test-alpine_jdk11
 ``` 
 
 #### Other `make` targets
@@ -164,7 +164,7 @@ $ make test-alpine_jdk11
 `show` gives us a detailed view of the images that will be built, with the tags, platforms, and Dockerfiles.
 
 ```bash
-$ make show
+make show
 {
   "group": {
     "default": {
@@ -199,7 +199,7 @@ $ make show
 `bats` is a dependency target. It will update the [`bats` submodule](https://github.com/sstephenson/bats) and run the tests.
 
 ```bash
-$ make bats
+make bats
 make: 'bats' is up to date.
 ```
 
