@@ -196,7 +196,7 @@ make show
     [...]
 ```
 
-`bats` is a dependency target. It will update the [`bats` submodule](https://github.com/sstephenson/bats) and run the tests.
+`bats` is a dependency target. It will update the [`bats` submodule](https://github.com/bats-core/bats-core) and run the tests.
 
 ```bash
 make bats
