@@ -17,13 +17,13 @@ See [Jenkins Distributed builds](https://wiki.jenkins-ci.org/display/JENKINS/Dis
 To run a Docker container
 
 ```bash
-docker run -d --rm --name=agent -p 22:22 -e "JENKINS_AGENT_SSH_PUBKEY=<public_key>" jenkins/ssh-agent
+docker run -d --rm --name=agent --publish 2200:22 -e "JENKINS_AGENT_SSH_PUBKEY=<public_key>" jenkins/ssh-agent
 ```
 
  - `-d`: To start a container in detached mode, use the `-d` option. Containers started in detached mode exit when the root process used to run the container exits, unless you also specify the --rm option.
  - `--rm`: If you use -d with --rm, the container is removed when it exits or when the daemon exits, whichever happens first.
  - `--name`: Assigns a name to the container. If you do not specify a name, Docker generates a random name.
- - `-p`: Bind server port 22 (SSH).
+ - `--publish 2200:22`: Publishes the host port 2200 to the agent container port 22 (SSH) to allow connection from the host with `ssh jenkins@localhost -p2200`
 
 Please note none of these options are mandatory, they are just examples.
 
