@@ -64,7 +64,6 @@ If you intend to use another directory than `/home/jenkins/agent`, don't forget 
 You should be all set.
 
 ## Extending the image
-
 Should you need to extend the image, you could use something along those lines:
 
 ```Dockerfile
@@ -88,6 +87,122 @@ The image has several supported configurations, which can be accessed via the fo
 * `nanoserver-1809-jdk8`, `nanoserver-ltsc2019-jdk8`, `${IMAGE_VERSION}-nanoserver-1809-jdk8`, `${IMAGE_VERSION}-nanoserver-ltsc2019-jdk8` ([Dockerfile](8/windows/nanoserver-ltsc2019/Dockerfile))
 * `windowsservercore-1809`, `windowsservercore-ltsc2019`, `windowsservercore-1809-jdk11`, `windowsservercore-ltsc2019-jdk11`, `${IMAGE_VERSION}-windowsservercore-1809`, `${IMAGE_VERSION}-windowsservercore-ltsc2019`, `${IMAGE_VERSION}-windowsservercore-1809-jdk11`, `${IMAGE_VERSION}-windowsservercore-ltsc2019-jdk11` ([Dockerfile](11/windows/windowsservercore-ltsc2019/Dockerfile))
 * `windowsservercore-1809-jdk8`, `windowsservercore-ltsc2019-jdk8`, `${IMAGE_VERSION}-windowsservercore-1809-jdk8`, `${IMAGE_VERSION}-windowsservercore-ltsc2019-jdk8` ([Dockerfile](8/windows/windowsservercore-ltsc2019/Dockerfile))
+
+## Building instructions
+
+### Pre-requisites
+
+Should you want to build this image on your machine (before submitting a pull request for example), please have a look at the pre-requisites:
+
+* A GNU/Linux machine with [Docker](https://docs.docker.com/engine/install/), a macOS machine with [Docker Desktop](https://docs.docker.com/desktop/install/mac-install/), or a Windows machine with [Docker for Windows](https://docs.docker.com/docker-for-windows/) installed
+* Docker BuildX plugin [installed](https://github.com/docker/buildx#installing) on older versions of Docker (from `19.03`). Docker Buildx is included in recent versions of Docker Desktop for Windows, macOS, and Linux. Docker Linux packages also include Docker Buildx when installed using the DEB or RPM packages.
+* [GNU Make](https://www.gnu.org/software/make/) [installed](https://command-not-found.com/make)
+* jq [installed](https://command-not-found.com/jq)
+* [GNU Bash](https://www.gnu.org/software/bash/) [installed](https://command-not-found.com/bash)
+* git [installed](https://command-not-found.com/git)
+* curl [installed](https://command-not-found.com/curl)
+
+### Building
+
+#### Target images
+
+If you want to see the target images that will be built, you can issue the following command:
+
+```bash
+make list
+alpine_jdk11
+alpine_jdk17
+alpine_jdk8
+debian_jdk11
+debian_jdk17
+debian_jdk8
+``` 
+
+#### Building a specific image
+
+If you want to build a specific image, you can issue the following command:
+
+```bash
+make build-<OS>_<JDK_VERSION>
+```
+
+That would give for JDK 11 on Alpine Linux:
+
+```bash
+make test-alpine_jdk11
+```
+
+#### Building all images
+Then, you can build all the images by running:
+
+```bash
+make build
+```
+
+#### Testing all images
+
+If you want to test the images, you can run:
+
+```bash
+make test
+```
+#### Testing a specific image
+
+If you want to test a specific image, you can run:
+
+```bash
+make test-<OS>_<JDK_VERSION>
+```
+
+That would give for JDK 11 on Alpine Linux:
+
+```bash
+make test-alpine_jdk11
+``` 
+
+#### Other `make` targets
+
+`show` gives us a detailed view of the images that will be built, with the tags, platforms, and Dockerfiles.
+
+```bash
+make show
+{
+  "group": {
+    "default": {
+      "targets": [
+        "alpine_jdk8",
+        "alpine_jdk17",
+        "alpine_jdk11",
+        "debian_jdk8",
+        "debian_jdk11",
+        "debian_jdk17"
+      ]
+    }
+  },
+  "target": {
+    "alpine_jdk11": {
+      "context": ".",
+      "dockerfile": "11/alpine/Dockerfile",
+      "tags": [
+        "docker.io/jenkins/ssh-agent:alpine-jdk11",
+        "docker.io/jenkins/ssh-agent:latest-alpine-jdk11"
+      ],
+      "platforms": [
+        "linux/amd64"
+      ],
+      "output": [
+        "type=docker"
+      ]
+    },
+    [...]
+```
+
+`bats` is a dependency target. It will update the [`bats` submodule](https://github.com/bats-core/bats-core) and run the tests.
+
+```bash
+make bats
+make: 'bats' is up to date.
+```
 
 ## Changelog
 
