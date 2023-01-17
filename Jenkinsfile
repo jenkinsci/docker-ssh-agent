@@ -6,10 +6,6 @@ pipeline {
         timestamps()
     }
 
-    triggers {
-        pollSCM('H/24 * * * *') // once a day in case some hooks are missed
-    }
-
     stages {
         stage('Build Docker Image') {
             parallel {
