@@ -22,6 +22,12 @@ group "linux-s390x" {
   ]
 }
 
+group "linux-ppc64le" {
+  targets = [
+    "debian_jdk11",
+  ]
+}
+
 variable "REGISTRY" {
   default = "docker.io"
 }
