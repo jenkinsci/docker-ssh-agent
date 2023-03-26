@@ -104,7 +104,7 @@ target "debian_jdk11" {
     "${REGISTRY}/${JENKINS_REPO}:latest-bullseye-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk11",
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
 }
 
 target "debian_jdk17" {
