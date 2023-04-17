@@ -22,6 +22,13 @@ group "linux-s390x" {
   ]
 }
 
+group "linux-ppc64le" {
+  targets = [
+    "debian_jdk11",
+    "debian_jdk17",
+  ]
+}
+
 variable "REGISTRY" {
   default = "docker.io"
 }
@@ -97,7 +104,7 @@ target "debian_jdk11" {
     "${REGISTRY}/${JENKINS_REPO}:latest-bullseye-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk11",
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/s390x"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
 }
 
 target "debian_jdk17" {
@@ -110,5 +117,5 @@ target "debian_jdk17" {
     "${REGISTRY}/${JENKINS_REPO}:latest-bullseye-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk17",
   ]
-  platforms = ["linux/amd64", "linux/arm64"]
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 }
