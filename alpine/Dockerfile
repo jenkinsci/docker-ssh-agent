@@ -20,7 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM eclipse-temurin:17.0.7_7-jdk-alpine
+ARG JAVA_VERSION="17.0.7_7"
+FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine
 
 ARG user=jenkins
 ARG group=jenkins
@@ -51,7 +52,7 @@ RUN apk add --no-cache \
     netcat-openbsd \
     openssh \
     patch
-    
+
 # setup SSH server
 RUN sed -i /etc/ssh/sshd_config \
         -e 's/#PermitRootLogin.*/PermitRootLogin no/' \

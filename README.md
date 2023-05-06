@@ -67,7 +67,7 @@ You should be all set.
 Should you need to extend the image, you could use something along those lines:
 
 ```Dockerfile
-FROM jenkins/ssh-agent:bullseye-jdk17 as ssh-agent
+FROM jenkins/ssh-agent:debian-jdk17 as ssh-agent
 # [...]
 COPY --chown=jenkins mykey "${JENKINS_AGENT_HOME}"/.ssh/mykey
 # [...]
@@ -79,8 +79,8 @@ The image has several supported configurations, which can be accessed via the fo
 
 `${IMAGE_VERSION}` can be found on the [releases](https://github.com/jenkinsci/docker-ssh-agent/releases) page.
 
-* `latest`, `latest-jdk11`, `jdk11`, `latest-bullseye-jdk11`, `bullseye-jdk11`, `${IMAGE_VERSION}`, `${IMAGE_VERSION}-jdk11`, ([Dockerfile](11/bullseye/Dockerfile))
-* `latest-jdk17`, `jdk17`, `latest-bullseye-jdk17`, `bullseye-jdk17`, `${IMAGE_VERSION}-jdk17`, ([Dockerfile](17/bullseye/Dockerfile))
+* `latest`, `latest-jdk11`, `jdk11`, `latest-bullseye-jdk11`, `bullseye-jdk11`, `latest-debian-jdk11`, `debian-jdk11`, `${IMAGE_VERSION}`, `${IMAGE_VERSION}-jdk11`, ([Dockerfile](debian/Dockerfile))
+* `latest-jdk17`, `jdk17`, `latest-bullseye-jdk17`, `bullseye-jdk17`,`latest-debian-jdk17`, `debian-jdk17`, `${IMAGE_VERSION}-jdk17`, ([Dockerfile](debian/Dockerfile))
 * `nanoserver-1809`, `nanoserver-ltsc2019`, `nanoserver-1809-jdk11`, `nanoserver-ltsc2019-jdk11`, `${IMAGE_VERSION}-nanoserver-1809`, `${IMAGE_VERSION}-nanoserver-ltsc2019`, `${IMAGE_VERSION}-nanoserver-1809-jdk11`, `${IMAGE_VERSION}-nanoserver-ltsc2019-jdk11` ([Dockerfile](11/windows/nanoserver-ltsc2019/Dockerfile))
 * `windowsservercore-1809`, `windowsservercore-ltsc2019`, `windowsservercore-1809-jdk11`, `windowsservercore-ltsc2019-jdk11`, `${IMAGE_VERSION}-windowsservercore-1809`, `${IMAGE_VERSION}-windowsservercore-ltsc2019`, `${IMAGE_VERSION}-windowsservercore-1809-jdk11`, `${IMAGE_VERSION}-windowsservercore-ltsc2019-jdk11` ([Dockerfile](11/windows/windowsservercore-ltsc2019/Dockerfile))
 
@@ -174,7 +174,7 @@ make show
   "target": {
     "alpine_jdk11": {
       "context": ".",
-      "dockerfile": "11/alpine/Dockerfile",
+      "dockerfile": "alpine/Dockerfile",
       "tags": [
         "docker.io/jenkins/ssh-agent:alpine-jdk11",
         "docker.io/jenkins/ssh-agent:latest-alpine-jdk11"
