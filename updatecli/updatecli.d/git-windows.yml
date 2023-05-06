@@ -84,60 +84,6 @@ targets:
         keyword: ARG
         matcher: GIT_PATCH_VERSION
     scmid: default
-  ############# JDK8 Nanoserver 18.09
-  setGitVersionJDK8WindowsNanoserver1809:
-    name: Update the Git Windows version for JDK8 Windows Nanoserver 1809
-    transformers:
-      - findsubmatch:
-          pattern: '(.*).windows\.(\d*)$'
-          captureindex: 1
-    kind: dockerfile
-    spec:
-      file: 8/windows/nanoserver-ltsc2019/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: GIT_VERSION
-    scmid: default
-  setGitPackagePatchJDK8WindowsNanoserver1809:
-    name: Update the Git Package Windows patch for JDK8 Windows Nanoserver 1809
-    transformers:
-      - findsubmatch:
-          pattern: '(.*).windows\.(\d*)$'
-          captureindex: 2
-    kind: dockerfile
-    spec:
-      file: 8/windows/nanoserver-ltsc2019/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: GIT_PATCH_VERSION
-    scmid: default
-  ############# JDK8 Windows Server Core LTSC2019
-  setGitVersionJDK8WindowsServer2019:
-    name: Update the Git Windows version for JDK8 Windows Server Core LTSC2019
-    transformers:
-      - findsubmatch:
-          pattern: '(.*).windows\.(\d*)$'
-          captureindex: 1
-    kind: dockerfile
-    spec:
-      file: 8/windows/windowsservercore-ltsc2019/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: GIT_VERSION
-    scmid: default
-  setGitPackagePatchJDK8WindowsServer2019:
-    name: Update the Git Package Windows patch for JDK8 Windows Server Core LTSC2019
-    transformers:
-      - findsubmatch:
-          pattern: '(.*).windows\.(\d*)$'
-          captureindex: 2
-    kind: dockerfile
-    spec:
-      file: 8/windows/windowsservercore-ltsc2019/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: GIT_PATCH_VERSION
-    scmid: default
 
 actions:
   default:

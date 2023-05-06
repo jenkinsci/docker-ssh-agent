@@ -71,7 +71,7 @@ FROM jenkins/ssh-agent:bullseye-jdk17 as ssh-agent
 # [...]
 COPY --chown=jenkins mykey "${JENKINS_AGENT_HOME}"/.ssh/mykey
 # [...]
-``` 
+```
 
 ## Configurations
 
@@ -80,13 +80,9 @@ The image has several supported configurations, which can be accessed via the fo
 `${IMAGE_VERSION}` can be found on the [releases](https://github.com/jenkinsci/docker-ssh-agent/releases) page.
 
 * `latest`, `latest-jdk11`, `jdk11`, `latest-bullseye-jdk11`, `bullseye-jdk11`, `${IMAGE_VERSION}`, `${IMAGE_VERSION}-jdk11`, ([Dockerfile](11/bullseye/Dockerfile))
-* `latest-jdk8`, `jdk8`, `latest-bullseye-jdk8`, `bullseye-jdk8`, `${IMAGE_VERSION}-jdk8`, ([Dockerfile](8/bullseye/Dockerfile))
 * `latest-jdk17`, `jdk17`, `latest-bullseye-jdk17`, `bullseye-jdk17`, `${IMAGE_VERSION}-jdk17`, ([Dockerfile](17/bullseye/Dockerfile))
-* `latest-alpine-jdk8`, `alpine-jdk8`, `${IMAGE_VERSION}-jdk8`, ([Dockerfile](8/alpine/Dockerfile))
 * `nanoserver-1809`, `nanoserver-ltsc2019`, `nanoserver-1809-jdk11`, `nanoserver-ltsc2019-jdk11`, `${IMAGE_VERSION}-nanoserver-1809`, `${IMAGE_VERSION}-nanoserver-ltsc2019`, `${IMAGE_VERSION}-nanoserver-1809-jdk11`, `${IMAGE_VERSION}-nanoserver-ltsc2019-jdk11` ([Dockerfile](11/windows/nanoserver-ltsc2019/Dockerfile))
-* `nanoserver-1809-jdk8`, `nanoserver-ltsc2019-jdk8`, `${IMAGE_VERSION}-nanoserver-1809-jdk8`, `${IMAGE_VERSION}-nanoserver-ltsc2019-jdk8` ([Dockerfile](8/windows/nanoserver-ltsc2019/Dockerfile))
 * `windowsservercore-1809`, `windowsservercore-ltsc2019`, `windowsservercore-1809-jdk11`, `windowsservercore-ltsc2019-jdk11`, `${IMAGE_VERSION}-windowsservercore-1809`, `${IMAGE_VERSION}-windowsservercore-ltsc2019`, `${IMAGE_VERSION}-windowsservercore-1809-jdk11`, `${IMAGE_VERSION}-windowsservercore-ltsc2019-jdk11` ([Dockerfile](11/windows/windowsservercore-ltsc2019/Dockerfile))
-* `windowsservercore-1809-jdk8`, `windowsservercore-ltsc2019-jdk8`, `${IMAGE_VERSION}-windowsservercore-1809-jdk8`, `${IMAGE_VERSION}-windowsservercore-ltsc2019-jdk8` ([Dockerfile](8/windows/windowsservercore-ltsc2019/Dockerfile))
 
 ## Building instructions
 
@@ -112,11 +108,9 @@ If you want to see the target images that will be built, you can issue the follo
 make list
 alpine_jdk11
 alpine_jdk17
-alpine_jdk8
 debian_jdk11
 debian_jdk17
-debian_jdk8
-``` 
+```
 
 #### Building a specific image
 
@@ -158,7 +152,7 @@ That would give for JDK 11 on Alpine Linux:
 
 ```bash
 make test-alpine_jdk11
-``` 
+```
 
 #### Other `make` targets
 
@@ -170,10 +164,8 @@ make show
   "group": {
     "default": {
       "targets": [
-        "alpine_jdk8",
         "alpine_jdk17",
         "alpine_jdk11",
-        "debian_jdk8",
         "debian_jdk11",
         "debian_jdk17"
       ]
