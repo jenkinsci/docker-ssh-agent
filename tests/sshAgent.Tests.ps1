@@ -119,17 +119,10 @@ Describe "[${JDK} ${FLAVOR}] image has correct version of java installed and in 
         $exitCode | Should -Be 0
 
         $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "exec $AGENT_CONTAINER $SHELL -C `"`$version = java -version 2>&1 ; Write-Host `$version`""
-        if($JDK -eq 8) {
-            $r = [regex] "^openjdk version `"(?<major>\d+)\.(?<minor>\d+)\.(?<build>\d+).*`""
-            $m = $r.Match($stdout)
-            $m | Should -Not -Be $null
-            $m.Groups['minor'].ToString() | Should -Be "$JDK"
-        } else {
-            $r = [regex] "^openjdk version `"(?<major>\d+)"
-            $m = $r.Match($stdout)
-            $m | Should -Not -Be $null
-            $m.Groups['major'].ToString() | Should -Be "$JDK"
-        }
+        $r = [regex] "^openjdk version `"(?<major>\d+)"
+        $m = $r.Match($stdout)
+        $m | Should -Not -Be $null
+        $m.Groups['major'].ToString() | Should -Be "$JDK"
     }
 
     AfterAll {

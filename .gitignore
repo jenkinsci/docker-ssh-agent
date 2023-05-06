@@ -2,7 +2,6 @@
 bats-core/
 bats/
 11/*/setup-sshd*
-8/*/setup-sshd*
 */CreateProfile.psm1
 target/
 

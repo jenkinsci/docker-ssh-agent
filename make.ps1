@@ -20,21 +20,13 @@ if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_ORGANISATION)) {
 }
 
 $builds = @{
-    'jdk8' = @{
-        'Folder' = '8\windows\windowsservercore-ltsc2019';
-        'Tags' = @( "windowsservercore-1809-jdk8", "windowsservercore-ltsc2019-jdk8" );
-    };
     'jdk11' = @{
         'Folder' = '11\windows\windowsservercore-ltsc2019';
         'Tags' = @( "windowsservercore-1809", "windowsservercore-1809-jdk11", "windowsservercore-ltsc2019", "windowsservercore-ltsc2019-jdk11" );
     };
-    'nanoserver' = @{
-        'Folder' = '8\windows\nanoserver-ltsc2019';
-        'Tags' = @( "nanoserver-1809-jdk8", "nanoserver-ltsc2019", "nanoserver-ltsc2019-jdk8" );
-    };
     'nanoserver-jdk11' = @{
         'Folder' = '11\windows\nanoserver-ltsc2019';
-        'Tags' = @( "nanoserver-1809", "nanoserver-1809-jdk11", "nanoserver-ltsc2019", "nanoserver-ltsc2019-jdk11" );
+        'Tags' = @( "nanoserver-1809", "nanoserver-ltsc2019", "nanoserver-1809-jdk11", "nanoserver-ltsc2019", "nanoserver-ltsc2019-jdk11" );
     };
 }
 
