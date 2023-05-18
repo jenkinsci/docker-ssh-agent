@@ -41,7 +41,7 @@ ARG gid=1000
 ARG JENKINS_AGENT_HOME=/home/${user}
 
 ENV JENKINS_AGENT_HOME=${JENKINS_AGENT_HOME}
-ARG AGENT_WORKDIR="${JENKINS_AGENT_HOME}"/agent
+ARG AGENT_WORKDIR="${JENKINS_AGENT_HOME}/agent"
 # Persist agent workdir path through an environment variable for people extending the image
 ENV AGENT_WORKDIR=${AGENT_WORKDIR}
 

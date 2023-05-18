@@ -21,28 +21,23 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
+ARG JAVA_VERSION=11.0.19_7
+FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-1809 AS jdk-core
 
-# If you pass in a POWERSHELL_VERSION, make sure it ends with a hyphen, leaving it empty will
-# use the 'latest'
-ARG POWERSHELL_VERSION=
-FROM mcr.microsoft.com/powershell:${POWERSHELL_VERSION}nanoserver-1809
-
+FROM mcr.microsoft.com/powershell:nanoserver-1809
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
-
-ARG JAVA_VERSION=11.0.18+10
-ARG JAVA_SHA256=0cfa5991a8e372b3f8eacacbb2a336663ead0cc6ec9c9ab6cd53206602fb0062
-ARG JAVA_HOME=C:\jdk-${JAVA_VERSION}
-
 USER ContainerAdministrator
 
-RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
-    $javaRoot = 'OpenJDK11U-jdk_x64_windows_hotspot_{0}' -f $env:JAVA_VERSION.Replace('+', '_') ; `
-    $url = 'https://github.com/adoptium/temurin11-binaries/releases/download/jdk-{0}/{1}.zip' -f [System.Uri]::EscapeDataString($env:JAVA_VERSION), $javaRoot ; `
-    Write-Host "Retrieving $url..." ; `
-    Invoke-WebRequest $url -OutFile 'openjdk.zip' -UseBasicParsing ; `
-    if ((Get-FileHash openjdk.zip -Algorithm sha256).Hash -ne $env:JAVA_SHA256) { Write-Error 'Java SHA256 mismatch' ; exit 1} ; `
-    Expand-Archive openjdk.zip -DestinationPath C:/ ; `
-    Remove-Item -Path openjdk.zip
+# The nanoserver image is nice and small, but we need a couple of things to get SSH working
+COPY --from=jdk-core /windows/system32/netapi32.dll /windows/system32/netapi32.dll
+COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
+
+ARG JAVA_HOME="C:\openjdk-17"
+COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
+
+# Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
+RUN $javaMajorVersion = $env:JAVA_HOME.Substring($env:JAVA_HOME.Length - 2); `
+    New-Item -Path "C:\jdk-${javaMajorVersion}" -ItemType SymbolicLink -Value "${env:JAVA_HOME}"
 
 ARG GIT_VERSION=2.40.1
 ARG GIT_PATCH_VERSION=1
@@ -72,8 +67,6 @@ ARG user=jenkins
 ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"
 ENV JENKINS_AGENT_USER ${user}
 ENV JENKINS_AGENT_WORK ${JENKINS_AGENT_WORK}
-
-USER ContainerAdministrator
 
 # setup SSH server
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
