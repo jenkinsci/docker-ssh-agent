@@ -39,8 +39,7 @@ targets:
           captureindex: 1
     kind: dockerfile
     spec:
-      # TODO update after https://github.com/jenkinsci/docker-ssh-agent/pull/241 is merged
-      file: 11/windows/nanoserver-ltsc2019/Dockerfile
+      file: windows/nanoserver-ltsc2019/Dockerfile
       instruction:
         keyword: ARG
         matcher: GIT_VERSION
@@ -53,8 +52,7 @@ targets:
           captureindex: 2
     kind: dockerfile
     spec:
-      # TODO update after https://github.com/jenkinsci/docker-ssh-agent/pull/241 is merged
-      file: 11/windows/nanoserver-ltsc2019/Dockerfile
+      file: windows/nanoserver-ltsc2019/Dockerfile
       instruction:
         keyword: ARG
         matcher: GIT_PATCH_VERSION
@@ -68,8 +66,7 @@ targets:
           captureindex: 1
     kind: dockerfile
     spec:
-      # TODO update after https://github.com/jenkinsci/docker-ssh-agent/pull/241 is merged
-      file: 11/windows/windowsservercore-ltsc2019/Dockerfile
+      file: windows/windowsservercore-ltsc2019/Dockerfile
       instruction:
         keyword: ARG
         matcher: GIT_VERSION
@@ -82,8 +79,7 @@ targets:
           captureindex: 2
     kind: dockerfile
     spec:
-      # TODO update after https://github.com/jenkinsci/docker-ssh-agent/pull/241 is merged
-      file: 11/windows/windowsservercore-ltsc2019/Dockerfile
+      file: windows/windowsservercore-ltsc2019/Dockerfile
       instruction:
         keyword: ARG
         matcher: GIT_PATCH_VERSION
