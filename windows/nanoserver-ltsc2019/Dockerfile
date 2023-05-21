@@ -24,7 +24,7 @@
 ARG JAVA_VERSION=11.0.19_7
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-1809 AS jdk-core
 
-FROM mcr.microsoft.com/powershell:nanoserver-1809
+FROM mcr.microsoft.com/powershell:nanoserver-2004
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
 
