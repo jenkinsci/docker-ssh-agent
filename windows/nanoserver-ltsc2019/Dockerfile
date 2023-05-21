@@ -61,24 +61,17 @@ ENV ProgramFiles="C:\Program Files"
 ENV WindowsPATH="C:\Windows\system32;C:\Windows"
 ENV PATH="${WindowsPATH};${ProgramFiles}\PowerShell;${JAVA_HOME}\bin;C:\mingit\cmd"
 
-ARG OPENSSH_VERSION=V8.6.0.0p1-Beta
-
 ARG user=jenkins
-ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"
 ENV JENKINS_AGENT_USER ${user}
-ENV JENKINS_AGENT_WORK ${JENKINS_AGENT_WORK}
+COPY CreateProfile.psm1 C:/
+# create user and user directory
+RUN Import-Module -Force C:/CreateProfile.psm1 ; `
+    New-UserWithProfile -UserName $env:JENKINS_AGENT_USER -Description 'Jenkins Agent User' ; `
+    Remove-Item -Force C:/CreateProfile.psm1
 
-# setup SSH server
-RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
-    $url = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/{0}/OpenSSH-Win64.zip' -f $env:OPENSSH_VERSION ; `
-    Write-Host "Retrieving $url..." ; `
-    Invoke-WebRequest -Uri $url -OutFile C:/openssh.zip -UseBasicParsing ; `
-    Expand-Archive c:/openssh.zip 'C:/Program Files' ; `
-    Remove-Item C:/openssh.zip ; `
-    $env:PATH = '{0};{1}' -f $env:PATH,'C:\Program Files\OpenSSH-Win64' ; `
-    & 'C:/Program Files/OpenSSH-Win64/Install-SSHd.ps1' ; `
-    if(!(Test-Path 'C:\ProgramData\ssh')) { New-Item -Type Directory -Path 'C:\ProgramData\ssh' | Out-Null } ; `
-    Copy-Item 'C:\Program Files\OpenSSH-Win64\sshd_config_default' 'C:\ProgramData\ssh\sshd_config' ; `
+# setup SSH server - https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse?tabs=powershell
+RUN Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0 ; `
+    Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0; `
     $content = Get-Content -Path "C:\ProgramData\ssh\sshd_config" ; `
     $content | ForEach-Object { $_ -replace '#PermitRootLogin.*','PermitRootLogin no' `
                         -replace '#PasswordAuthentication.*','PasswordAuthentication no' `
@@ -93,18 +86,11 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value 'ChallengeResponseAuthentication no' ; `
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value 'HostKeyAgent \\.\pipe\openssh-ssh-agent' ; `
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('Match User {0}' -f $env:JENKINS_AGENT_USER) ; `
-    Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('       AuthorizedKeysFile C:/Users/{0}/.ssh/authorized_keys' -f $env:JENKINS_AGENT_USER) ; `
-    New-Item -Path HKLM:\SOFTWARE -Name OpenSSH -Force | Out-Null ; `
-    New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\Program Files\Powershell\pwsh.exe' -PropertyType string -Force | Out-Null
+    Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('       AuthorizedKeysFile C:/Users/{0}/.ssh/authorized_keys' -f $env:JENKINS_AGENT_USER) ;
 
-COPY CreateProfile.psm1 C:/
-
-# create user and user directory
-RUN Import-Module -Force C:/CreateProfile.psm1 ; `
-    New-UserWithProfile -UserName $env:JENKINS_AGENT_USER -Description 'Jenkins Agent User' ; `
-    Remove-Item -Force C:/CreateProfile.psm1
-
-VOLUME "${JENKINS_AGENT_WORK}" "C:/Users/${user}/AppData/Local/Temp"
+ARG JENKINS_AGENT_WORK="C:/Users/${JENKINS_AGENT_USER}/Work"
+ENV JENKINS_AGENT_WORK ${JENKINS_AGENT_WORK}
+VOLUME "${JENKINS_AGENT_WORK}" "C:/Users/${JENKINS_AGENT_USER}/AppData/Local/Temp"
 WORKDIR "${JENKINS_AGENT_WORK}"
 
 COPY setup-sshd.ps1 C:/ProgramData/Jenkins/setup-sshd.ps1
