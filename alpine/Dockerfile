@@ -69,6 +69,7 @@ RUN apk add --no-cache \
     bash \
     git-lfs \
     less \
+    musl-locales \
     netcat-openbsd \
     openssh \
     patch
