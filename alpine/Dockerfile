@@ -21,7 +21,27 @@
 # SOFTWARE.
 
 ARG JAVA_VERSION="17.0.7_7"
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine
+ARG ALPINE_TAG=3.17.3
+FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
+
+RUN if [ "$TARGETPLATFORM" != 'linux/arm/v7' ]; then \
+    case "$(jlink --version 2>&1)" in \
+      # jlink version 11 has less features than JDK17+
+      "11."*) strip_java_debug_flags="--strip-debug" ;; \
+      *) strip_java_debug_flags="--strip-java-debug-attributes" ;; \
+    esac; \
+    jlink \
+      --add-modules ALL-MODULE-PATH \
+      "$strip_java_debug_flags" \
+      --no-man-pages \
+      --no-header-files \
+      --compress=2 \
+      --output /javaruntime; \
+  else \
+    cp -r /opt/java/openjdk /javaruntime; \
+  fi
+
+FROM alpine:"${ALPINE_TAG}" AS build
 
 ARG user=jenkins
 ARG group=jenkins
@@ -49,6 +69,7 @@ RUN apk add --no-cache \
     bash \
     git-lfs \
     less \
+    musl-locales \
     netcat-openbsd \
     openssh \
     patch
@@ -61,6 +82,12 @@ RUN sed -i /etc/ssh/sshd_config \
         -e 's/#LogLevel.*/LogLevel INFO/' \
         -e 's/#PermitUserEnvironment.*/PermitUserEnvironment yes/' \
     && mkdir /var/run/sshd
+
+# Install JDK
+
+ENV JAVA_HOME=/opt/java/openjdk
+COPY --from=jre-build /javaruntime "$JAVA_HOME"
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # VOLUME directive must happen after setting up permissions and content
 VOLUME "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}"/.jenkins "/tmp" "/run" "/var/run"
