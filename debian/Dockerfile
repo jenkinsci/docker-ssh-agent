@@ -32,7 +32,7 @@ RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
     else cp -r /opt/java/openjdk /javaruntime; \
     fi
 
-FROM debian:bullseye-20230522
+FROM debian:bullseye-20230612
 
 ARG user=jenkins
 ARG group=jenkins
