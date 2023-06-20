@@ -79,7 +79,6 @@ conditions:
       architecture: amd64
       image: eclipse-temurin
       tag: '{{source "jdk17LastVersion" }}-jdk-windowsservercore-1809'
-
   checkTemurinJDK11AlpineDockerImage:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-alpine" is available
@@ -137,6 +136,26 @@ targets:
     sourceid: jdk17LastVersion
     spec:
       file: debian/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK11VersionNanoServer:
+    name: "Bump JDK11 default ARG version on Windows NanoServer Dockerfile"
+    kind: dockerfile
+    sourceid: jdk11LastVersion
+    spec:
+      file: windows/nanoserver-ltsc2019/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK11VersionServerCore:
+    name: "Bump JDK11 default ARG version on Windows Server Core Dockerfile"
+    kind: dockerfile
+    sourceid: jdk11LastVersion
+    spec:
+      file: windows/windowsservercore-ltsc2019/Dockerfile
       instruction:
         keyword: ARG
         matcher: JAVA_VERSION
