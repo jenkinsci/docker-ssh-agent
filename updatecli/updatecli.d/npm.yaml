@@ -1,5 +1,5 @@
 ---
-name: Bumps the npm versions
+name: Bumps the npm version
 
 scms:
   default:
@@ -40,7 +40,7 @@ conditions:
 
 targets:
   updateMakefile:
-    name: "Update the value of the npm version in the Makefile"
+    name: "Updates the value of the npm version in the Makefile"
     kind: file
     sourceid: npmLatestVersion
     spec:
@@ -50,3 +50,13 @@ targets:
       replacepattern: >-
         ${1}{{ source "npmLatestVersion" }}${3}${{4}}
     scmid: default
+    
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump npm version to {{ source "npmLatestVersion" }}
+    spec:
+      labels:
+        - dependencies
