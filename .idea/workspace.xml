@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="62e334e5-6b76-49e7-858f-0b7c5ef65cc0" name="Changes" comment="fix(updatecli): Now includes the trailing part of the regex match">
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test.bats" beforeDir="false" afterPath="$PROJECT_DIR$/bats/test.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test/fixtures/bats/dos_line_no_shellcheck.bats" beforeDir="false" afterPath="$PROJECT_DIR$/bats/test/fixtures/bats/dos_line_no_shellcheck.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test/fixtures/parallel/setup_file/setup_file1.bats" beforeDir="false" afterPath="$PROJECT_DIR$/bats/test/fixtures/parallel/setup_file/setup_file1.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test/fixtures/parallel/setup_file/setup_file2.bats" beforeDir="false" afterPath="$PROJECT_DIR$/bats/test/fixtures/parallel/setup_file/setup_file2.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test/fixtures/parallel/setup_file/setup_file3.bats" beforeDir="false" afterPath="$PROJECT_DIR$/bats/test/fixtures/parallel/setup_file/setup_file3.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test/fixtures/parallel/suite/parallel2.bats" beforeDir="false" afterPath="$PROJECT_DIR$/bats/test/fixtures/parallel/suite/parallel2.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test/fixtures/parallel/suite/parallel3.bats" beforeDir="false" afterPath="$PROJECT_DIR$/bats/test/fixtures/parallel/suite/parallel3.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test/fixtures/parallel/suite/parallel4.bats" beforeDir="false" afterPath="$PROJECT_DIR$/bats/test/fixtures/parallel/suite/parallel4.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test/fixtures/suite/recursive_with_symlinks/subsuite" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test/fixtures/suite/recursive_with_symlinks/test.bats" beforeDir="false" afterPath="$PROJECT_DIR$/bats/test/fixtures/suite/recursive_with_symlinks/test.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test/fixtures/suite_setup_teardown/pick_up_toplevel/folder1/setup_suite.bash" beforeDir="false" afterPath="$PROJECT_DIR$/bats/test/fixtures/suite_setup_teardown/pick_up_toplevel/folder1/setup_suite.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bats/test/fixtures/suite_setup_teardown/pick_up_toplevel/folder2/setup_suite.bash" beforeDir="false" afterPath="$PROJECT_DIR$/bats/test/fixtures/suite_setup_teardown/pick_up_toplevel/folder2/setup_suite.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/.travis.yml" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/.travis.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/load.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/load.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert_equal.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert_equal.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert_failure.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert_failure.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert_line.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert_line.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert_output.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert_output.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert_success.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/assert_success.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/refute.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/refute.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/refute_line.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/refute_line.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/refute_output.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/src/refute_output.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert_equal.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert_equal.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert_failure.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert_failure.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert_line.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert_line.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert_output.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert_output.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert_success.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/assert_success.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/refute.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/refute.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/refute_line.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/refute_line.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/refute_output.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/refute_output.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/test_helper.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-assert/test/test_helper.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/.travis.yml" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/.travis.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/load.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/load.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/src/error.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/src/error.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/src/lang.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/src/lang.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/src/output.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/src/output.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-10-batslib_err.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-10-batslib_err.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-11-batslib_count_lines.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-11-batslib_count_lines.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-12-batslib_is_single_line.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-12-batslib_is_single_line.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-13-batslib_get_max_single_line_key_width.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-13-batslib_get_max_single_line_key_width.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-14-batslib_print_kv_single.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-14-batslib_print_kv_single.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-15-batslib_print_kv_multi.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-15-batslib_print_kv_multi.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-16-batslib_print_kv_single_or_multi.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-16-batslib_print_kv_single_or_multi.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-17-batslib_prefix.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-17-batslib_prefix.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-18-batslib_mark.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-18-batslib_mark.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-19-batslib_decorate.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/50-output-19-batslib_decorate.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/51-error-10-fail.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/51-error-10-fail.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/52-lang-10-batslib_is_caller.bats" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/52-lang-10-batslib_is_caller.bats" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_helper/bats-support/test/test_helper.bash" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_helper/bats-support/test/test_helper.bash" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/updatecli/updatecli.d/node.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/updatecli/updatecli.d/node.yaml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="update-temurin-version" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/docker-bake.hcl" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="293UVYs1FR8rBBeCZoz7MHGf5yD" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "full.screen.before.presentation.mode": "false",
+    "git-widget-placeholder": "Merging updatecli-for-npm",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Support/users/jenkins/git/ci/docker-ssh-agent/updatecli/updatecli.d",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "vcs.Git",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "TEXT"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Support\users\jenkins\git\ci\docker-ssh-agent\updatecli\updatecli.d" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="62e334e5-6b76-49e7-858f-0b7c5ef65cc0" name="Changes" comment="" />
+      <created>1652341290737</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1652341290737</updated>
+      <workItem from="1652341292464" duration="9258000" />
+      <workItem from="1652449324016" duration="40000" />
+      <workItem from="1653487388486" duration="957000" />
+      <workItem from="1653494192917" duration="56000" />
+      <workItem from="1653494259585" duration="94000" />
+      <workItem from="1653494361854" duration="1339000" />
+      <workItem from="1653926164128" duration="1563000" />
+      <workItem from="1666252223116" duration="218000" />
+      <workItem from="1666601147536" duration="23000" />
+      <workItem from="1666601189130" duration="1605000" />
+      <workItem from="1666603250631" duration="22551000" />
+      <workItem from="1666724128351" duration="621000" />
+      <workItem from="1666945637831" duration="14000" />
+      <workItem from="1668607075872" duration="2061000" />
+      <workItem from="1668676777859" duration="9000" />
+      <workItem from="1669024830659" duration="1230000" />
+      <workItem from="1669029513349" duration="4233000" />
+      <workItem from="1669108991925" duration="1245000" />
+      <workItem from="1669114569699" duration="1351000" />
+      <workItem from="1669313745686" duration="434000" />
+      <workItem from="1669322774958" duration="74000" />
+      <workItem from="1669365747511" duration="7964000" />
+      <workItem from="1669653998449" duration="5621000" />
+      <workItem from="1670406651619" duration="734000" />
+      <workItem from="1670578665507" duration="135000" />
+      <workItem from="1670579265817" duration="11000" />
+      <workItem from="1670608500573" duration="2259000" />
+      <workItem from="1670618227588" duration="8000" />
+      <workItem from="1670694458338" duration="632000" />
+      <workItem from="1670838708465" duration="123000" />
+      <workItem from="1684766844164" duration="30000" />
+      <workItem from="1684766905159" duration="3017000" />
+      <workItem from="1684769944034" duration="2510000" />
+      <workItem from="1684829575658" duration="3964000" />
+      <workItem from="1685106875867" duration="616000" />
+      <workItem from="1686214545952" duration="831000" />
+      <workItem from="1686734525594" duration="8511000" />
+      <workItem from="1687190882349" duration="915000" />
+      <workItem from="1687246339884" duration="2522000" />
+      <workItem from="1687334682976" duration="2741000" />
+      <workItem from="1687538806458" duration="602000" />
+      <workItem from="1687853634642" duration="1257000" />
+      <workItem from="1687939419129" duration="1204000" />
+      <workItem from="1687964802094" duration="269000" />
+      <workItem from="1687965094777" duration="607000" />
+      <workItem from="1688035111221" duration="48000" />
+      <workItem from="1688035183323" duration="1204000" />
+      <workItem from="1688392716146" duration="3183000" />
+      <workItem from="1688399291700" duration="19000" />
+      <workItem from="1688399342383" duration="1400000" />
+    </task>
+    <task id="LOCAL-00001" summary="fix(documentation) First draft of the remote root documentation change.">
+      <created>1666628190752</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1666628190752</updated>
+    </task>
+    <task id="LOCAL-00002" summary="fix(documentation) Removed the french part and documented the `docker` command.">
+      <created>1666684367348</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1666684367348</updated>
+    </task>
+    <task id="LOCAL-00003" summary="fix(documentation) Sentence didn't have a verb.">
+      <created>1666686374790</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1666686374790</updated>
+    </task>
+    <task id="LOCAL-00004" summary="fix(documentation) Removed the `ssh` port parameter">
+      <created>1666716910028</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1666716910028</updated>
+    </task>
+    <task id="LOCAL-00005" summary="fix(docker) Removed the explicit dependency packages">
+      <created>1669038470087</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1669038470087</updated>
+    </task>
+    <task id="LOCAL-00006" summary="fix(tests) Added new line for POSIX compliancy">
+      <created>1669039613762</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1669039613762</updated>
+    </task>
+    <task id="LOCAL-00007" summary="fix(docker) Creates the directories before changing their permissions">
+      <created>1669366229401</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1669366229401</updated>
+    </task>
+    <task id="LOCAL-00008" summary="fix(docker) Creates the directories before changing their permissions">
+      <created>1669366447131</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1669366447131</updated>
+    </task>
+    <task id="LOCAL-00009" summary="fix(docker) VOLUME directive must happen after setting up permissions and content">
+      <created>1669366798883</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1669366798883</updated>
+    </task>
+    <task id="LOCAL-00010" summary="fix(alpine) Groups the user creation, subdirectories creation and permissions settings.">
+      <created>1669370236794</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1669370236794</updated>
+    </task>
+    <task id="LOCAL-00011" summary="fix(debian) Groups the user creation, subdirectories creation and permissions settings.">
+      <created>1669371190072</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1669371190072</updated>
+    </task>
+    <task id="LOCAL-00012" summary="feat(test) The default 'jenkins' user is allowed to write in the default agent directory">
+      <created>1669371428783</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1669371428783</updated>
+    </task>
+    <task id="LOCAL-00013" summary="fix(test) Now uses &quot;${AGENT_WORKDIR}&quot; instead of a hardcoded path">
+      <created>1669371586296</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1669371586296</updated>
+    </task>
+    <task id="LOCAL-00014" summary="fix(test) Now uses &quot;/home/jenkins/agent&quot; hardcoded path">
+      <created>1669372273183</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1669372273184</updated>
+    </task>
+    <task id="LOCAL-00015" summary="chore(test) Uses `&quot;${AGENT_WORKDIR}&quot;` instead of hardcoded path.">
+      <created>1669380967801</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1669380967801</updated>
+    </task>
+    <task id="LOCAL-00016" summary="feat(documentation) Adding information on how to build the images locally">
+      <created>1669656902515</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1669656902515</updated>
+    </task>
+    <task id="LOCAL-00017" summary="fix(documentation) No `$` anymore in front of `make` commands">
+      <created>1669657632284</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1669657632284</updated>
+    </task>
+    <task id="LOCAL-00018" summary="fix(documentation) Corrects the `bats` project URL">
+      <created>1669666263759</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1669666263759</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.bats" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="fix(docker) Removed the explicit dependency packages" />
+    <MESSAGE value="fix(tests) Added new line for POSIX compliancy" />
+    <MESSAGE value="fix(docker) Creates the directories before changing their permissions" />
+    <MESSAGE value="fix(docker) VOLUME directive must happen after setting up permissions and content" />
+    <MESSAGE value="fix(alpine) Groups the user creation, subdirectories creation and permissions settings." />
+    <MESSAGE value="fix(debian) Groups the user creation, subdirectories creation and permissions settings." />
+    <MESSAGE value="feat(test) The default 'jenkins' user is allowed to write in the default agent directory" />
+    <MESSAGE value="fix(test) Now uses &quot;${AGENT_WORKDIR}&quot; instead of a hardcoded path" />
+    <MESSAGE value="fix(test) Now uses &quot;/home/jenkins/agent&quot; hardcoded path" />
+    <MESSAGE value="chore(test) Uses `&quot;${AGENT_WORKDIR}&quot;` instead of hardcoded path." />
+    <MESSAGE value="feat(documentation) Adding information on how to build the images locally" />
+    <MESSAGE value="fix(documentation) No `$` anymore in front of `make` commands" />
+    <MESSAGE value="fix(documentation) Corrects the `bats` project URL" />
+    <MESSAGE value="feat(updatecli): Adds tracking for the Alpine Linux base version" />
+    <MESSAGE value="chore(alpine): Now copies Temurin's JDK binaries into a defined Alpine version image" />
+    <MESSAGE value="chore(alpine): Now uses `ALPINE_SHORT_TAG` and `ALPINE_FULL_TAG` &#10;&#10;Defines `ALPINE_SHORT_TAG` and `ALPINE_FULL_TAG`, and uses it when tagging the various Alpine images." />
+    <MESSAGE value="fix(updatecli): Removes the alpine tracking file." />
+    <MESSAGE value="fix(alpine): Adds the `musl-locales` package that was missing" />
+    <MESSAGE value="feature(dependencies): Now tracks the JDK17 version thanks to updatecli" />
+    <MESSAGE value="fix(dependencies): Back to focal." />
+    <MESSAGE value="feature(dependencies): Also tracks JDK11 now." />
+    <MESSAGE value="chore(updatecli): Now tracks JDK11 for Windows" />
+    <MESSAGE value="feature(updatecli): Tracks npm in Makefile" />
+    <MESSAGE value="fix(updatecli): Creates a pull request" />
+    <MESSAGE value="fix(updatecli): Now includes the trailing part of the regex match" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix(updatecli): Now includes the trailing part of the regex match" />
+  </component>
+</project>

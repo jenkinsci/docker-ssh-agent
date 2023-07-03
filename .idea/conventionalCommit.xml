@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="general">
+    <commitTypes>
+      <entry providerId="37415b03-9388-4c55-b949-8c4526f6934d" order="2" />
+      <entry providerId="e9ce9acf-f4a6-4b36-b43c-531169556c29" order="2" />
+      <entry providerId="e9d4e8de-79a0-48b8-b1ba-b4161e2572c0" order="1" />
+    </commitTypes>
+    <commitScopes>
+      <entry providerId="37415b03-9388-4c55-b949-8c4526f6934d" order="2" />
+      <entry providerId="e9ce9acf-f4a6-4b36-b43c-531169556c29" order="2" />
+      <entry providerId="e9d4e8de-79a0-48b8-b1ba-b4161e2572c0" order="1" />
+    </commitScopes>
+  </component>
+</project>
