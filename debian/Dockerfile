@@ -54,6 +54,7 @@ RUN groupadd -g ${gid} ${group} \
 
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
+        ca-certificates \
         git-lfs \
         less \
         netcat-traditional \
