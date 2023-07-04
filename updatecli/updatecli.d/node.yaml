@@ -67,7 +67,7 @@ targets:
       matchpattern: >-
         (.*docker.*run.*)node:.*( .*)
       replacepattern: >-
-        ${1}node:{{ source "nodeLatestVersion" }}-alpine{{ source "alpineLatestVersion" }}${3}
+        ${1}node:{{ source "nodeLatestVersion" }}-alpine{{ source "alpineLatestVersion" }}${2}
     scmid: default
 
 actions:
