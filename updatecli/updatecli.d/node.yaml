@@ -77,4 +77,4 @@ actions:
     title: Bump node alpine docker image version to {{ source "nodeLatestVersion" }}-alpine{{ source "alpineLatestVersion" }}
     spec:
       labels:
-        - dependencies
+        - chore # Because Node is only used for testing
