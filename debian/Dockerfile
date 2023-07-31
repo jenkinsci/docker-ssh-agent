@@ -1,5 +1,4 @@
-ARG JAVA_VERSION=17.0.8.1_1
-ARG DEBIAN_RELEASE=bookworm-20240211
+ARG JAVA_VERSION=17.0.8_7
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy AS jre-build
 
 # This Build ARG is populated by Docker
@@ -33,6 +32,7 @@ RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
     else cp -r /opt/java/openjdk /javaruntime; \
     fi
 
+ARG DEBIAN_RELEASE=bookworm-20240211
 FROM debian:"${DEBIAN_RELEASE}"
 
 ARG user=jenkins
