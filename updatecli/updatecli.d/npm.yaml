@@ -59,4 +59,4 @@ actions:
     title: Bump npm version to {{ source "npmLatestVersion" }}
     spec:
       labels:
-        - dependencies
+        - chore # Because NPM is only used for testing
