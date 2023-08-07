@@ -1,29 +1,16 @@
 [CmdletBinding()]
 Param(
     [Parameter(Position=1)]
-    [String] $Target = "build",
+    [String] $Target = 'build',
     [String] $Build = '',
-    [String] $RemotingVersion = '3142.vcfca_0cd92128',
-    [String] $BuildNumber = '1',
-    [switch] $PushVersions = $false,
-    [switch] $DisableEnvProps = $false
+    [String] $VersionTag = '1.0-1',
+    [switch] $PushVersions = $false
 )
 
 $ErrorActionPreference = 'Stop'
-$Repository = 'agent'
+$Repository = 'ssh-agent'
 $Organization = 'jenkins'
 $ImageType = 'windows-ltsc2019'
-
-if(!$DisableEnvProps) {
-    Get-Content env.props | ForEach-Object {
-        $items = $_.Split("=")
-        if($items.Length -eq 2) {
-            $name = $items[0].Trim()
-            $value = $items[1].Trim()
-            Set-Item -Path "env:$($name)" -Value $value
-        }
-    }
-}
 
 if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_REPO)) {
     $Repository = $env:DOCKERHUB_REPO
@@ -31,10 +18,6 @@ if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_REPO)) {
 
 if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_ORGANISATION)) {
     $Organization = $env:DOCKERHUB_ORGANISATION
-}
-
-if(![String]::IsNullOrWhiteSpace($env:REMOTING_VERSION)) {
-    $RemotingVersion = $env:REMOTING_VERSION
 }
 
 if(![String]::IsNullOrWhiteSpace($env:IMAGE_TYPE)) {
@@ -63,10 +46,9 @@ Function Test-CommandExists {
     }
 }
 
-# this is the jdk version that will be used for the 'bare tag' images, e.g., jdk8-windowsservercore-1809 -> windowsserver-1809
+# this is the jdk version that will be used for the 'bare tag' images, e.g., windowsservercore-1809-jdk11 -> windowsserver-1809
 $defaultJdk = '11'
 $builds = @{}
-$env:REMOTING_VERSION = "$RemotingVersion"
 
 $items = $ImageType.Split("-")
 $env:WINDOWS_FLAVOR = $items[0]
@@ -87,16 +69,13 @@ $baseDockerCmd = 'docker-compose --file=build-windows.yaml'
 $baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
 
 Invoke-Expression "$baseDockerCmd config --services" 2>$null | ForEach-Object {
-    $image = '{0}-{1}-{2}' -f $_, $env:WINDOWS_FLAVOR, $env:WINDOWS_VERSION_TAG
-    $items = $image.Split("-")
-    # Remove the 'jdk' prefix (3 first characters)
-    $jdkMajorVersion = $items[0].Remove(0,3)
-    $windowsType = $items[1]
-    $windowsVersion = $items[2]
+    $image = '{1}-{2}-{0}' -f $_, $env:WINDOWS_FLAVOR, $env:WINDOWS_VERSION_TAG # Ex: "nanoserver-ltsc2019-jdk11"
 
-    $baseImage = "${windowsType}-${windowsVersion}"
-    $versionTag = "${RemotingVersion}-${BuildNumber}-${image}"
-    $tags = @( $image, $versionTag )
+    # Remove the 'jdk' prefix
+    $jdkMajorVersion = $_.Remove(0,3)
+
+    $baseImage = "${env:WINDOWS_FLAVOR}-${env:WINDOWS_VERSION_TAG}"
+    $tags = @( $image )
     # Additional image tag without any 'jdk' prefix for the default JDK
     if($jdkMajorVersion -eq "$defaultJdk") {
         $tags += $baseImage
@@ -133,9 +112,8 @@ function Test-Image {
     Write-Host "= TEST: Testing image ${ImageName}:"
 
     $env:AGENT_IMAGE = $ImageName
-    $serviceName = $ImageName.SubString(0, $ImageName.IndexOf('-'))
-    $env:IMAGE_FOLDER = Invoke-Expression "$baseDockerCmd config" 2>$null |  yq -r ".services.${serviceName}.build.context"
-    $env:VERSION = "$RemotingVersion-$BuildNumber"
+    $serviceName = $ImageName.SubString($ImageName.LastIndexOf('-') + 1)
+    $env:BUILD_CONTEXT = Invoke-Expression "$baseDockerCmd config" 2>$null |  yq -r ".services.${serviceName}.build.context"
 
     if(Test-Path ".\target\$ImageName") {
         Remove-Item -Recurse -Force ".\target\$ImageName"
@@ -150,8 +128,7 @@ function Test-Image {
         Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $ImageName"
     }
     Remove-Item env:\AGENT_IMAGE
-    Remove-Item env:\IMAGE_FOLDER
-    Remove-Item env:\VERSION
+    Remove-Item env:\BUILD_CONTEXT
 }
 
 if($target -eq "test") {
@@ -228,9 +205,9 @@ if($target -eq "publish") {
             }
 
             if($PushVersions) {
-                $buildTag = "$RemotingVersion-$BuildNumber-$tag"
+                $buildTag = "$VersionTag-$tag"
                 if($tag -eq 'latest') {
-                    $buildTag = "$RemotingVersion-$BuildNumber"
+                    $buildTag = "$VersionTag"
                 }
                 Publish-Image "$Build" "${Organization}/${Repository}:${buildTag}"
                 if($lastExitCode -ne 0) {
@@ -247,9 +224,9 @@ if($target -eq "publish") {
                 }
 
                 if($PushVersions) {
-                    $buildTag = "$RemotingVersion-$BuildNumber-$tag"
+                    $buildTag = "$VersionTag-$tag"
                     if($tag -eq 'latest') {
-                        $buildTag = "$RemotingVersion-$BuildNumber"
+                        $buildTag = "$VersionTag"
                     }
                     Publish-Image "$b" "${Organization}/${Repository}:${buildTag}"
                     if($lastExitCode -ne 0) {
