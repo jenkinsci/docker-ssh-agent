@@ -9,7 +9,11 @@ Param(
 
 $ErrorActionPreference = 'Stop'
 $Repository = 'ssh-agent'
+<<<<<<< HEAD
 $Organisation = 'jenkins'
+=======
+$Organization = 'jenkins'
+>>>>>>> 3bbee4c (refactor Jenkinsfile, adapt build.ps1 and docker compose file)
 $ImageType = 'windows-ltsc2019'
 
 if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_REPO)) {
@@ -17,7 +21,11 @@ if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_REPO)) {
 }
 
 if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_ORGANISATION)) {
+<<<<<<< HEAD
     $Organisation = $env:DOCKERHUB_ORGANISATION
+=======
+    $Organization = $env:DOCKERHUB_ORGANISATION
+>>>>>>> 3bbee4c (refactor Jenkinsfile, adapt build.ps1 and docker compose file)
 }
 
 if(![String]::IsNullOrWhiteSpace($env:IMAGE_TYPE)) {
@@ -46,10 +54,16 @@ Function Test-CommandExists {
     }
 }
 
+<<<<<<< HEAD
 # Ensure constant env vars used in the docker compose file are defined
 $env:DOCKERHUB_ORGANISATION = "$Organisation"
 $env:DOCKERHUB_REPO = "$Repository"
 $env:VERSION = "$VersionTag"
+=======
+# this is the jdk version that will be used for the 'bare tag' images, e.g., windowsservercore-1809-jdk11 -> windowsserver-1809
+$defaultJdk = '11'
+$builds = @{}
+>>>>>>> 3bbee4c (refactor Jenkinsfile, adapt build.ps1 and docker compose file)
 
 $items = $ImageType.Split("-")
 $env:WINDOWS_FLAVOR = $items[0]
@@ -66,6 +80,48 @@ Test-CommandExists "docker"
 Test-CommandExists "docker-compose"
 Test-CommandExists "yq"
 
+<<<<<<< HEAD
+=======
+$baseDockerCmd = 'docker-compose --file=build-windows.yaml'
+$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
+
+Invoke-Expression "$baseDockerCmd config --services" 2>$null | ForEach-Object {
+    $image = '{1}-{2}-{0}' -f $_, $env:WINDOWS_FLAVOR, $env:WINDOWS_VERSION_TAG # Ex: "nanoserver-ltsc2019-jdk11"
+
+    # Remove the 'jdk' prefix
+    $jdkMajorVersion = $_.Remove(0,3)
+
+    $baseImage = "${env:WINDOWS_FLAVOR}-${env:WINDOWS_VERSION_TAG}"
+    $tags = @( $image )
+    # Additional image tag without any 'jdk' prefix for the default JDK
+    if($jdkMajorVersion -eq "$defaultJdk") {
+        $tags += $baseImage
+    }
+
+    $builds[$image] = @{
+        'Tags' = $tags;
+    }
+}
+
+Write-Host '= PREPARE: List of images and tags to be processed:'
+ConvertTo-Json $builds
+
+if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
+    Write-Host "= BUILD: Building image ${Build}..."
+    $dockerBuildCmd = '{0} {1}' -f $baseDockerBuildCmd, $Build
+    Invoke-Expression $dockerBuildCmd
+    Write-Host "= BUILD: Finished building image ${Build}"
+} else {
+    Write-Host "= BUILD: Building all images..."
+    Invoke-Expression $baseDockerBuildCmd
+    Write-Host "= BUILD: Finished building all image"
+}
+
+if($lastExitCode -ne 0) {
+    exit $lastExitCode
+}
+
+>>>>>>> 3bbee4c (refactor Jenkinsfile, adapt build.ps1 and docker compose file)
 function Test-Image {
     param (
         $ImageName
@@ -74,7 +130,11 @@ function Test-Image {
     Write-Host "= TEST: Testing image ${ImageName}:"
 
     $env:AGENT_IMAGE = $ImageName
+<<<<<<< HEAD
     $serviceName = $ImageName.SubString($ImageName.LastIndexOf('-') + 1)
+=======
+    $serviceName = $ImageName.SubString(0, $ImageName.LastIndexOf('-'))
+>>>>>>> 3bbee4c (refactor Jenkinsfile, adapt build.ps1 and docker compose file)
     $env:BUILD_CONTEXT = Invoke-Expression "$baseDockerCmd config" 2>$null |  yq -r ".services.${serviceName}.build.context"
 
     if(Test-Path ".\target\$ImageName") {
@@ -92,6 +152,7 @@ function Test-Image {
     }
     Remove-Item env:\AGENT_IMAGE
     Remove-Item env:\BUILD_CONTEXT
+<<<<<<< HEAD
 
     return $failed
 }
@@ -118,6 +179,8 @@ Write-Host "= BUILD: Building all images..."
 
 if($lastExitCode -ne 0) {
     exit $lastExitCode
+=======
+>>>>>>> 3bbee4c (refactor Jenkinsfile, adapt build.ps1 and docker compose file)
 }
 
 if($target -eq "test") {
@@ -168,10 +231,53 @@ if($target -eq "test") {
 }
 
 if($target -eq "publish") {
+<<<<<<< HEAD
     Write-Host "= PUBLISH: push all images and tags"
     switch($DryRun) {
         $true { Write-Host "(dry-run) $baseDockerCmd push" }
         $false { Invoke-Expression "$baseDockerCmd push" }
+=======
+    # Only fail the run afterwards in case of any issues when publishing the docker images
+    $publishFailed = 0
+    if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
+        foreach($tag in $Builds[$Build]['Tags']) {
+            Publish-Image  "$Build" "${Organization}/${Repository}:${tag}"
+            if($lastExitCode -ne 0) {
+                $publishFailed = 1
+            }
+
+            if($PushVersions) {
+                $buildTag = "$VersionTag-$tag"
+                if($tag -eq 'latest') {
+                    $buildTag = "$VersionTag"
+                }
+                Publish-Image "$Build" "${Organization}/${Repository}:${buildTag}"
+                if($lastExitCode -ne 0) {
+                    $publishFailed = 1
+                }
+            }
+        }
+    } else {
+        foreach($b in $builds.Keys) {
+            foreach($tag in $Builds[$b]['Tags']) {
+                Publish-Image "$b" "${Organization}/${Repository}:${tag}"
+                if($lastExitCode -ne 0) {
+                    $publishFailed = 1
+                }
+
+                if($PushVersions) {
+                    $buildTag = "$VersionTag-$tag"
+                    if($tag -eq 'latest') {
+                        $buildTag = "$VersionTag"
+                    }
+                    Publish-Image "$b" "${Organization}/${Repository}:${buildTag}"
+                    if($lastExitCode -ne 0) {
+                        $publishFailed = 1
+                    }
+                }
+            }
+        }
+>>>>>>> 3bbee4c (refactor Jenkinsfile, adapt build.ps1 and docker compose file)
     }
 
     # Fail if any issues when publising the docker images
