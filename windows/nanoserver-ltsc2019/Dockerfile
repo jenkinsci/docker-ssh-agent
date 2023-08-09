@@ -32,7 +32,7 @@ USER ContainerAdministrator
 COPY --from=jdk-core /windows/system32/netapi32.dll /windows/system32/netapi32.dll
 COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
 
-ARG JAVA_HOME="C:\openjdk-17"
+ARG JAVA_HOME="C:\openjdk-11"
 COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
 
 # Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
