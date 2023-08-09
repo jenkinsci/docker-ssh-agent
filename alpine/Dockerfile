@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 ARG JAVA_VERSION=17.0.8_7
-ARG ALPINE_TAG=3.18.2
+ARG ALPINE_TAG=3.18.3
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
 
 RUN if [ "$TARGETPLATFORM" != 'linux/arm/v7' ]; then \
