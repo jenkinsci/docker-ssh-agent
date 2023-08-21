@@ -70,7 +70,7 @@ actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump Debian Bookworm Linux Version to {{ source "bookwormLatestVersion" }}
+    title: Bump Debian Bookworm Linux version to {{ source "bookwormLatestVersion" }}
     spec:
       labels:
         - dependencies
