@@ -4,8 +4,6 @@ group "linux" {
     "alpine_jdk11",
     "debian_jdk11",
     "debian_jdk17",
-    "debian_next_jdk11",
-    "debian_next_jdk17",
   ]
 }
 
@@ -27,9 +25,7 @@ group "linux-s390x" {
 group "linux-ppc64le" {
   targets = [
     "debian_jdk11",
-    "debian_jdk17",
-    "debian_next_jdk11",
-    "debian_next_jdk17",
+    "debian_jdk17"
   ]
 }
 
@@ -66,10 +62,6 @@ variable "JAVA17_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "bullseye-20230814"
-}
-
-variable "DEBIAN_NEXT_RELEASE" {
   default = "bookworm-20230814"
 }
 
@@ -122,28 +114,13 @@ target "debian_jdk11" {
   tags = [
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}": "",
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk11": "",
-    "${REGISTRY}/${JENKINS_REPO}:bullseye-jdk11",
+    "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:debian-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:jdk11",
     "${REGISTRY}/${JENKINS_REPO}:latest",
-    "${REGISTRY}/${JENKINS_REPO}:latest-bullseye-jdk11",
+    "${REGISTRY}/${JENKINS_REPO}:latest-bookworm-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk11",
-  ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
-}
-
-target "debian_next_jdk11" {
-  dockerfile = "debian/Dockerfile"
-  context = "."
-  args = {
-    JAVA_VERSION = JAVA11_VERSION
-    DEBIAN_RELEASE = DEBIAN_NEXT_RELEASE
-  }
-  tags = [
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:bookworm-${VERSION}-jdk11": "",
-    "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk11",
-    "${REGISTRY}/${JENKINS_REPO}:latest-bookworm-jdk11",
   ]
   platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
 }
@@ -157,27 +134,12 @@ target "debian_jdk17" {
   }
   tags = [
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk17": "",
-    "${REGISTRY}/${JENKINS_REPO}:bullseye-jdk17",
+    "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:debian-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:jdk17",
-    "${REGISTRY}/${JENKINS_REPO}:latest-bullseye-jdk17",
+    "${REGISTRY}/${JENKINS_REPO}:latest-bookworm-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk17",
-  ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
-}
-
-target "debian_next_jdk17" {
-  dockerfile = "debian/Dockerfile"
-  context = "."
-  args = {
-    JAVA_VERSION = JAVA17_VERSION
-    DEBIAN_RELEASE = DEBIAN_NEXT_RELEASE
-  }
-  tags = [
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:bookworm-${VERSION}-jdk17": "",
-    "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk17",
-    "${REGISTRY}/${JENKINS_REPO}:latest-bookworm-jdk17",
   ]
   platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le"]
 }
