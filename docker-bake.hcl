@@ -59,8 +59,8 @@ variable "JAVA17_VERSION" {
   default = "17.0.8_7"
 }
 
-variable "BOOKWORM_TAG" {
-  default = "20230814"
+variable "DEBIAN_RELEASE" {
+  default = "bookworm-20230814"
 }
 
 target "alpine_jdk17" {
@@ -107,16 +107,16 @@ target "debian_jdk11" {
   context = "."
   args = {
     JAVA_VERSION = JAVA11_VERSION
-    BOOKWORM_TAG = BOOKWORM_TAG
+    DEBIAN_RELEASE = DEBIAN_RELEASE
   }
   tags = [
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}": "",
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk11": "",
-    "${REGISTRY}/${JENKINS_REPO}:bullseye-jdk11",
+    "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:debian-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:jdk11",
     "${REGISTRY}/${JENKINS_REPO}:latest",
-    "${REGISTRY}/${JENKINS_REPO}:latest-bullseye-jdk11",
+    "${REGISTRY}/${JENKINS_REPO}:latest-bookworm-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk11",
   ]
@@ -128,14 +128,14 @@ target "debian_jdk17" {
   context = "."
   args = {
     JAVA_VERSION = JAVA17_VERSION
-    BOOKWORM_TAG = BOOKWORM_TAG
+    DEBIAN_RELEASE = DEBIAN_RELEASE
   }
   tags = [
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk17": "",
-    "${REGISTRY}/${JENKINS_REPO}:bullseye-jdk17",
+    "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:debian-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:jdk17",
-    "${REGISTRY}/${JENKINS_REPO}:latest-bullseye-jdk17",
+    "${REGISTRY}/${JENKINS_REPO}:latest-bookworm-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk17",
   ]
