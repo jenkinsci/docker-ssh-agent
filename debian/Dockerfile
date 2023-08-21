@@ -1,4 +1,5 @@
 ARG JAVA_VERSION=17.0.8_7
+ARG BOOKWORM_TAG=20230814
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-focal AS jre-build
 
 # This Build ARG is populated by Docker
@@ -32,7 +33,7 @@ RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
     else cp -r /opt/java/openjdk /javaruntime; \
     fi
 
-FROM debian:bullseye-20230814
+FROM debian:bookworm-${BOOKWORM_TAG}
 
 ARG user=jenkins
 ARG group=jenkins
