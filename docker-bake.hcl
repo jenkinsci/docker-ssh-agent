@@ -50,7 +50,7 @@ variable "VERSION" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.18.2"
+  default = "3.18.3"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -58,11 +58,11 @@ variable "ALPINE_SHORT_TAG" {
 }
 
 variable "JAVA11_VERSION" {
-  default = "11.0.19_7"
+  default = "11.0.20_8"
 }
 
 variable "JAVA17_VERSION" {
-  default = "17.0.7_7"
+  default = "17.0.8_7"
 }
 
 variable "DEBIAN_RELEASE" {

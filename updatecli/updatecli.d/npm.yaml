@@ -1,0 +1,62 @@
+---
+name: Bumps the npm version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  npmLatestVersion:
+    kind: githubrelease
+    spec:
+      owner: "npm"
+      repository: "cli"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      versionfilter:
+        kind: regex
+        pattern: >-
+          ^v\d+\.\d+.\d+$
+    transformers:
+      - trimprefix: "v"
+
+conditions:
+  testNodeArg:
+    name: "Does the Makefile have a reference to npm?"
+    kind: file
+    disablesourceinput: true
+    spec:
+      file: Makefile
+      matchpattern: >-
+        .*npm.* install.*-g.*npm@.*.*npm.*install.*
+
+targets:
+  updateMakefile:
+    name: "Updates the value of the npm version in the Makefile"
+    kind: file
+    sourceid: npmLatestVersion
+    spec:
+      file: Makefile
+      matchpattern: >-
+        (.*sh -c "npm install -g npm@)(.*)( && npm install)(.*)
+      replacepattern: >-
+        ${1}{{ source "npmLatestVersion" }}${3}${{4}}
+    scmid: default
+    
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump npm version to {{ source "npmLatestVersion" }}
+    spec:
+      labels:
+        - chore # Because NPM is only used for testing

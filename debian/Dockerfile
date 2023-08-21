@@ -1,4 +1,4 @@
-ARG JAVA_VERSION=17.0.7_7
+ARG JAVA_VERSION=17.0.8_7
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-focal AS jre-build
 
 # This Build ARG is populated by Docker
@@ -32,7 +32,7 @@ RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
     else cp -r /opt/java/openjdk /javaruntime; \
     fi
 
-FROM debian:bullseye-20230612
+FROM debian:bullseye-20230725
 
 ARG user=jenkins
 ARG group=jenkins
@@ -54,6 +54,7 @@ RUN groupadd -g ${gid} ${group} \
 
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
+        ca-certificates \
         git-lfs \
         less \
         netcat-traditional \
