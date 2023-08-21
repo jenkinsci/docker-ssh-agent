@@ -66,11 +66,11 @@ variable "JAVA17_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "bullseye-20230522"
+  default = "bullseye-20230814"
 }
 
 variable "DEBIAN_NEXT_RELEASE" {
-  default = "bookworm-20230522"
+  default = "bookworm-20230814"
 }
 
 target "alpine_jdk17" {
