@@ -23,7 +23,7 @@ group "linux-s390x" {
 group "linux-ppc64le" {
   targets = [
     "debian_jdk11",
-    "debian_jdk17"
+    "debian_jdk17",
   ]
 }
 
