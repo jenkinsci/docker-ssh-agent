@@ -167,7 +167,7 @@ make show
         "alpine_jdk17",
         "alpine_jdk11",
         "debian_jdk11",
-        "debian_jdk17",
+        "debian_jdk17"
       ]
     }
   },
