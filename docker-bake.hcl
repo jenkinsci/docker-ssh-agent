@@ -59,6 +59,10 @@ variable "JAVA17_VERSION" {
   default = "17.0.8_7"
 }
 
+variable "BOOKWORM_TAG" {
+  default = "20230814"
+}
+
 target "alpine_jdk17" {
   dockerfile = "alpine/Dockerfile"
   context = "."
@@ -103,6 +107,7 @@ target "debian_jdk11" {
   context = "."
   args = {
     JAVA_VERSION = JAVA11_VERSION
+    BOOKWORM_TAG = BOOKWORM_TAG
   }
   tags = [
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}": "",
@@ -123,6 +128,7 @@ target "debian_jdk17" {
   context = "."
   args = {
     JAVA_VERSION = JAVA17_VERSION
+    BOOKWORM_TAG = BOOKWORM_TAG
   }
   tags = [
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk17": "",
