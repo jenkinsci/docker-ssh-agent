@@ -49,7 +49,7 @@ targets:
     kind: dockerfile
     sourceid: bookwormLatestVersion
     spec:
-      file: 11/debian/bookworm/hotspot/Dockerfile
+      file: debian/Dockerfile
       instruction:
         keyword: "ARG"
         matcher: "DEBIAN_RELEASE"
