@@ -11,8 +11,6 @@ group "linux-arm64" {
   targets = [
     "debian_jdk11",
     "debian_jdk17",
-    "debian_next_jdk11",
-    "debian_next_jdk17",
   ]
 }
 
