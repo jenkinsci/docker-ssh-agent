@@ -74,4 +74,3 @@ actions:
     spec:
       labels:
         - dependencies
-
