@@ -65,6 +65,7 @@ targets:
       replacepattern: >-
         variable${1}"DEBIAN_RELEASE"${2}{${3}${4}${5}default${6}= "{{ source "bookwormLatestVersion" }}"
     scmid: default
+
 actions:
   default:
     kind: github/pullrequest
