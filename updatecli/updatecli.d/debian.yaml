@@ -17,8 +17,6 @@ sources:
   bookwormLatestVersion:
     kind: dockerimage
     name: "Get the latest Debian Bookworm Linux version"
-    transformers:
-      - trimprefix: "bookworm-"
     spec:
       image: "debian"
       tagFilter: "bookworm-*"
@@ -26,18 +24,6 @@ sources:
         kind: regex
         pattern: >-
           bookworm-\d+$
-  bookwormSlimLatestVersion:
-    kind: dockerimage
-    name: "Get the latest Debian Bookworm Linux version"
-    transformers:
-      - trimprefix: "bookworm-"
-    spec:
-      image: "debian"
-      tagFilter: "bookworm-*"
-      versionfilter:
-        kind: regex
-        pattern: >-
-          bookworm-\d+-slim$
 
 conditions:
   testDockerfileArg:
@@ -48,36 +34,36 @@ conditions:
       file: debian/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BOOKWORM_TAG"
+        matcher: "DEBIAN_RELEASE"
   testVersionInBakeFile:
-    name: "Does the bake file have variable BOOKWORM_TAG"
+    name: "Does the bake file have variable DEBIAN_RELEASE?"
     kind: file
     disablesourceinput: true
     spec:
       file: docker-bake.hcl
-      matchpattern: "(.*BOOKWORM_TAG.*)"
+      matchpattern: "(.*DEBIAN_RELEASE.*)"
 
 targets:
   updateDockerfile:
-    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the Dockerfile"
+    name: "Update the value of the base image (ARG DEBIAN_RELEASE) in the Dockerfile"
     kind: dockerfile
     sourceid: bookwormLatestVersion
     spec:
       file: 11/debian/bookworm/hotspot/Dockerfile
       instruction:
         keyword: "ARG"
-        matcher: "BOOKWORM_TAG"
+        matcher: "DEBIAN_RELEASE"
     scmid: default
   updateDockerBake:
-    name: "Update the value of the base image (ARG BOOKWORM_TAG) in the docker-bake.hcl"
+    name: "Update the value of the base image (ARG DEBIAN_RELEASE) in the docker-bake.hcl"
     kind: file
     sourceid: bookwormLatestVersion
     spec:
       file: docker-bake.hcl
       matchpattern: >-
-        variable(.*)"BOOKWORM_TAG"(.*){(.*)(\r\n|\r|\n)(.*)default(.*)=(.*)
+        variable(.*)"DEBIAN_RELEASE"(.*){(.*)(\r\n|\r|\n)(.*)default(.*)=(.*)
       replacepattern: >-
-        variable${1}"BOOKWORM_TAG"${2}{${3}${4}${5}default${6}= "{{ source "bookwormLatestVersion" }}"
+        variable${1}"DEBIAN_RELEASE"${2}{${3}${4}${5}default${6}= "{{ source "bookwormLatestVersion" }}"
     scmid: default
 actions:
   default:
