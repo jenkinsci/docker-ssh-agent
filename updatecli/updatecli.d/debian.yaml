@@ -25,24 +25,6 @@ sources:
         pattern: >-
           bookworm-\d+$
 
-conditions:
-  testDockerfileArg:
-    name: "Does the Dockerfile have an ARG instruction for the Debian Bookworm Linux version?"
-    kind: dockerfile
-    disablesourceinput: true
-    spec:
-      file: debian/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "DEBIAN_RELEASE"
-  testVersionInBakeFile:
-    name: "Does the bake file have variable DEBIAN_RELEASE?"
-    kind: file
-    disablesourceinput: true
-    spec:
-      file: docker-bake.hcl
-      matchpattern: "(.*DEBIAN_RELEASE.*)"
-
 targets:
   updateDockerfile:
     name: "Update the value of the base image (ARG DEBIAN_RELEASE) in the Dockerfile"
