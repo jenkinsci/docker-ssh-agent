@@ -50,13 +50,12 @@ targets:
       replacepattern: >-
         ${1}{{ source "npmLatestVersion" }}${3}${{4}}
     scmid: default
-    
 
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: chore(tests): Bump NPM version to {{ source "npmLatestVersion" }}
+    title: 'chore(tests): Bump NPM version to {{ source "npmLatestVersion" }}'
     spec:
       labels:
         - chore # Because NPM is only used for testing
