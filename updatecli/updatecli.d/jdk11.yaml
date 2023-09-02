@@ -1,0 +1,103 @@
+---
+name: Bump Temurin's JDK11 version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  jdk11LastVersion:
+    kind: githubrelease
+    name: Get the latest Temurin JDK11 version
+    spec:
+      owner: "adoptium"
+      repository: "temurin11-binaries"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      versionfilter:
+        kind: regex
+        # jdk-11.0.20+8 ()https://github.com/adoptium/temurin11-binaries/releases/tag/jdk-11.0.20%2B8) is OK
+        # jdk-11.0.20.1+1(https://github.com/adoptium/temurin11-binaries/releases/tag/jdk-11.0.20.1%2B1) is OK
+        pattern: "^jdk-11.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
+    transformers:
+      - trimprefix: "jdk-"
+      - replacer:
+          from: +
+          to: _
+
+conditions:
+  checkTemurinJDK11AlpineDockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-alpine" is available
+    disablesourceinput: true
+    spec:
+      architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "jdk11LastVersion" }}-jdk-alpine'
+  checkTemurinJDK11DebianDockerImages:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-focal" is available
+    disablesourceinput: true
+    spec:
+      architectures:
+        - amd64
+        - arm64
+        - s390x
+        - arm/v7
+      image: eclipse-temurin
+      tag: '{{source "jdk11LastVersion" }}-jdk-focal'
+  checkTemurinJDK11WindowsCoreDockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-windowsservercore-1809" is available
+    disablesourceinput: true
+    spec:
+      architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "jdk11LastVersion" }}-jdk-windowsservercore-1809'
+
+targets:
+  setJDK11VersionNanoServer:
+    name: "Bump JDK11 default ARG version on Windows NanoServer Dockerfile"
+    kind: dockerfile
+    sourceid: jdk11LastVersion
+    spec:
+      file: windows/nanoserver-ltsc2019/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK11VersionServerCore:
+    name: "Bump JDK11 default ARG version on Windows Server Core Dockerfile"
+    kind: dockerfile
+    sourceid: jdk11LastVersion
+    spec:
+      file: windows/windowsservercore-ltsc2019/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+  setJDK11VersionDockerBake:
+    name: "Bump JDK11 version for Linux images in the docker-bake.hcl file"
+    kind: hcl
+    sourceid: jdk11LastVersion
+    spec:
+      file: docker-bake.hcl
+      path: variable.JAVA11_VERSION.default
+    scmid: default
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: Bump JDK11 version to {{ source "jdk11LastVersion" }}
+    spec:
+      labels:
+        - dependencies
+        - jdk11
