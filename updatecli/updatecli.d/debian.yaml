@@ -19,7 +19,7 @@ sources:
     name: "Get the latest Debian Bookworm Linux version"
     spec:
       image: "debian"
-      tagFilter: "bookworm-*"
+      tagfilter: "bookworm-*"
       versionfilter:
         kind: regex
         pattern: >-
@@ -37,15 +37,12 @@ targets:
         matcher: "DEBIAN_RELEASE"
     scmid: default
   updateDockerBake:
-    name: "Update the value of the base image (ARG DEBIAN_RELEASE) in the docker-bake.hcl"
-    kind: file
+    name: "Update the default value of the variable DEBIAN_RELEASE in the docker-bake.hcl"
+    kind: hcl
     sourceid: bookwormLatestVersion
     spec:
       file: docker-bake.hcl
-      matchpattern: >-
-        variable(.*)"DEBIAN_RELEASE"(.*){(.*)(\r\n|\r|\n)(.*)default(.*)=(.*)
-      replacepattern: >-
-        variable${1}"DEBIAN_RELEASE"${2}{${3}${4}${5}default${6}= "{{ source "bookwormLatestVersion" }}"
+      path: variable.DEBIAN_RELEASE.default
     scmid: default
 
 actions:
