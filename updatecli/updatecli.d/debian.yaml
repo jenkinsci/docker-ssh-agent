@@ -19,7 +19,7 @@ sources:
     name: "Get the latest Debian Bookworm Linux version"
     spec:
       image: "debian"
-      tagFilter: "bookworm-*"
+      tagfilter: "bookworm-*"
       versionfilter:
         kind: regex
         pattern: >-
