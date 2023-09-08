@@ -20,9 +20,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-ARG JAVA_VERSION=17.0.8.1_1
+ARG JAVA_VERSION=21+35
 ARG ALPINE_TAG=3.18.3
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
+FROM alpine:"${ALPINE_TAG}" AS jre-build
+ARG JAVA_VERSION
+
+RUN apk add --no-cache curl jq \
+  && ARCH=$(uname -m | sed 's/x86_64/x64/') \
+  && JAVA_VERSION_ENCODED=$(printf '%s' "$JAVA_VERSION" | jq -jRr '@uri') \
+  && BUILD_NUMBER=$(printf '%s' "$JAVA_VERSION" | cut -d'+' -f2) \
+  && JAVA_MAJOR_VERSION=$(printf '%s' "$JAVA_VERSION" | cut -d'+' -f1) \
+  && curl -sL https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${ARCH}"_alpine-linux_hotspot_ea_"${JAVA_MAJOR_VERSION}"-0-"${BUILD_NUMBER}".tar.gz | tar xz -C /opt/
+
+ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 
 RUN if [ "$TARGETPLATFORM" != 'linux/arm/v7' ]; then \
     case "$(jlink --version 2>&1)" in \
