@@ -1,5 +1,5 @@
 ARG JAVA_VERSION=21+35
-ARG DEBIAN_RELEASE=bookworm-20230814
+ARG DEBIAN_RELEASE=bookworm-20230904
 FROM debian:"${DEBIAN_RELEASE}" AS jre-build
 ARG JAVA_VERSION
 # This Build ARG is populated by Docker
