@@ -46,13 +46,6 @@ conditions:
       image: "alpine"
       # tag come from the source
       architecture: amd64
-  testVersionInBakeFile:
-    name: "Does the bake file have variable ALPINE_VERSION"
-    kind: file
-    disablesourceinput: true
-    spec:
-      file: docker-bake.hcl
-      matchpattern: "(.*ALPINE_FULL_TAG.*)"
 
 targets:
   updateDockerfile:
@@ -66,13 +59,10 @@ targets:
     scmid: default
   updateDockerBake:
     name: "Update the value of the base image (ARG ALPINE_TAG) in the docker-bake.hcl"
-    kind: file
+    kind: hcl
     spec:
       file: docker-bake.hcl
-      matchpattern: >-
-        variable(.*)"ALPINE_FULL_TAG"(.*){(.*)(\r\n|\r|\n)(.*)default(.*)=(.*)
-      replacepattern: >-
-        variable${1}"ALPINE_FULL_TAG"${2}{${3}${4}${5}default${6}= "{{ source "latestVersion" }}"
+      path: variable.ALPINE_FULL_TAG.default
     scmid: default
 actions:
   default:

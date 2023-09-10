@@ -1,12 +1,24 @@
-ARG JAVA_VERSION=17.0.8.1_1
+ARG JAVA_VERSION=21+35
 ARG DEBIAN_RELEASE=bookworm-20230904
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-focal AS jre-build
-
+FROM debian:"${DEBIAN_RELEASE}" AS jre-build
+ARG JAVA_VERSION
 # This Build ARG is populated by Docker
 # Ref. https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 ARG TARGETPLATFORM
 
 SHELL ["/bin/bash","-e", "-u", "-o", "pipefail", "-c"]
+
+RUN apt-get update \
+  && apt-get install --no-install-recommends -y ca-certificates curl jq \
+  && ARCH=$(uname -m | sed 's/x86_64/x64/') \
+  && JAVA_VERSION_ENCODED=$(printf '%s' "$JAVA_VERSION" | jq -jRr '@uri') \
+  && BUILD_NUMBER=$(printf '%s' "$JAVA_VERSION" | cut -d'+' -f2) \
+  && JAVA_MAJOR_VERSION=$(printf '%s' "$JAVA_VERSION" | cut -d'+' -f1) \
+  && curl -sL https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${ARCH}"_linux_hotspot_ea_"${JAVA_MAJOR_VERSION}"-0-"${BUILD_NUMBER}".tar.gz | tar xz -C /opt/ \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
