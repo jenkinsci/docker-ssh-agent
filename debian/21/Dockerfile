@@ -10,7 +10,7 @@ SHELL ["/bin/bash","-e", "-u", "-o", "pipefail", "-c"]
 
 RUN apt-get update \
   && apt-get install --no-install-recommends -y ca-certificates curl jq \
-  && ARCH=$(uname -m | sed 's/x86_64/x64/') \
+  && ARCH=$(uname -m | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
   && JAVA_VERSION_ENCODED=$(printf '%s' "$JAVA_VERSION" | jq -jRr '@uri') \
   && BUILD_NUMBER=$(printf '%s' "$JAVA_VERSION" | cut -d'+' -f2) \
   && JAVA_MAJOR_VERSION=$(printf '%s' "$JAVA_VERSION" | cut -d'+' -f1) \
@@ -42,7 +42,7 @@ RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
         --output /javaruntime; \
     # It is acceptable to have a larger image in arm/v7 (arm 32 bits) environment.
     # Because jlink fails with the error "jmods: Value too large for defined data type" error.
-    else cp -r /opt/java/openjdk /javaruntime; \
+    else cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
     fi
 
 FROM debian:"${DEBIAN_RELEASE}"
