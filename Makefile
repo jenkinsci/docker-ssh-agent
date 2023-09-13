@@ -81,8 +81,8 @@ test-%: prepare-test
 	set -x
 	IMAGE=$* bats/bin/bats $(bats_flags) | tee target/results-$*.tap
 # convert TAP to JUNIT
-	docker run --rm -v "$(CURDIR)":/usr/src/app -w /usr/src/app node:20.5.1-alpine3.18 \
-		sh -c "npm install -g npm@10.0.0 && npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
+	docker run --rm -v "$(CURDIR)":/usr/src/app -w /usr/src/app node:20.6.0-alpine3.18 \
+		sh -c "npm install -g npm@10.1.0 && npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
 
 test: prepare-test
 	@make --silent list | while read image; do make --silent "test-$${image}"; done

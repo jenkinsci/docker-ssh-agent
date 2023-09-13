@@ -67,19 +67,19 @@ variable "JAVA21_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "bookworm-20230814"
+  default = "bookworm-20230904"
 }
 
 target "alpine_jdk11" {
   dockerfile = "alpine/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    ALPINE_TAG = ALPINE_FULL_TAG
+    ALPINE_TAG   = ALPINE_FULL_TAG
     JAVA_VERSION = JAVA11_VERSION
   }
   tags = [
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine-jdk11": "",
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine${ALPINE_SHORT_TAG}-jdk11": "",
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine-jdk11" : "",
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine${ALPINE_SHORT_TAG}-jdk11" : "",
     "${REGISTRY}/${JENKINS_REPO}:alpine",
     "${REGISTRY}/${JENKINS_REPO}:alpine-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:latest-alpine-jdk11",
@@ -93,14 +93,14 @@ target "alpine_jdk11" {
 
 target "alpine_jdk17" {
   dockerfile = "alpine/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    ALPINE_TAG = ALPINE_FULL_TAG
+    ALPINE_TAG   = ALPINE_FULL_TAG
     JAVA_VERSION = JAVA17_VERSION
   }
   tags = [
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine-jdk17": "",
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine${ALPINE_SHORT_TAG}-jdk17": "",
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine-jdk17" : "",
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine${ALPINE_SHORT_TAG}-jdk17" : "",
     "${REGISTRY}/${JENKINS_REPO}:alpine-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:latest-alpine-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:alpine${ALPINE_SHORT_TAG}-jdk17",
@@ -111,14 +111,14 @@ target "alpine_jdk17" {
 
 target "alpine_jdk21" {
   dockerfile = "alpine/21/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    ALPINE_TAG = ALPINE_FULL_TAG
+    ALPINE_TAG   = ALPINE_FULL_TAG
     JAVA_VERSION = JAVA21_VERSION
   }
   tags = [
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine-jdk21-preview": "",
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine${ALPINE_SHORT_TAG}-jdk21-preview": "",
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine-jdk21-preview" : "",
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine${ALPINE_SHORT_TAG}-jdk21-preview" : "",
     "${REGISTRY}/${JENKINS_REPO}:alpine-jdk21-preview",
     "${REGISTRY}/${JENKINS_REPO}:latest-alpine-jdk21-preview",
     "${REGISTRY}/${JENKINS_REPO}:alpine${ALPINE_SHORT_TAG}-jdk21-preview",
@@ -129,14 +129,14 @@ target "alpine_jdk21" {
 
 target "debian_jdk11" {
   dockerfile = "debian/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JAVA_VERSION = JAVA11_VERSION
+    JAVA_VERSION   = JAVA11_VERSION
     DEBIAN_RELEASE = DEBIAN_RELEASE
   }
   tags = [
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}": "",
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk11": "",
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}" : "",
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk11" : "",
     "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:debian-jdk11",
     "${REGISTRY}/${JENKINS_REPO}:jdk11",
@@ -150,13 +150,13 @@ target "debian_jdk11" {
 
 target "debian_jdk17" {
   dockerfile = "debian/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JAVA_VERSION = JAVA17_VERSION
+    JAVA_VERSION   = JAVA17_VERSION
     DEBIAN_RELEASE = DEBIAN_RELEASE
   }
   tags = [
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk17": "",
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk17" : "",
     "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:debian-jdk17",
     "${REGISTRY}/${JENKINS_REPO}:jdk17",
@@ -169,13 +169,13 @@ target "debian_jdk17" {
 
 target "debian_jdk21" {
   dockerfile = "debian/21/Dockerfile"
-  context = "."
+  context    = "."
   args = {
-    JAVA_VERSION = JAVA21_VERSION
+    JAVA_VERSION   = JAVA21_VERSION
     DEBIAN_RELEASE = DEBIAN_RELEASE
   }
   tags = [
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk21-preview": "",
+    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk21-preview" : "",
     "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk21-preview",
     "${REGISTRY}/${JENKINS_REPO}:debian-jdk21-preview",
     "${REGISTRY}/${JENKINS_REPO}:jdk21-preview",
