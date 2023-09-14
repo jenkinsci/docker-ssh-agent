@@ -25,16 +25,16 @@ group "linux-arm32" {
 
 group "linux-s390x" {
   targets = [
-    "debian_jdk11"
-    "debian_jdk21",
+    "debian_jdk11",
+    "debian_jdk21"
   ]
 }
 
 group "linux-ppc64le" {
   targets = [
     "debian_jdk11",
-    "debian_jdk17"
-    "debian_jdk21",
+    "debian_jdk17",
+    "debian_jdk21"
   ]
 }
 
