@@ -41,50 +41,50 @@ pipeline {
                         }
                     }
                 }
-                stage('Linux') {
-                    agent {
-                        label "docker&&linux"
-                    }
-                    options {
-                        timeout(time: 30, unit: 'MINUTES')
-                    }
-                    steps {
-                        script {
-                            infra.withDockerCredentials {
-                                def branchName = "${env.BRANCH_NAME}"
-                                if (infra.isTrusted()) {
-                                    if (branchName ==~ 'master') {
-                                        sh '''
-                                            docker buildx create --use
-                                            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-                                            docker buildx bake --push --file docker-bake.hcl linux
-                                        '''
-                                    } else if (env.TAG_NAME != null)  {
-                                        sh """
-                                            export ON_TAG=true
-                                            export VERSION=$TAG_NAME
-                                            docker buildx create --use
-                                            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-                                            docker buildx bake --push --file docker-bake.hcl linux
-                                        """
-                                    }
-                                } else {
-                                    sh 'make build'
-                                    try {
-                                        sh 'make test'
-                                    } finally {
-                                        junit('target/*.xml')
-                                    }
-                                    sh '''
-                                        docker buildx create --use
-                                        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-                                        docker buildx bake --file docker-bake.hcl linux
-                                    '''
-                                }
-                            }
-                        }
-                    }
-                }
+                // stage('Linux') {
+                //     agent {
+                //         label "docker&&linux"
+                //     }
+                //     options {
+                //         timeout(time: 30, unit: 'MINUTES')
+                //     }
+                //     steps {
+                //         script {
+                //             infra.withDockerCredentials {
+                //                 def branchName = "${env.BRANCH_NAME}"
+                //                 if (infra.isTrusted()) {
+                //                     if (branchName ==~ 'master') {
+                //                         sh '''
+                //                             docker buildx create --use
+                //                             docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                //                             docker buildx bake --push --file docker-bake.hcl linux
+                //                         '''
+                //                     } else if (env.TAG_NAME != null)  {
+                //                         sh """
+                //                             export ON_TAG=true
+                //                             export VERSION=$TAG_NAME
+                //                             docker buildx create --use
+                //                             docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                //                             docker buildx bake --push --file docker-bake.hcl linux
+                //                         """
+                //                     }
+                //                 } else {
+                //                     sh 'make build'
+                //                     try {
+                //                         sh 'make test'
+                //                     } finally {
+                //                         junit('target/*.xml')
+                //                     }
+                //                     sh '''
+                //                         docker buildx create --use
+                //                         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+                //                         docker buildx bake --file docker-bake.hcl linux
+                //                     '''
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
             }
         }
     }
