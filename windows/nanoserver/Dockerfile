@@ -78,7 +78,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Expand-Archive c:/openssh.zip 'C:/Program Files' ; `
     Remove-Item C:/openssh.zip ; `
     $env:PATH = '{0};{1}' -f $env:PATH,'C:\Program Files\OpenSSH-Win64' ; `
-    & 'C:/Program Files/OpenSSH-Win64/Install-SSHd.ps1' ; `
+    & 'C:/Program Files/OpenSSH-Win64/install-sshd.ps1' ; `
     if(!(Test-Path 'C:\ProgramData\ssh')) { New-Item -Type Directory -Path 'C:\ProgramData\ssh' | Out-Null } ; `
     Copy-Item 'C:\Program Files\OpenSSH-Win64\sshd_config_default' 'C:\ProgramData\ssh\sshd_config' ; `
     $content = Get-Content -Path "C:\ProgramData\ssh\sshd_config" ; `
