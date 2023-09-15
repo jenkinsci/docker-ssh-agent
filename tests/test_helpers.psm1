@@ -72,8 +72,15 @@ function Retry-Command {
 }
 
 function Cleanup($name='') {
-    docker kill "$name" 2>&1 | Out-Null
-    docker rm -fv "$name" 2>&1 | Out-Null
+    if([System.String]::IsNullOrWhiteSpace($name)) {
+        $name = Get-EnvOrDefault 'AGENT_IMAGE' ''
+    }
+
+    if(![System.String]::IsNullOrWhiteSpace($name)) {
+        #Write-Host "Cleaning up $name"
+        docker kill "$name" 2>&1 | Out-Null
+        docker rm -fv "$name" 2>&1 | Out-Null
+    }
 }
 
 function CleanupNetwork($name) {
@@ -83,7 +90,7 @@ function CleanupNetwork($name) {
 function Is-ContainerRunning($container) {
     Start-Sleep -Seconds 5
     return Retry-Command -RetryCount 10 -Delay 2 -ScriptBlock {
-        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect -f `"{{.State.Running}}`" $container"
+        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect --format `"{{.State.Running}}`" $container"
         if(($exitCode -ne 0) -or (-not $stdout.Contains('true')) ) {
             throw('Exit code incorrect, or invalid value for running state')
         }
@@ -91,8 +98,10 @@ function Is-ContainerRunning($container) {
     }
 }
 
-function Run-Program($cmd, $params, $quiet=$true) {
-    #Write-Host "cmd = $cmd, params = $params"
+function Run-Program($cmd, $params, $quiet=$false) {
+    if (-not $quiet) {
+        Write-Host "Starting Run-Program with cmd = $cmd, params = $params"
+    }
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
@@ -130,7 +139,7 @@ function Run-ThruSSH($container, $privateKeyVal, $cmd) {
         $TMP_PRIV_KEY_FILE = New-TemporaryFile
         Set-Content -Path $TMP_PRIV_KEY_FILE -Value "$privateKeyVal"
 
-        $exitCode, $stdout, $stderr = Run-Program (Join-Path $PSScriptRoot 'ssh.exe') "-i `"${TMP_PRIV_KEY_FILE}`" -o LogLevel=quiet -o UserKnownHostsFile=NUL -o StrictHostKeyChecking=no -l jenkins localhost -p $SSH_PORT $cmd"
+        $exitCode, $stdout, $stderr = Run-Program (Join-Path $PSScriptRoot 'ssh.exe') "-v -i `"${TMP_PRIV_KEY_FILE}`" -o LogLevel=quiet -o UserKnownHostsFile=NUL -o StrictHostKeyChecking=no -l jenkins localhost -p $SSH_PORT $cmd"
         Remove-Item -Force $TMP_PRIV_KEY_FILE
 
         return $exitCode, $stdout, $stderr
