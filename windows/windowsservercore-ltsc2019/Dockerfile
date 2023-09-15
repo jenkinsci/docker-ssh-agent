@@ -27,7 +27,7 @@ FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-1809
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG OPENSSH_VERSION=V8.6.0.0p1-Beta
+ARG OPENSSH_VERSION=v9.2.2.0p1-Beta
 
 ARG user=jenkins
 ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"

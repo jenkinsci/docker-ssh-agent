@@ -63,7 +63,7 @@ ENV ProgramFiles="C:\Program Files"
 ENV WindowsPATH="C:\Windows\system32;C:\Windows"
 ENV PATH="${WindowsPATH};${ProgramFiles}\PowerShell;${JAVA_HOME}\bin;C:\mingit\cmd"
 
-ARG OPENSSH_VERSION=V8.6.0.0p1-Beta
+ARG OPENSSH_VERSION=v9.2.2.0p1-Beta
 
 ARG user=jenkins
 ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"
