@@ -2,7 +2,7 @@
 name: Bumps the node docker images version
 
 scms:
-  default:
+  nodeLTS: &scmSpec
     kind: github
     spec:
       user: "{{ .github.user }}"
@@ -12,20 +12,35 @@ scms:
       token: "{{ requiredEnv .github.token }}"
       username: "{{ .github.username }}"
       branch: "{{ .github.branch }}"
+  # Exactly the same
+  nodeEdge: *scmSpec
 
 sources:
-  nodeLatestVersion:
+  nodeEdgeVersion: &sourceEdge
     kind: githubrelease
-    spec:
+    spec: &Edge
       owner: "nodejs"
       repository: "node"
       token: "{{ requiredEnv .github.token }}"
       username: "{{ .github.username }}"
+      versionfilter:
+        kind: semver
+        pattern: '~20.x'
+    transformers:
+      - trimprefix: "v"
+  nodeLTSVersion: &sourceLTS
+    kind: githubrelease
+    spec:
+      <<: *Edge
+      versionfilter:
+        kind: semver
+        pattern: '^18.x'
     transformers:
       - trimprefix: "v"
   alpineLatestVersion:
     kind: githubrelease
     name: "Get the latest Alpine Linux version"
+    sourceid: alpineLatestVersion
     spec:
       owner: "alpinelinux"
       repository: "aports" # Its release process follows Alpine's
@@ -49,32 +64,61 @@ conditions:
       file: Makefile
       matchpattern: >-
         .*docker.*run.*node:.*
-  testNodeAlpineImagePublished:
+  testNodeEdgeAlpineImagePublished:
     name: "Test node:<latest_version>-alpine<latest-version> docker image tag"
     kind: dockerimage
     disablesourceinput: true
     spec:
       image: "node"
-      tag: '{{ source "nodeLatestVersion" }}-alpine{{ source "alpineLatestVersion" }}'
+      tag: '{{ source "nodeEdgeVersion" }}-alpine{{ source "alpineLatestVersion" }}'
+  testNodeLTSAlpineImagePublished:
+    name: "Test node:<latest_version>-alpine<latest-version> docker image tag"
+    kind: dockerimage
+    disablesourceinput: true
+    spec:
+      image: "node"
+      tag: '{{ source "nodeLTSVersion" }}-alpine{{ source "alpineLatestVersion" }}'
 
 targets:
-  updateMakefile:
-    name: "Updates the value of the node docker image in the Makefile"
+  updateMakefileForEdge: &targetEdge
+    name: "Updates the value of the edge node docker image in the Makefile"
     kind: file
-    sourceid: nodeLatestVersion
+    sourceid: nodeEdgeVersion
+    scmid: nodeEdge
     spec:
       file: Makefile
       matchpattern: >-
         (.*docker.*run.*)node:.*( .*)
       replacepattern: >-
-        ${1}node:{{ source "nodeLatestVersion" }}-alpine{{ source "alpineLatestVersion" }}${2}
-    scmid: default
+        ${1}node:{{ source "nodeEdgeVersion" }}-alpine{{ source "alpineLatestVersion" }}${2}
+  updateMakefileForLTS: &targetLTS
+    <<: *targetEdge
+    name: "Updates the value of the LTS node docker image in the Makefile"
+    sourceid: nodeLTSVersion
+    scmid: nodeLTS
+    spec:
+      file: Makefile
+      matchpattern: >-
+        (.*docker.*run.*)node:.*( .*)
+      replacepattern: >-
+        ${1}node:{{ source "nodeLTSVersion" }}-alpine{{ source "alpineLatestVersion" }}${2}
 
 actions:
-  default:
+  nodeLTSAction:
     kind: github/pullrequest
-    scmid: default
-    title: Bump node alpine docker image version to {{ source "nodeLatestVersion" }}-alpine{{ source "alpineLatestVersion" }}
+    scmid: nodeLTS
+    title: Bump node alpine docker image version to {{ source "nodeLTSVersion" }}-alpine{{ source "alpineLatestVersion" }}
     spec:
+      title: Bump node LTS Version to {{ source `nodeLTSVersion` }}
       labels:
         - chore # Because Node is only used for testing
+        - LTS
+  nodeEdgeAction:
+    kind: github/pullrequest
+    scmid: nodeEdge
+    title: Bump node alpine docker image version to {{ source "nodeEdgeVersion" }}-alpine{{ source "alpineLatestVersion" }}
+    spec:
+      title: Bump node Edge Version to {{ source `nodeEdgeVersion` }}
+      labels:
+        - chore # Because Node is only used for testing
+        - edge
