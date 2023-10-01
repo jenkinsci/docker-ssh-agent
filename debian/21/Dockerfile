@@ -1,7 +1,6 @@
-ARG JAVA_VERSION=21+35
 ARG DEBIAN_RELEASE=bookworm-20230904
 FROM debian:"${DEBIAN_RELEASE}" AS jre-build
-ARG JAVA_VERSION
+ARG JAVA_VERSION=21+35
 # This Build ARG is populated by Docker
 # Ref. https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 ARG TARGETPLATFORM
