@@ -81,7 +81,7 @@ test-%: prepare-test
 	set -x
 	IMAGE=$* bats/bin/bats $(bats_flags) | tee target/results-$*.tap
 # convert TAP to JUNIT
-	docker run --rm -v "$(CURDIR)":/usr/src/app -w /usr/src/app node:18.18.0-alpine3.18 \
+	docker run --rm -v "$(CURDIR)":/usr/src/app -w /usr/src/app node:21.1.0-alpine3.18 \
 		sh -c "npm install -g npm@10.2.1 && npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
 
 test: prepare-test
