@@ -77,10 +77,7 @@ test-%: prepare-test
 	@make --silent build-$*
 # Execute the test harness and write result to a TAP file
 	set -x
-	IMAGE=$* bats/bin/bats $(bats_flags) | tee target/results-$*.tap
-# convert TAP to JUNIT
-	docker run --rm -v "$(CURDIR)":/usr/src/app -w /usr/src/app node:21.1.0-alpine3.18 \
-		sh -c "npm install -g npm@10.2.3 && npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
+	IMAGE=$* bats/bin/bats --formatter junit $(bats_flags) | tee target/junit-results-$*.xml
 
 test: prepare-test
 	@make --silent list | while read image; do make --silent "test-$${image}"; done
