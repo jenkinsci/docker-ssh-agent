@@ -51,9 +51,7 @@ list: check-reqs
 	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
 
 bats:
-	git clone https://github.com/bats-core/bats-core bats ;\
-	cd bats ;\
-	git checkout v1.7.0
+	git clone --branch v1.10.0 https://github.com/bats-core/bats-core bats
 
 prepare-test: bats check-reqs
 	git submodule update --init --recursive
@@ -79,10 +77,7 @@ test-%: prepare-test
 	@make --silent build-$*
 # Execute the test harness and write result to a TAP file
 	set -x
-	IMAGE=$* bats/bin/bats $(bats_flags) | tee target/results-$*.tap
-# convert TAP to JUNIT
-	docker run --rm -v "$(CURDIR)":/usr/src/app -w /usr/src/app node:21.1.0-alpine3.18 \
-		sh -c "npm install -g npm@10.2.3 && npm install tap-xunit -g && cat target/results-$*.tap | tap-xunit --package='jenkinsci.docker.$*' > target/junit-results-$*.xml"
+	IMAGE=$* bats/bin/bats --formatter junit $(bats_flags) | tee target/junit-results-$*.xml
 
 test: prepare-test
 	@make --silent list | while read image; do make --silent "test-$${image}"; done
