@@ -49,14 +49,6 @@ targets:
       file: docker-bake.hcl
       path: variable.JAVA21_PREVIEW_VERSION.default
     scmid: default
-  setJDK21VersionAlpine:
-    name: "Bump JDK21 EA version for Linux images in the Alpine Linux Dockerfile"
-    kind: dockerfile
-    spec:
-      file: alpine/preview/Dockerfile
-      instruction:
-        keyword: "ARG"
-        matcher: "JAVA_VERSION"
   setJDK21VersionDebian:
     name: "Bump JDK21 EA version for Linux images in the Debian Dockerfile"
     kind: dockerfile
