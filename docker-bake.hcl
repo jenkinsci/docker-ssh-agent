@@ -21,7 +21,6 @@ group "linux-arm64" {
 
 group "linux-arm32" {
   targets = [
-    "alpine_jdk21-preview",
     "debian_jdk21-preview",
   ]
 }
@@ -159,7 +158,7 @@ target "alpine_jdk21-preview" {
     "${REGISTRY}/${JENKINS_REPO}:alpine${ALPINE_SHORT_TAG}-jdk21-preview",
     "${REGISTRY}/${JENKINS_REPO}:latest-alpine${ALPINE_SHORT_TAG}-jdk21-preview",
   ]
-  platforms = ["linux/ppc64le", "linux/s390x", "linux/arm/v7"]
+  platforms = ["linux/ppc64le", "linux/s390x"]
 }
 
 target "debian_jdk11" {
