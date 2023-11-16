@@ -19,16 +19,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-ARG ALPINE_TAG=3.18.3
+ARG ALPINE_TAG=3.18.4
 FROM alpine:"${ALPINE_TAG}" AS jre-build
-ARG JAVA_VERSION=21+35
+ARG JAVA_VERSION=21.0.1+12
 
 RUN apk add --no-cache curl jq \
-  && ARCH=$(uname -m | sed 's/x86_64/x64/') \
+  && ARCH=$(uname -m | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
   && JAVA_VERSION_ENCODED=$(printf '%s' "$JAVA_VERSION" | jq -jRr '@uri') \
   && BUILD_NUMBER=$(printf '%s' "$JAVA_VERSION" | cut -d'+' -f2) \
-  && JAVA_MAJOR_VERSION=$(printf '%s' "$JAVA_VERSION" | cut -d'+' -f1) \
-  && curl -sL https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${ARCH}"_alpine-linux_hotspot_ea_"${JAVA_MAJOR_VERSION}"-0-"${BUILD_NUMBER}".tar.gz | tar xz -C /opt/
+  && JAVA_MAJOR_VERSION=$(printf '%s' "$JAVA_VERSION" | cut -d'.' -f1) \
+  && JAVA_VERSION_KEBAB=$(printf '%s' "$JAVA_VERSION" | sed 's/+/-/g;s/\./-/g') \
+  && curl -sL https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${ARCH}"_alpine-linux_hotspot_ea_"${JAVA_VERSION_KEBAB}".tar.gz | tar xz -C /opt/
 
 ENV PATH=/opt/jdk-${JAVA_VERSION}/bin:$PATH
 

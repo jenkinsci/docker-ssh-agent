@@ -44,7 +44,7 @@ conditions:
       tag: '{{source "jdk11LastVersion" }}-jdk-alpine'
   checkTemurinJDK11DebianDockerImages:
     kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-focal" is available
+    name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-jammy" is available
     disablesourceinput: true
     spec:
       architectures:
@@ -53,7 +53,7 @@ conditions:
         - s390x
         - arm/v7
       image: eclipse-temurin
-      tag: '{{source "jdk11LastVersion" }}-jdk-focal'
+      tag: '{{source "jdk11LastVersion" }}-jdk-jammy'
   checkTemurinJDK11WindowsCoreDockerImage:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-windowsservercore-1809" is available

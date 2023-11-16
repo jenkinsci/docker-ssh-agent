@@ -1,6 +1,6 @@
 ARG DEBIAN_RELEASE=bookworm-20230904
 FROM debian:"${DEBIAN_RELEASE}" AS jre-build
-ARG JAVA_VERSION=21+35
+ARG JAVA_VERSION=21.0.1+12
 # This Build ARG is populated by Docker
 # Ref. https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 ARG TARGETPLATFORM
@@ -12,8 +12,9 @@ RUN apt-get update \
   && ARCH=$(uname -m | sed -e 's/x86_64/x64/' -e 's/armv7l/arm/') \
   && JAVA_VERSION_ENCODED=$(printf '%s' "$JAVA_VERSION" | jq -jRr '@uri') \
   && BUILD_NUMBER=$(printf '%s' "$JAVA_VERSION" | cut -d'+' -f2) \
-  && JAVA_MAJOR_VERSION=$(printf '%s' "$JAVA_VERSION" | cut -d'+' -f1) \
-  && curl -sL https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${ARCH}"_linux_hotspot_ea_"${JAVA_MAJOR_VERSION}"-0-"${BUILD_NUMBER}".tar.gz | tar xz -C /opt/ \
+  && JAVA_MAJOR_VERSION=$(printf '%s' "$JAVA_VERSION" | cut -d'.' -f1) \
+  && JAVA_VERSION_KEBAB=$(printf '%s' "$JAVA_VERSION" | sed 's/+/-/g;s/\./-/g') \
+  && curl -sL https://github.com/adoptium/temurin"${JAVA_MAJOR_VERSION}"-binaries/releases/download/jdk-"${JAVA_VERSION_ENCODED}"-ea-beta/OpenJDK"${JAVA_MAJOR_VERSION}"U-jdk_"${ARCH}"_linux_hotspot_ea_"${JAVA_VERSION_KEBAB}".tar.gz | tar xz -C /opt/ \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
