@@ -3,7 +3,6 @@ group "linux" {
     "alpine_jdk11",
     "alpine_jdk17",
     "alpine_jdk21",
-    "alpine_jdk21-preview",
     "debian_jdk11",
     "debian_jdk21",
     "debian_jdk21-preview",
