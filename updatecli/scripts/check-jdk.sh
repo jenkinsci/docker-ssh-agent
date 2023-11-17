@@ -30,10 +30,11 @@ function get_jdk_download_url() {
       echo "https://github.com/adoptium/temurin19-binaries/releases/download/jdk-${jdk_version}/OpenJDK19U-jdk_${platform}_hotspot_${jdk_version//+/_}";
       return 0;;
     21*)
-      # JDK version (21+35-ea-beta)
-      ##    https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35-ea-beta/OpenJDK21U-jdk_aarch64_linux_hotspot_ea_21-0-35.tar.gz
+      # TODO: Check both generally available and early access versions, as both are in use within this repository
+      # JDK version (21.0.1+12-ea-beta)
+      ##    https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35-ea-beta/OpenJDK21U-jdk_aarch64_linux_hotspot_ea_21-0-1-12.tar.gz
       urlEncodedJDKVersion="${jdk_version//+/%2B}"
-      echo "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${urlEncodedJDKVersion}-ea-beta/OpenJDK21U-jdk_${platform}_hotspot_ea_21-0-$(echo ${jdk_version} | cut -d '+' -f 2 | cut -d '-' -f 1)"
+      echo "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${urlEncodedJDKVersion}-ea-beta/OpenJDK21U-jdk_${platform}_hotspot_ea_$(echo ${jdk_version} | sed 's/+/-/g;s/\./-/g')"
       return 0;;
     *)
       echo "ERROR: unsupported JDK version (${jdk_version}).";

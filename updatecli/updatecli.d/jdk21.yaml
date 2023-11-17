@@ -1,5 +1,5 @@
 ---
-name: Bump JDK21 version for all Linux images
+name: Bump Temurin's JDK21 version
 
 scms:
   default:
@@ -12,64 +12,93 @@ scms:
       token: "{{ requiredEnv .github.token }}"
       username: "{{ .github.username }}"
       branch: "{{ .github.branch }}"
-  temurin21-binaries:
-    kind: "github"
-    spec:
-      user: "{{ .github.user }}"
-      email: "{{ .github.email }}"
-      owner: "adoptium"
-      repository: "temurin21-binaries"
-      token: '{{ requiredEnv .github.token }}'
-      branch: "main"
 
 sources:
-  getLatestJDK21EAVersion:
-    name: Get the latest Adoptium JDK21 version
-    kind: gittag
-    scmid: temurin21-binaries
+  jdk21LastVersion:
+    kind: githubrelease
+    name: Get the latest Temurin JDK21 version
     spec:
+      owner: "adoptium"
+      repository: "temurin21-binaries"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
       versionfilter:
         kind: regex
-        pattern: ".*-ea-.*"
+        # jdk-17.0.2+8(https://github.com/adoptium/temurin17-binaries/releases/tag/jdk-17.0.2%2B8) is OK
+        # jdk-17.0.4.1+1(https://github.com/adoptium/temurin17-binaries/releases/tag/jdk-17.0.4.1%2B1) is OK
+        pattern: "^jdk-21.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
     transformers:
       - trimprefix: "jdk-"
-      - trimsuffix: "-ea-beta"
+      - replacer:
+          from: +
+          to: _
 
 conditions:
-  checkIfReleaseIsAvailable:
-    kind: shell
+  checkTemurinJDK21AlpineDockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<jdk21LastVersion>-jdk-alpine" is available
+    disablesourceinput: true
     spec:
-      command: bash ./updatecli/scripts/check-jdk.sh # source input value passed as argument
+      architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "jdk21LastVersion" }}-jdk-alpine'
+  checkTemurinJDK21DebianDockerImages:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<jdk21LastVersion>-jdk-jammy" is available
+    disablesourceinput: true
+    spec:
+      architectures:
+        - amd64
+        - arm64
+        - s390x
+        - arm/v7
+      image: eclipse-temurin
+      tag: '{{source "jdk21LastVersion" }}-jdk-jammy'
+  checkTemurinJDK21WindowsCoreDockerImage:
+    kind: dockerimage
+    name: Check if the container image "eclipse-temurin:<jdk21LastVersion>-jdk-windowsservercore-1809" is available
+    disablesourceinput: true
+    spec:
+      architecture: amd64
+      image: eclipse-temurin
+      tag: '{{source "jdk21LastVersion" }}-jdk-windowsservercore-1809'
 
 targets:
-  setJDK21VersionForBake:
+  setJDK21VersionDockerBake:
     name: "Bump JDK21 version for Linux images in the docker-bake.hcl file"
     kind: hcl
+    sourceid: jdk21LastVersion
     spec:
       file: docker-bake.hcl
       path: variable.JAVA21_VERSION.default
     scmid: default
   setJDK21VersionAlpine:
-    name: "Bump JDK21 version for Linux images in the Alpine Linux Dockerfile"
+    name: "Bump JDK21 default ARG version on Alpine Dockerfile"
     kind: dockerfile
+    sourceid: jdk21LastVersion
     spec:
-      file: alpine/21/Dockerfile
+      file: alpine/Dockerfile
       instruction:
-        keyword: "ARG"
-        matcher: "JAVA_VERSION"
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
   setJDK21VersionDebian:
-    name: "Bump JDK21 version for Linux images in the Debian Dockerfile"
+    name: "Bump JDK21 default ARG version on Debian Dockerfile"
     kind: dockerfile
+    sourceid: jdk21LastVersion
     spec:
-      file: debian/21/Dockerfile
+      file: debian/Dockerfile
       instruction:
-        keyword: "ARG"
-        matcher: "JAVA_VERSION"
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
+
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK21 version to {{ source "getLatestJDK21EAVersion" }}
+    title: Bump JDK21 version to {{ source "jdk21LastVersion" }}
     spec:
       labels:
         - dependencies
+        - jdk21
