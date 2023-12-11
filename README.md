@@ -123,7 +123,7 @@ make build-<OS>_<JDK_VERSION>
 That would give for JDK 11 on Alpine Linux:
 
 ```bash
-make test-alpine_jdk11
+make build-alpine_jdk11
 ```
 
 #### Building all images
