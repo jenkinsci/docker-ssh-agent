@@ -121,48 +121,49 @@ if($lastExitCode -ne 0) {
 }
 
 if($target -eq "test") {
-if ($DryRun) {
-            Write-Host "= TEST: (dry-run) test harness"
-        } else {
-    Write-Host "= TEST: Starting test harness"
-
-    $mod = Get-InstalledModule -Name Pester -MinimumVersion 5.3.0 -MaximumVersion 5.3.3 -ErrorAction SilentlyContinue
-    if($null -eq $mod) {
-        Write-Host "= TEST: Pester 5.3.x not found: installing..."
-        $module = "c:\Program Files\WindowsPowerShell\Modules\Pester"
-        if(Test-Path $module) {
-            takeown /F $module /A /R
-            icacls $module /reset
-            icacls $module /grant Administrators:'F' /inheritance:d /T
-            Remove-Item -Path $module -Recurse -Force -Confirm:$false
-        }
-        Install-Module -Force -Name Pester -MaximumVersion 5.3.3
-    }
-
-    Import-Module Pester
-    Write-Host "= TEST: Setting up Pester environment..."
-    $configuration = [PesterConfiguration]::Default
-    $configuration.Run.PassThru = $true
-    $configuration.Run.Path = '.\tests'
-    $configuration.Run.Exit = $true
-    $configuration.TestResult.Enabled = $true
-    $configuration.TestResult.OutputFormat = 'JUnitXml'
-    $configuration.Output.Verbosity = 'Diagnostic'
-    $configuration.CodeCoverage.Enabled = $false
-
-    Write-Host "= TEST: Testing all ${agentType} images..."
-    # Only fail the run afterwards in case of any test failures
-    $testFailed = $false
-    foreach($image in $builds) {
-        $testFailed = $testFailed -or (Test-Image $image)
-    }
-
-    # Fail if any test failures
-    if($testFailed -ne $false) {
-        Write-Error "= TEST: stage failed!"
-        exit 1
+    if ($DryRun) {
+        Write-Host "= TEST: (dry-run) test harness"
     } else {
-        Write-Host "= TEST: stage passed!"
+        Write-Host "= TEST: Starting test harness"
+
+        $mod = Get-InstalledModule -Name Pester -MinimumVersion 5.3.0 -MaximumVersion 5.3.3 -ErrorAction SilentlyContinue
+        if($null -eq $mod) {
+            Write-Host "= TEST: Pester 5.3.x not found: installing..."
+            $module = "c:\Program Files\WindowsPowerShell\Modules\Pester"
+            if(Test-Path $module) {
+                takeown /F $module /A /R
+                icacls $module /reset
+                icacls $module /grant Administrators:'F' /inheritance:d /T
+                Remove-Item -Path $module -Recurse -Force -Confirm:$false
+            }
+            Install-Module -Force -Name Pester -MaximumVersion 5.3.3
+        }
+
+        Import-Module Pester
+        Write-Host "= TEST: Setting up Pester environment..."
+        $configuration = [PesterConfiguration]::Default
+        $configuration.Run.PassThru = $true
+        $configuration.Run.Path = '.\tests'
+        $configuration.Run.Exit = $true
+        $configuration.TestResult.Enabled = $true
+        $configuration.TestResult.OutputFormat = 'JUnitXml'
+        $configuration.Output.Verbosity = 'Diagnostic'
+        $configuration.CodeCoverage.Enabled = $false
+
+        Write-Host "= TEST: Testing all ${agentType} images..."
+        # Only fail the run afterwards in case of any test failures
+        $testFailed = $false
+        foreach($image in $builds) {
+            $testFailed = $testFailed -or (Test-Image $image)
+        }
+
+        # Fail if any test failures
+        if($testFailed -ne $false) {
+            Write-Error "= TEST: stage failed!"
+            exit 1
+        } else {
+            Write-Host "= TEST: stage passed!"
+        }
     }
 }
 
