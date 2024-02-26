@@ -9,7 +9,7 @@ Param(
 
 $ErrorActionPreference = 'Stop'
 $Repository = 'ssh-agent'
-$Organization = 'jenkins'
+$Organisation = 'jenkins'
 $ImageType = 'windows-ltsc2019'
 
 if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_REPO)) {
@@ -17,7 +17,7 @@ if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_REPO)) {
 }
 
 if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_ORGANISATION)) {
-    $Organization = $env:DOCKERHUB_ORGANISATION
+    $Organisation = $env:DOCKERHUB_ORGANISATION
 }
 
 if(![String]::IsNullOrWhiteSpace($env:IMAGE_TYPE)) {
@@ -46,17 +46,18 @@ Function Test-CommandExists {
     }
 }
 
-# this is the jdk version that will be used for the 'bare tag' images, e.g., windowsservercore-1809-jdk11 -> windowsserver-1809
-$defaultJdk = '11'
-$builds = @{}
+# Ensure constant env vars used in the docker compose file are defined
+$env:DOCKERHUB_ORGANISATION = "$Organisation"
+$env:DOCKERHUB_REPO = "$Repository"
+$env:VERSION = "$VersionTag"
 
 $items = $ImageType.Split("-")
 $env:WINDOWS_FLAVOR = $items[0]
 $env:WINDOWS_VERSION_TAG = $items[1]
-$env:WINDOWS_VERSION_FALLBACK_TAG = $items[1]
+$env:TOOLS_WINDOWS_VERSION = $items[1]
 if ($items[1] -eq 'ltsc2019') {
     # There are no eclipse-temurin:*-ltsc2019 or mcr.microsoft.com/powershell:*-ltsc2019 docker images unfortunately, only "1809" ones
-    $env:WINDOWS_VERSION_FALLBACK_TAG = '1809'
+    $env:TOOLS_WINDOWS_VERSION = '1809'
 }
 
 $ProgressPreference = 'SilentlyContinue' # Disable Progress bar for faster downloads
@@ -64,45 +65,6 @@ $ProgressPreference = 'SilentlyContinue' # Disable Progress bar for faster downl
 Test-CommandExists "docker"
 Test-CommandExists "docker-compose"
 Test-CommandExists "yq"
-
-$baseDockerCmd = 'docker-compose --file=build-windows.yaml'
-$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
-
-Invoke-Expression "$baseDockerCmd config --services" 2>$null | ForEach-Object {
-    $image = '{1}-{2}-{0}' -f $_, $env:WINDOWS_FLAVOR, $env:WINDOWS_VERSION_TAG # Ex: "nanoserver-ltsc2019-jdk11"
-
-    # Remove the 'jdk' prefix
-    $jdkMajorVersion = $_.Remove(0,3)
-
-    $baseImage = "${env:WINDOWS_FLAVOR}-${env:WINDOWS_VERSION_TAG}"
-    $tags = @( $image )
-    # Additional image tag without any 'jdk' prefix for the default JDK
-    if($jdkMajorVersion -eq "$defaultJdk") {
-        $tags += $baseImage
-    }
-
-    $builds[$image] = @{
-        'Tags' = $tags;
-    }
-}
-
-Write-Host "= PREPARE: List of $Organization/$Repository images and tags to be processed:"
-ConvertTo-Json $builds
-
-if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
-    Write-Host "= BUILD: Building image ${Build}..."
-    $dockerBuildCmd = '{0} {1}' -f $baseDockerBuildCmd, $Build
-    Invoke-Expression $dockerBuildCmd
-    Write-Host "= BUILD: Finished building image ${Build}"
-} else {
-    Write-Host "= BUILD: Building all images..."
-    Invoke-Expression $baseDockerBuildCmd
-    Write-Host "= BUILD: Finished building all image"
-}
-
-if($lastExitCode -ne 0) {
-    exit $lastExitCode
-}
 
 function Test-Image {
     param (
@@ -121,21 +83,49 @@ function Test-Image {
     New-Item -Path ".\target\$ImageName" -Type Directory | Out-Null
     $configuration.TestResult.OutputPath = ".\target\$ImageName\junit-results.xml"
     $TestResults = Invoke-Pester -Configuration $configuration
+    $failed = $false
     if ($TestResults.FailedCount -gt 0) {
-        Write-Host "There were $($TestResults.FailedCount) failed tests in $ImageName"
-        $testFailed = $true
+        Write-Host "There were $($TestResults.FailedCount) failed tests out of $($TestResults.TotalCount) in $ImageName"
+        $failed = $true
     } else {
         Write-Host "There were $($TestResults.PassedCount) passed tests out of $($TestResults.TotalCount) in $ImageName"
     }
     Remove-Item env:\AGENT_IMAGE
     Remove-Item env:\BUILD_CONTEXT
+
+    return $failed
+}
+
+$baseDockerCmd = 'docker-compose --file=build-windows.yaml'
+$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
+
+$builds = @()
+
+$compose = Invoke-Expression "$baseDockerCmd config --format=json" 2>$null | ConvertFrom-Json
+foreach ($service in $compose.services.PSObject.Properties) {
+    $builds += $service.Value.image
+}
+
+Write-Host "= PREPARE: List of $Organisation/$env:DOCKERHUB_REPO images and tags to be processed:"
+Invoke-Expression "$baseDockerCmd config"
+
+Write-Host "= BUILD: Building all images..."
+    switch ($DryRun) {
+        $true { Write-Host "(dry-run) $baseDockerBuildCmd" }
+        $false { Invoke-Expression $baseDockerBuildCmd }
+    }
+    Write-Host "= BUILD: Finished building all images."
+
+if($lastExitCode -ne 0) {
+    exit $lastExitCode
 }
 
 if($target -eq "test") {
+if ($DryRun) {
+            Write-Host "= TEST: (dry-run) test harness"
+        } else {
     Write-Host "= TEST: Starting test harness"
 
-    # Only fail the run afterwards in case of any test failures
-    $testFailed = $false
     $mod = Get-InstalledModule -Name Pester -MinimumVersion 5.3.0 -MaximumVersion 5.3.3 -ErrorAction SilentlyContinue
     if($null -eq $mod) {
         Write-Host "= TEST: Pester 5.3.x not found: installing..."
@@ -160,86 +150,32 @@ if($target -eq "test") {
     $configuration.Output.Verbosity = 'Diagnostic'
     $configuration.CodeCoverage.Enabled = $false
 
-    if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
-        Test-Image $Build
-    } else {
-        Write-Host "= TEST: Testing all images..."
-        foreach($image in $builds.Keys) {
-            Test-Image $image
-        }
+    Write-Host "= TEST: Testing all ${agentType} images..."
+    # Only fail the run afterwards in case of any test failures
+    $testFailed = $false
+    foreach($image in $builds) {
+        $testFailed = $testFailed -or (Test-Image $image)
     }
 
     # Fail if any test failures
     if($testFailed -ne $false) {
-        Write-Error "Test stage failed!"
+        Write-Error "= TEST: stage failed!"
         exit 1
     } else {
-        Write-Host "Test stage passed!"
+        Write-Host "= TEST: stage passed!"
     }
 }
 
-function Publish-Image {
-    param (
-        [String] $Build,
-        [String] $ImageName
-    )
-    # foreach($tag in $builds[$ImageName]['Tags']) {
-    #     $fullImageName = '{0}/{1}:{2}' -f $Organization, $Repository, $tag
-    #     $cmd = "docker tag {0} {1}" -f $ImageName, $tag
-    Write-Host "= PUBLISH: Tagging $Build => full name = $ImageName"
-    docker tag "$Build" "$ImageName"
-
-    Write-Host "= PUBLISH: Publishing $ImageName..."
-    docker push "$ImageName"
-}
-
-
 if($target -eq "publish") {
-    # Only fail the run afterwards in case of any issues when publishing the docker images
-    $publishFailed = 0
-    if(![System.String]::IsNullOrWhiteSpace($Build) -and $builds.ContainsKey($Build)) {
-        foreach($tag in $Builds[$Build]['Tags']) {
-            Publish-Image  "$Build" "${Organization}/${Repository}:${tag}"
-            if($lastExitCode -ne 0) {
-                $publishFailed = 1
-            }
-
-            if($PushVersions) {
-                $buildTag = "$VersionTag-$tag"
-                if($tag -eq 'latest') {
-                    $buildTag = "$VersionTag"
-                }
-                Publish-Image "$Build" "${Organization}/${Repository}:${buildTag}"
-                if($lastExitCode -ne 0) {
-                    $publishFailed = 1
-                }
-            }
-        }
-    } else {
-        foreach($b in $builds.Keys) {
-            foreach($tag in $Builds[$b]['Tags']) {
-                Publish-Image "$b" "${Organization}/${Repository}:${tag}"
-                if($lastExitCode -ne 0) {
-                    $publishFailed = 1
-                }
-
-                if($PushVersions) {
-                    $buildTag = "$VersionTag-$tag"
-                    if($tag -eq 'latest') {
-                        $buildTag = "$VersionTag"
-                    }
-                    Publish-Image "$b" "${Organization}/${Repository}:${buildTag}"
-                    if($lastExitCode -ne 0) {
-                        $publishFailed = 1
-                    }
-                }
-            }
-        }
+    Write-Host "= PUBLISH: push all images and tags"
+    switch($DryRun) {
+        $true { Write-Host "(dry-run) $baseDockerCmd push" }
+        $false { Invoke-Expression "$baseDockerCmd push" }
     }
 
     # Fail if any issues when publising the docker images
-    if($publishFailed -ne 0) {
-        Write-Error "Publish failed!"
+    if($lastExitCode -ne 0) {
+        Write-Error "= PUBLISH: failed!"
         exit 1
     }
 }

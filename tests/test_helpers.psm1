@@ -77,7 +77,6 @@ function Cleanup($name='') {
     }
 
     if(![System.String]::IsNullOrWhiteSpace($name)) {
-        #Write-Host "Cleaning up $name"
         docker kill "$name" 2>&1 | Out-Null
         docker rm -fv "$name" 2>&1 | Out-Null
     }
@@ -99,8 +98,8 @@ function Is-ContainerRunning($container) {
 }
 
 function Run-Program($cmd, $params, $quiet=$false) {
-    if (-not $quiet) {
-        Write-Host "Starting Run-Program with cmd = $cmd, params = $params"
+    if(-not $quiet) {
+        Write-Host "cmd & params: $cmd $params"
     }
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
@@ -117,7 +116,10 @@ function Run-Program($cmd, $params, $quiet=$false) {
     $stderr = $proc.StandardError.ReadToEnd()
     $proc.WaitForExit()
     if(($proc.ExitCode -ne 0) -and (-not $quiet)) {
-        Write-Host "`n`nstdout:`n$stdout`n`nstderr:`n$stderr`n`n"
+        Write-Host "[err] stdout:`n$stdout"
+        Write-Host "[err] stderr:`n$stderr"
+        Write-Host "[err] cmd:`n$cmd"
+        Write-Host "[err] params:`n$param"
     }
 
     return $proc.ExitCode, $stdout, $stderr

@@ -1,6 +1,6 @@
 services:
   jdk11:
-    image: ${WINDOWS_FLAVOR}-${WINDOWS_VERSION_TAG}-jdk11
+    image: ${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}:${WINDOWS_FLAVOR}-${WINDOWS_VERSION_TAG}-jdk11
     build:
       context: ./
       dockerfile: ./windows/${WINDOWS_FLAVOR}/Dockerfile
@@ -8,7 +8,9 @@ services:
         JAVA_HOME: "C:/openjdk-11"
         JAVA_VERSION: 11.0.20_8
         WINDOWS_VERSION_TAG: ${WINDOWS_VERSION_TAG}
-        WINDOWS_VERSION_FALLBACK_TAG: ${WINDOWS_VERSION_FALLBACK_TAG}
+        TOOLS_WINDOWS_VERSION: ${TOOLS_WINDOWS_VERSION}
+      tags:
+        - "${DOCKERHUB_ORGANISATION}/${DOCKERHUB_REPO}:${VERSION_TAG}-${WINDOWS_FLAVOR}-${WINDOWS_VERSION_TAG}-jdk11"
   # jdk17:
   #   image: ${WINDOWS_FLAVOR}-${WINDOWS_VERSION_TAG}-jdk17
   #   build:
