@@ -39,7 +39,7 @@ conditions:
     name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-alpine" is available
     disablesourceinput: true
     spec:
-      architecture: amd64
+      architecture: linux/amd64
       image: eclipse-temurin
       tag: '{{source "jdk11LastVersion" }}-jdk-alpine'
   checkTemurinJDK11DebianDockerImages:
@@ -48,10 +48,10 @@ conditions:
     disablesourceinput: true
     spec:
       architectures:
-        - amd64
-        - arm64
-        - s390x
-        - arm/v7
+        - linux/amd64
+        - linux/arm64
+        - linux/s390x
+        - linux/arm/v7
       image: eclipse-temurin
       tag: '{{source "jdk11LastVersion" }}-jdk-jammy'
   checkTemurinJDK11WindowsCoreDockerImage:
@@ -59,7 +59,7 @@ conditions:
     name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-windowsservercore-1809" is available
     disablesourceinput: true
     spec:
-      architecture: amd64
+      architecture: windows/amd64
       image: eclipse-temurin
       tag: '{{source "jdk11LastVersion" }}-jdk-windowsservercore-1809'
 
