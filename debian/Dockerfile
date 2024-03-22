@@ -1,4 +1,4 @@
-ARG JAVA_VERSION=17.0.8.1_1
+ARG JAVA_VERSION=21.0.2_13
 ARG DEBIAN_RELEASE=bookworm-20240311
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy AS jre-build
 
