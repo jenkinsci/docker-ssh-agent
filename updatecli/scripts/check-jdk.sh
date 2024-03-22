@@ -5,7 +5,7 @@
 # The source of truth is the ERB template stored at the location dist/profile/templates/jenkinscontroller/casc/tools.yaml.erb
 # It lists all the installations used as "Jenkins Tools" by the Jenkins controllers of the infrastructure
 ##
-set -eu # -o pipefail
+set -eu -o pipefail
 
 command -v curl >/dev/null 2>&1 || { echo "ERROR: curl command not found. Exiting."; exit 1; }
 
@@ -29,12 +29,20 @@ function get_jdk_download_url() {
       ## JDK19 URLs have an underscore ('_') instead of a plus ('+') in their archive names
       echo "https://github.com/adoptium/temurin19-binaries/releases/download/jdk-${jdk_version}/OpenJDK19U-jdk_${platform}_hotspot_${jdk_version//+/_}";
       return 0;;
+    21*-ea-beta)
+      # JDK preview version (21+35-ea-beta, 21.0.1+12-ea-beta)
+      # This has been updated to support the new inferred URL pattern that started as of 21.0.3+2-ea-beta. It will not work for earlier preview versions.
+      # One could update the cases to support all preview versions, if desired.
+      jdk_version="${jdk_version//-beta}"
+      ##    https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35-ea-beta/OpenJDK21U-jdk_aarch64_linux_hotspot_ea_21-0-35.tar.gz
+      ##    https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.1%2B12-ea-beta/OpenJDK21U-jdk_x64_linux_hotspot_ea_21-0-1-12.tar.gz
+      dashJDKVersion="${jdk_version//+/_}"
+      jdk_version="${jdk_version//-ea}"
+      echo "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${jdk_version//+/%2B}-ea-beta/OpenJDK21U-jdk_${platform}_hotspot_${dashJDKVersion}"
+      return 0;;
     21*)
-      # TODO: Check both generally available and early access versions, as both are in use within this repository
-      # JDK version (21.0.1+12-ea-beta)
-      ##    https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35-ea-beta/OpenJDK21U-jdk_aarch64_linux_hotspot_ea_21-0-1-12.tar.gz
-      urlEncodedJDKVersion="${jdk_version//+/%2B}"
-      echo "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${urlEncodedJDKVersion}-ea-beta/OpenJDK21U-jdk_${platform}_hotspot_ea_$(echo ${jdk_version} | sed 's/+/-/g;s/\./-/g')"
+      ## JDK21 URLs have an underscore ('_') instead of a plus ('+') in their archive names
+      echo "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${jdk_version}/OpenJDK21U-jdk_${platform}_hotspot_${jdk_version//+/_}";
       return 0;;
     *)
       echo "ERROR: unsupported JDK version (${jdk_version}).";
@@ -52,8 +60,10 @@ case "${1}" in
     platforms=("x64_linux" "x64_windows" "aarch64_linux" "s390x_linux");;
   19.*+*)
     platforms=("x64_linux" "x64_windows" "aarch64_linux" "s390x_linux");;
-  21*+*)
+  21*+*-ea-beta)
     platforms=("x64_linux" "x64_windows" "aarch64_linux" "s390x_linux");;
+  21*+*)
+    platforms=("x64_linux" "x64_windows" "aarch64_linux");;
   *)
     echo "ERROR: unsupported JDK version (${1}).";
     exit 1;;
