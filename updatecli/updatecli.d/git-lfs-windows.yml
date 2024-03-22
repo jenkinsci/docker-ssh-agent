@@ -25,20 +25,20 @@ sources:
         kind: semver
 
 targets:
-  setGitLfsVersionWindowsNanoserver2019:
-    name: Update the `git-lfs` Windows version for Windows Nanoserver 2019
+  setGitLfsVersionWindowsNanoserver:
+    name: Update the `git-lfs` Windows version for Windows Nanoserver
     kind: dockerfile
     spec:
-      file: windows/nanoserver-ltsc2019/Dockerfile
+      file: windows/nanoserver/Dockerfile
       instruction:
         keyword: ARG
         matcher: GIT_LFS_VERSION
     scmid: default
-  setGitLfsVersionWindowsServer2019:
-    name: Update the `git-lfs` Windows version for Windows Core Server 2019
+  setGitLfsVersionWindowsServer:
+    name: Update the `git-lfs` Windows version for Windows Core Server
     kind: dockerfile
     spec:
-      file: windows/windowsservercore-ltsc2019/Dockerfile
+      file: windows/windowsservercore/Dockerfile
       instruction:
         keyword: ARG
         matcher: GIT_LFS_VERSION

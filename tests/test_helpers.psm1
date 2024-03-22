@@ -72,8 +72,14 @@ function Retry-Command {
 }
 
 function Cleanup($name='') {
-    docker kill "$name" 2>&1 | Out-Null
-    docker rm -fv "$name" 2>&1 | Out-Null
+    if([System.String]::IsNullOrWhiteSpace($name)) {
+        $name = Get-EnvOrDefault 'IMAGE_NAME' ''
+    }
+
+    if(![System.String]::IsNullOrWhiteSpace($name)) {
+        docker kill "$name" 2>&1 | Out-Null
+        docker rm -fv "$name" 2>&1 | Out-Null
+    }
 }
 
 function CleanupNetwork($name) {
@@ -83,7 +89,7 @@ function CleanupNetwork($name) {
 function Is-ContainerRunning($container) {
     Start-Sleep -Seconds 5
     return Retry-Command -RetryCount 10 -Delay 2 -ScriptBlock {
-        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect -f `"{{.State.Running}}`" $container"
+        $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "inspect --format `"{{.State.Running}}`" $container"
         if(($exitCode -ne 0) -or (-not $stdout.Contains('true')) ) {
             throw('Exit code incorrect, or invalid value for running state')
         }
@@ -92,7 +98,9 @@ function Is-ContainerRunning($container) {
 }
 
 function Run-Program($cmd, $params, $quiet=$true) {
-    #Write-Host "cmd = $cmd, params = $params"
+    if(-not $quiet) {
+        Write-Host "cmd & params: $cmd $params"
+    }
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
@@ -108,7 +116,10 @@ function Run-Program($cmd, $params, $quiet=$true) {
     $stderr = $proc.StandardError.ReadToEnd()
     $proc.WaitForExit()
     if(($proc.ExitCode -ne 0) -and (-not $quiet)) {
-        Write-Host "`n`nstdout:`n$stdout`n`nstderr:`n$stderr`n`n"
+        Write-Host "[err] stdout:`n$stdout"
+        Write-Host "[err] stderr:`n$stderr"
+        Write-Host "[err] cmd:`n$cmd"
+        Write-Host "[err] params:`n$param"
     }
 
     return $proc.ExitCode, $stdout, $stderr
@@ -130,7 +141,7 @@ function Run-ThruSSH($container, $privateKeyVal, $cmd) {
         $TMP_PRIV_KEY_FILE = New-TemporaryFile
         Set-Content -Path $TMP_PRIV_KEY_FILE -Value "$privateKeyVal"
 
-        $exitCode, $stdout, $stderr = Run-Program (Join-Path $PSScriptRoot 'ssh.exe') "-i `"${TMP_PRIV_KEY_FILE}`" -o LogLevel=quiet -o UserKnownHostsFile=NUL -o StrictHostKeyChecking=no -l jenkins localhost -p $SSH_PORT $cmd"
+        $exitCode, $stdout, $stderr = Run-Program (Join-Path $PSScriptRoot 'ssh.exe') "-v -i `"${TMP_PRIV_KEY_FILE}`" -o LogLevel=quiet -o UserKnownHostsFile=NUL -o StrictHostKeyChecking=no -l jenkins localhost -p $SSH_PORT $cmd"
         Remove-Item -Force $TMP_PRIV_KEY_FILE
 
         return $exitCode, $stdout, $stderr
