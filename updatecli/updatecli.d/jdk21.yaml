@@ -12,55 +12,61 @@ scms:
       token: "{{ requiredEnv .github.token }}"
       username: "{{ .github.username }}"
       branch: "{{ .github.branch }}"
+  temurin21-binaries:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "adoptium"
+      repository: "temurin21-binaries"
+      token: '{{ requiredEnv .github.token }}'
+      branch: "main"
 
 sources:
   jdk21LastVersion:
-    kind: githubrelease
-    name: Get the latest Temurin JDK21 version
+    name: Get the latest Adoptium JDK21 version
+    kind: gittag
+    scmid: temurin21-binaries
     spec:
-      owner: "adoptium"
-      repository: "temurin21-binaries"
-      token: "{{ requiredEnv .github.token }}"
-      username: "{{ .github.username }}"
       versionfilter:
         kind: regex
-        # jdk-17.0.2+8(https://github.com/adoptium/temurin17-binaries/releases/tag/jdk-17.0.2%2B8) is OK
-        # jdk-17.0.4.1+1(https://github.com/adoptium/temurin17-binaries/releases/tag/jdk-17.0.4.1%2B1) is OK
-        pattern: "^jdk-21.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
+        pattern: {{ .temurin.version_pattern }}
     transformers:
       - trimprefix: "jdk-"
       - replacer:
-          from: +
-          to: _
+          from: "+"
+          to: "_"
 
 conditions:
   checkTemurinJDK21AlpineDockerImage:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<jdk21LastVersion>-jdk-alpine" is available
-    disablesourceinput: true
+    transformers:
+      - addsuffix: "-jdk-alpine"
     spec:
-      architecture: linux/amd64
+      architectures:
+        - linux/amd64
+        - linux/arm64
       image: eclipse-temurin
-      tag: '{{source "jdk21LastVersion" }}-jdk-alpine'
   checkTemurinJDK21DebianDockerImages:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<jdk21LastVersion>-jdk-jammy" is available
-    disablesourceinput: true
+    transformers:
+      - addsuffix: "-jdk-jammy"
     spec:
       architectures:
         - linux/amd64
         - linux/arm64
         - linux/s390x
       image: eclipse-temurin
-      tag: '{{source "jdk21LastVersion" }}-jdk-jammy'
   checkTemurinJDK21WindowsCoreDockerImage:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<jdk21LastVersion>-jdk-windowsservercore-1809" is available
-    disablesourceinput: true
+    transformers:
+      - addsuffix: "-jdk-windowsservercore-1809"
     spec:
       architecture: windows/amd64
       image: eclipse-temurin
-      tag: '{{source "jdk21LastVersion" }}-jdk-windowsservercore-1809'
 
 targets:
   setJDK21VersionDockerBake:

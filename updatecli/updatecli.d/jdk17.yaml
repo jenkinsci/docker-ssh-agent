@@ -16,7 +16,7 @@ scms:
 sources:
   jdk17LastVersion:
     kind: githubrelease
-    name: Get the latest Temurin JDK17 version
+    name: Get the latest Adoptium JDK17 version
     spec:
       owner: "adoptium"
       repository: "temurin17-binaries"
@@ -26,7 +26,7 @@ sources:
         kind: regex
         # jdk-17.0.2+8(https://github.com/adoptium/temurin17-binaries/releases/tag/jdk-17.0.2%2B8) is OK
         # jdk-17.0.4.1+1(https://github.com/adoptium/temurin17-binaries/releases/tag/jdk-17.0.4.1%2B1) is OK
-        pattern: "^jdk-17.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
+        pattern: {{ .temurin.version_pattern }}
     transformers:
       - trimprefix: "jdk-"
       - replacer:
@@ -37,15 +37,16 @@ conditions:
   checkTemurinJDK17AlpineDockerImage:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<jdk17LastVersion>-jdk-alpine" is available
-    disablesourceinput: true
+    transformers:
+      - addsuffix: "-jdk-alpine"
     spec:
       architecture: linux/amd64
       image: eclipse-temurin
-      tag: '{{source "jdk17LastVersion" }}-jdk-alpine'
   checkTemurinJDK17DebianDockerImages:
     kind: dockerimage
-    name: Check if the container image "eclipse-temurin:<jdk17LastVersion>-jdk-jammy" is available
-    disablesourceinput: true
+    name: Check if the container image "eclipse-temurin:<jdk17LastVersion>-jdk-focal" is available
+    transformers:
+      - addsuffix: "-jdk-focal"
     spec:
       architectures:
         - linux/amd64
@@ -53,15 +54,14 @@ conditions:
         - linux/s390x
         - linux/arm/v7
       image: eclipse-temurin
-      tag: '{{source "jdk17LastVersion" }}-jdk-jammy'
   checkTemurinJDK17WindowsCoreDockerImage:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<jdk17LastVersion>-jdk-windowsservercore-1809" is available
-    disablesourceinput: true
+    transformers:
+      - addsuffix: "-jdk-windowsservercore-1809"
     spec:
       architecture: windows/amd64
       image: eclipse-temurin
-      tag: '{{source "jdk17LastVersion" }}-jdk-windowsservercore-1809'
 
 targets:
   setJDK17VersionDockerBake:

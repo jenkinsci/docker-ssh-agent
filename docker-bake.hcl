@@ -4,6 +4,7 @@ group "linux" {
     "alpine_jdk17",
     "alpine_jdk21",
     "debian_jdk11",
+    "debian_jdk17",
     "debian_jdk21",
     "debian_jdk21-preview",
   ]
@@ -64,11 +65,11 @@ variable "ALPINE_SHORT_TAG" {
 }
 
 variable "JAVA11_VERSION" {
-  default = "11.0.20.1_1"
+  default = "11.0.22_7"
 }
 
 variable "JAVA17_VERSION" {
-  default = "17.0.8.1_1"
+  default = "17.0.10_7"
 }
 
 variable "JAVA21_VERSION" {

@@ -16,7 +16,7 @@ scms:
 sources:
   jdk11LastVersion:
     kind: githubrelease
-    name: Get the latest Temurin JDK11 version
+    name: Get the latest Adoptium JDK11 version
     spec:
       owner: "adoptium"
       repository: "temurin11-binaries"
@@ -24,9 +24,9 @@ sources:
       username: "{{ .github.username }}"
       versionfilter:
         kind: regex
-        # jdk-11.0.20+8 ()https://github.com/adoptium/temurin11-binaries/releases/tag/jdk-11.0.20%2B8) is OK
-        # jdk-11.0.20.1+1(https://github.com/adoptium/temurin11-binaries/releases/tag/jdk-11.0.20.1%2B1) is OK
-        pattern: "^jdk-11.(\\d*).(\\d*).(\\d*)(.(\\d*))+(\\d*)$"
+        # jdk-11.0.12+7(https://github.com/adoptium/temurin11-binaries/releases/tag/jdk-11.0.12%2B7) is OK
+        # jdk-11.0.16.1+1 (https://github.com/adoptium/temurin11-binaries/releases/tag/jdk-11.0.16.1%2B1) is OK
+        pattern: {{ .temurin.version_pattern }}
     transformers:
       - trimprefix: "jdk-"
       - replacer:
@@ -37,15 +37,16 @@ conditions:
   checkTemurinJDK11AlpineDockerImage:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-alpine" is available
-    disablesourceinput: true
+    transformers:
+      - addsuffix: "-jdk-alpine"
     spec:
       architecture: linux/amd64
       image: eclipse-temurin
-      tag: '{{source "jdk11LastVersion" }}-jdk-alpine'
   checkTemurinJDK11DebianDockerImages:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-jammy" is available
-    disablesourceinput: true
+    transformers:
+      - addsuffix: "-jdk-jammy"
     spec:
       architectures:
         - linux/amd64
@@ -53,15 +54,14 @@ conditions:
         - linux/s390x
         - linux/arm/v7
       image: eclipse-temurin
-      tag: '{{source "jdk11LastVersion" }}-jdk-jammy'
   checkTemurinJDK11WindowsCoreDockerImage:
     kind: dockerimage
     name: Check if the container image "eclipse-temurin:<jdk11LastVersion>-jdk-windowsservercore-1809" is available
-    disablesourceinput: true
+    transformers:
+      - addsuffix: "-jdk-windowsservercore-1809"
     spec:
       architecture: windows/amd64
       image: eclipse-temurin
-      tag: '{{source "jdk11LastVersion" }}-jdk-windowsservercore-1809'
 
 targets:
   setJDK11VersionNanoServer:
