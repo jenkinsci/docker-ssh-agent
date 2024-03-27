@@ -1,25 +1,31 @@
 Import-Module -DisableNameChecking -Force $PSScriptRoot/test_helpers.psm1
 
-$global:AGENT_IMAGE = Get-EnvOrDefault 'AGENT_IMAGE' ''
-$global:IMAGE_FOLDER = Get-EnvOrDefault 'IMAGE_FOLDER' ''
+$global:IMAGE_NAME = Get-EnvOrDefault 'IMAGE_NAME' '' # Ex: jenkins4eval/ssh-agent:nanoserver-1809-jdk17
 
-$items = $global:AGENT_IMAGE.Split("-")
+$imageItems = $global:IMAGE_NAME.Split(":")
+$global:IMAGE_TAG = $imageItems[1]
 
-# Remove the 'jdk' prefix (3 first characters)
-$global:JDKMAJORVERSION = $items[0].Remove(0,3)
-$global:WINDOWSFLAVOR = $items[1]
-$global:WINDOWSVERSION = $items[2]
+$items = $global:IMAGE_TAG.Split("-")
+# Remove the 'jdk' prefix
+$global:JAVAMAJORVERSION = $items[2].Remove(0,3)
+$global:WINDOWSFLAVOR = $items[0]
+$global:WINDOWSVERSIONTAG = $items[1]
+$global:TOOLSWINDOWSVERSION = $items[1]
+# There are no eclipse-temurin:*-ltsc2019 or mcr.microsoft.com/powershell:*-ltsc2019 docker images unfortunately, only "1809" ones
+if ($items[1] -eq 'ltsc2019') {
+    $global:TOOLSWINDOWSVERSION = '1809'
+}
 
 # TODO: make this name unique for concurency
-$global:CONTAINERNAME = 'pester-jenkins-ssh-agent-{0}' -f $global:AGENT_IMAGE
+$global:CONTAINERNAME = 'pester-jenkins-ssh-agent-{0}' -f $global:IMAGE_TAG
 
-$global:CONTAINERSHELL="powershell.exe"
+$global:CONTAINERSHELL = "powershell.exe"
 if($global:WINDOWSFLAVOR -eq 'nanoserver') {
     $global:CONTAINERSHELL = "pwsh.exe"
 }
 
-$PUBLIC_SSH_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAvnRN27LdPPQq2OH3GiFFGWX/SH5TCPVePLR21ngMFV8nAthXgYrFkRi/t+Wafe3ByTu2XYUDlXHKGIPIoAKo4gz5dIjUFfoac1ZuCDIbEiqPEjkk4tkfc2qr/BnIZsOYQi4Mbu+Z40VZEsAQU7eBinnZaHE1qGMHjS1xfrRtp2rdeO1EBz92FJ8dfnkUnohTXo3qPVSFGIPbh7UKEoKcyCosRO1P41iWD1rVsH1SLLXYAh2t49L7IPiplg09Dep6H47LyQVbxU9eXY8yMtUrRuwEk9IUX/IqpxNhk5hngHPP3JjsP0hyyrYSPkZlbs3izd9kk3y09Wn/ElHidiEk0Q=="
-$PRIVATE_SSH_KEY=@"
+$global:PUBLIC_SSH_KEY = "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAvnRN27LdPPQq2OH3GiFFGWX/SH5TCPVePLR21ngMFV8nAthXgYrFkRi/t+Wafe3ByTu2XYUDlXHKGIPIoAKo4gz5dIjUFfoac1ZuCDIbEiqPEjkk4tkfc2qr/BnIZsOYQi4Mbu+Z40VZEsAQU7eBinnZaHE1qGMHjS1xfrRtp2rdeO1EBz92FJ8dfnkUnohTXo3qPVSFGIPbh7UKEoKcyCosRO1P41iWD1rVsH1SLLXYAh2t49L7IPiplg09Dep6H47LyQVbxU9eXY8yMtUrRuwEk9IUX/IqpxNhk5hngHPP3JjsP0hyyrYSPkZlbs3izd9kk3y09Wn/ElHidiEk0Q=="
+$global:PRIVATE_SSH_KEY = @"
 -----BEGIN RSA PRIVATE KEY-----
 MIIEoQIBAAKCAQEAvnRN27LdPPQq2OH3GiFFGWX/SH5TCPVePLR21ngMFV8nAthX
 gYrFkRi/t+Wafe3ByTu2XYUDlXHKGIPIoAKo4gz5dIjUFfoac1ZuCDIbEiqPEjkk
@@ -51,21 +57,21 @@ TUwLP4n7pK4J2sCIs6fRD5kEYms4BnddXeRuI2fGZHGH70Ci/Q==
 
 Cleanup($global:CONTAINERNAME)
 
-Describe "[$global:AGENT_IMAGE] image is present" {
+Describe "[$global:IMAGE_NAME] image is present" {
     It 'builds image' {
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "inspect $global:AGENT_IMAGE"
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"TOOLS_WINDOWS_VERSION=${global:TOOLSWINDOWSVERSION}`" --build-arg `"JAVA_VERSION=${global:JAVAMAJORVERSION}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --tag=${global:IMAGE_TAG} --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
         $exitCode | Should -Be 0
     }
 }
 
-Describe "[$global:AGENT_IMAGE] image has setup-sshd.ps1 in the correct location" {
+Describe "[$global:IMAGE_NAME] image has setup-sshd.ps1 in the correct location" {
     BeforeAll {
-        docker run --detach --tty --name="$global:CONTAINERNAME" --publish "$global:AGENT_IMAGE" $global:CONTAINERSHELL
+        docker run --detach --tty --name "$global:CONTAINERNAME" --publish-all  "$global:IMAGE_NAME" "$global:CONTAINERSHELL"
         Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
     }
 
     It 'has setup-sshd.ps1 in C:/ProgramData/Jenkins' {
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"if(Test-Path C:/ProgramData/Jenkins/setup-sshd.ps1) { exit 0 } else { exit 1}`""
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"if(Test-Path C:/ProgramData/Jenkins/setup-sshd.ps1) { exit 0 } else { exit 1}`"" $global:TESTS_DEBUG
         $exitCode | Should -Be 0
     }
 
@@ -74,9 +80,9 @@ Describe "[$global:AGENT_IMAGE] image has setup-sshd.ps1 in the correct location
     }
 }
 
-Describe "[$global:AGENT_IMAGE] checking image metadata" {
+Describe "[$global:IMAGE_NAME] checking image metadata" {
     It 'has correct volumes' {
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "inspect -f '{{.Config.Volumes}}' $global:AGENT_IMAGE"
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "inspect --format '{{.Config.Volumes}}' $global:IMAGE_NAME" $global:TESTS_DEBUG
         $exitCode | Should -Be 0
 
         $stdout | Should -Match 'C:/Users/jenkins/AppData/Local/Temp'
@@ -84,27 +90,33 @@ Describe "[$global:AGENT_IMAGE] checking image metadata" {
     }
 
     It 'has the source GitHub URL in docker metadata' {
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "inspect --format=`"{{index .Config.Labels \`"org.opencontainers.image.source\`"}}`" $global:AGENT_IMAGE"
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "inspect --format=`"{{index .Config.Labels \`"org.opencontainers.image.source\`"}}`" $global:IMAGE_NAME" $global:TESTS_DEBUG
         $exitCode | Should -Be 0
         $stdout.Trim() | Should -Match 'https://github.com/jenkinsci/docker-ssh-agent'
     }
 }
 
-Describe "[$global:AGENT_IMAGE] image has correct version of java installed and in the PATH" {
+Describe "[$global:IMAGE_NAME] image has correct version of java and git-lfs installed and in the PATH" {
     BeforeAll {
-        docker run --detach --tty --name="$global:CONTAINERNAME" --publish "$global:AGENT_IMAGE" $global:CONTAINERSHELL
+        docker run --detach --tty --name="$global:CONTAINERNAME" --publish-all "$global:IMAGE_NAME" $global:CONTAINERSHELL
         Is-ContainerRunning $global:CONTAINERNAME
     }
 
     It 'has java installed and in the path' {
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"if(`$null -eq (Get-Command java.exe -ErrorAction SilentlyContinue)) { exit -1 } else { exit 0 }`""
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"if(`$null -eq (Get-Command java.exe -ErrorAction SilentlyContinue)) { exit -1 } else { exit 0 }`"" $global:TESTS_DEBUG
         $exitCode | Should -Be 0
 
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`$version = java -version 2>&1 ; Write-Host `$version`""
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`$version = java -version 2>&1 ; Write-Host `$version`"" $global:TESTS_DEBUG
         $r = [regex] "^openjdk version `"(?<major>\d+)"
         $m = $r.Match($stdout)
         $m | Should -Not -Be $null
-        $m.Groups['major'].ToString() | Should -Be "$global:JDKMAJORVERSION"
+        $m.Groups['major'].ToString() | Should -Be "$global:JAVAMAJORVERSION"
+    }
+
+    It 'has git-lfs (and thus git) installed' {
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`& git lfs version`""
+        $exitCode | Should -Be 0
+        $stdout.Trim() | Should -Match "git-lfs/${global:GITLFSVERSION}"
     }
 
     AfterAll {
@@ -112,14 +124,14 @@ Describe "[$global:AGENT_IMAGE] image has correct version of java installed and 
     }
 }
 
-Describe "[$global:AGENT_IMAGE] create agent container with pubkey as argument" {
+Describe "[$global:IMAGE_NAME] create agent container with pubkey as argument" -Skip:($global:WINDOWSFLAVOR -eq 'windowsservercore') {
     BeforeAll {
-        docker run --detach --tty --name="$global:CONTAINERNAME" --publish "$global:AGENT_IMAGE" "$global:PUBLIC_SSH_KEY"
+        docker run --detach --tty --name="$global:CONTAINERNAME" --publish-all "$global:IMAGE_NAME" "$global:PUBLIC_SSH_KEY"
         Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
     }
 
     It 'runs commands via ssh' {
-        $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
+        $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should -Be 0
         $stdout | Should -Match "f00"
     }
@@ -129,14 +141,14 @@ Describe "[$global:AGENT_IMAGE] create agent container with pubkey as argument" 
     }
 }
 
-Describe "[$global:AGENT_IMAGE] create agent container with pubkey as envvar" {
+Describe "[$global:IMAGE_NAME] create agent container with pubkey as envvar" -Skip:($global:WINDOWSFLAVOR -eq 'windowsservercore') {
     BeforeAll {
-        docker run --detach --tty --name="$global:CONTAINERNAME" --publish --env="JENKINS_AGENT_SSH_PUBKEY=$PUBLIC_SSH_KEY" "$global:AGENT_IMAGE"
+        docker run --detach --tty --name="$global:CONTAINERNAME" --publish-all --env="JENKINS_AGENT_SSH_PUBKEY=$global:PUBLIC_SSH_KEY" "$global:IMAGE_NAME"
         Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
     }
 
     It 'runs commands via ssh' {
-        $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
+        $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should -Be 0
         $stdout | Should -Match "f00"
     }
@@ -146,16 +158,17 @@ Describe "[$global:AGENT_IMAGE] create agent container with pubkey as envvar" {
     }
 }
 
-$DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
-Describe "[$global:AGENT_IMAGE] create agent container like docker-plugin with '$DOCKER_PLUGIN_DEFAULT_ARG' as argument" {
+
+$global:DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
+Describe "[$global:IMAGE_NAME] create agent container like docker-plugin with '$global:DOCKER_PLUGIN_DEFAULT_ARG' as argument" -Skip:($global:WINDOWSFLAVOR -eq 'windowsservercore') {
     BeforeAll {
-        [string]::IsNullOrWhiteSpace($DOCKER_PLUGIN_DEFAULT_ARG) | Should -BeFalse
-        docker run --detach --tty --name="$global:CONTAINERNAME" --publish --env="JENKINS_AGENT_SSH_PUBKEY=$PUBLIC_SSH_KEY" "$global:AGENT_IMAGE" "$DOCKER_PLUGIN_DEFAULT_ARG"
+        [string]::IsNullOrWhiteSpace($global:DOCKER_PLUGIN_DEFAULT_ARG) | Should -BeFalse
+        docker run --detach --tty --name="$global:CONTAINERNAME" --publish-all --env="JENKINS_AGENT_SSH_PUBKEY=$global:PUBLIC_SSH_KEY" "$global:IMAGE_NAME" "$global:DOCKER_PLUGIN_DEFAULT_ARG"
         Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
     }
 
     It 'runs commands via ssh' {
-        $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
+        $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should -Be 0
         $stdout | Should -Match "f00"
     }
@@ -165,7 +178,7 @@ Describe "[$global:AGENT_IMAGE] create agent container like docker-plugin with '
     }
 }
 
-Describe "[$global:AGENT_IMAGE] build args" {
+Describe "[$global:IMAGE_NAME] build args" {
     BeforeAll {
         Push-Location -StackName 'agent' -Path "$PSScriptRoot/.."
     }
@@ -173,12 +186,12 @@ Describe "[$global:AGENT_IMAGE] build args" {
     It 'uses build args correctly' {
         $TEST_USER="testuser"
         $TEST_JAW="C:/hamster"
-        $CUSTOM_IMAGE_NAME = "custom-${AGENT_IMAGE}"
+        $CUSTOM_IMAGE_NAME = "custom-${IMAGE_NAME}"
 
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"user=$TEST_USER`" --build-arg `"JENKINS_AGENT_WORK=$TEST_JAW`" --tag=$CUSTOM_IMAGE_NAME --file=$global:IMAGE_FOLDER/Dockerfile ./"
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"TOOLS_WINDOWS_VERSION=${global:TOOLSWINDOWSVERSION}`" --build-arg `"JAVA_VERSION=${global:JAVAMAJORVERSION}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --build-arg `"user=$TEST_USER`" --build-arg `"JENKINS_AGENT_WORK=$TEST_JAW`" --tag=$CUSTOM_IMAGE_NAME --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
         $exitCode | Should -Be 0
 
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=$global:CONTAINERNAME --publish $CUSTOM_IMAGE_NAME $global:CONTAINERSHELL"
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=$global:CONTAINERNAME --publish-all $CUSTOM_IMAGE_NAME $global:CONTAINERSHELL"
         $exitCode | Should -Be 0
         Is-ContainerRunning "$global:CONTAINERNAME" | Should -BeTrue
 

@@ -2,7 +2,7 @@
 
 # The MIT License
 #
-#  Copyright (c) 2019-2020, Alex Earl
+#  Copyright (c) 2019-2020, Alex Earl and other Jenkins Contributors
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -22,21 +22,33 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-ARG JAVA_VERSION=11.0.22_7
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-1809
+ARG JAVA_VERSION
+ARG WINDOWS_VERSION_TAG
+ARG TOOLS_WINDOWS_VERSION
+FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-"${TOOLS_WINDOWS_VERSION}" AS jdk-core
 
-SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+FROM mcr.microsoft.com/powershell:nanoserver-"${TOOLS_WINDOWS_VERSION}" AS pwsh-source
 
-ARG OPENSSH_VERSION=V8.6.0.0p1-Beta
+FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
-ARG user=jenkins
-ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"
-ENV JENKINS_AGENT_USER ${user}
-ENV JENKINS_AGENT_WORK ${JENKINS_AGENT_WORK}
+ARG JAVA_HOME
+ENV PSHOME="C:\Program Files\PowerShell"
+ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
 
+# The nanoserver image is nice and small, but we need a couple of things to get SSH working
+COPY --from=jdk-core /windows/system32/netapi32.dll /windows/system32/netapi32.dll
+COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
+COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
+COPY --from=pwsh-source $PSHOME $PSHOME
+
+SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
 
-# install git
+# Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
+RUN $javaMajorVersion = $env:JAVA_HOME.Substring($env:JAVA_HOME.Length - 2); `
+    New-Item -Path "C:\jdk-${javaMajorVersion}" -ItemType SymbolicLink -Value "${env:JAVA_HOME}"
+
+# Install git
 ARG GIT_VERSION=2.44.0
 ARG GIT_PATCH_VERSION=1
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
@@ -48,6 +60,12 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Expand-Archive mingit.zip -DestinationPath c:\mingit ; `
     Remove-Item mingit.zip -Force
 
+# Add java & git to PATH
+ENV ProgramFiles="C:\Program Files"
+ENV WindowsPATH="C:\Windows\system32;C:\Windows"
+ENV PATH="${WindowsPATH};${ProgramFiles}\PowerShell;${JAVA_HOME}\bin;C:\mingit\cmd"
+
+# Install git-lfs
 ARG GIT_LFS_VERSION=v3.1.4
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
     $url = $('https://github.com/git-lfs/git-lfs/releases/download/{0}/git-lfs-windows-amd64-{0}.zip' -f $env:GIT_LFS_VERSION) ; `
@@ -55,12 +73,15 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Invoke-WebRequest $url -OutFile 'GitLfs.zip' -UseBasicParsing ; `
     Expand-Archive GitLfs.zip -DestinationPath c:\mingit\mingw64\bin ; `
     Remove-Item GitLfs.zip -Force ; `
-    & C:\mingit\cmd\git.exe lfs install ; `
-    $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
-    $NewPath = $CurrentPath + ';C:\mingit\cmd' ; `
-    Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath
+    & C:\mingit\cmd\git.exe lfs install
 
-# setup SSH server
+ARG user=jenkins
+ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"
+ENV JENKINS_AGENT_USER ${user}
+ENV JENKINS_AGENT_WORK ${JENKINS_AGENT_WORK}
+
+# Setup SSH server
+ARG OPENSSH_VERSION=V8.6.0.0p1-Beta
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
     $url = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/{0}/OpenSSH-Win64.zip' -f $env:OPENSSH_VERSION ; `
     Write-Host "Retrieving $url..." ; `
@@ -87,11 +108,11 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('Match User {0}' -f $env:JENKINS_AGENT_USER) ; `
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('       AuthorizedKeysFile C:/Users/{0}/.ssh/authorized_keys' -f $env:JENKINS_AGENT_USER) ; `
     New-Item -Path HKLM:\SOFTWARE -Name OpenSSH -Force | Out-Null ; `
-    New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -PropertyType string -Force | Out-Null
+    New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\Program Files\Powershell\pwsh.exe' -PropertyType string -Force | Out-Null
 
 COPY CreateProfile.psm1 C:/
 
-# create user and user directory
+# Create user and user directory
 RUN Import-Module -Force C:/CreateProfile.psm1 ; `
     New-UserWithProfile -UserName $env:JENKINS_AGENT_USER -Description 'Jenkins Agent User' ; `
     Remove-Item -Force C:/CreateProfile.psm1
@@ -103,8 +124,6 @@ COPY setup-sshd.ps1 C:/ProgramData/Jenkins/setup-sshd.ps1
 
 EXPOSE 22
 
-ENTRYPOINT ["powershell.exe", "-NoExit", "-Command", "& C:/ProgramData/Jenkins/setup-sshd.ps1"]
-
 LABEL `
     org.opencontainers.image.vendor="Jenkins project" `
     org.opencontainers.image.title="Official Jenkins SSH Agent Docker image" `
@@ -112,3 +131,5 @@ LABEL `
     org.opencontainers.image.url="https://www.jenkins.io/" `
     org.opencontainers.image.source="https://github.com/jenkinsci/docker-ssh-agent" `
     org.opencontainers.image.licenses="MIT"
+
+ENTRYPOINT ["pwsh.exe", "-NoExit", "-Command", "& C:/ProgramData/Jenkins/setup-sshd.ps1"]

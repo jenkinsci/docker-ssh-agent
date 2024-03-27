@@ -30,56 +30,56 @@ sources:
       - trimprefix: "v"
 
 targets:
-  ############# JDK11 Nanoserver 18.09
-  setGitVersionJDK11WindowsNanoserver1809:
-    name: Update the Git Windows version for JDK11 Windows Nanoserver 1809
+  # Nanoserver
+  setGitVersionWindowsNanoserver:
+    name: Update the Git Windows version for Windows Nanoserver
     transformers:
       - findsubmatch:
           pattern: '(.*).windows\.(\d*)$'
           captureindex: 1
     kind: dockerfile
     spec:
-      file: windows/nanoserver-ltsc2019/Dockerfile
+      file: windows/nanoserver/Dockerfile
       instruction:
         keyword: ARG
         matcher: GIT_VERSION
     scmid: default
-  setGitPackagePatchJDK11WindowsNanoserver1809:
-    name: Update the Git Package Windows patch for JDK11 Windows Nanoserver 1809
+  setGitPackagePatchWindowsNanoserver:
+    name: Update the Git Package Windows patch for Windows Nanoserver
     transformers:
       - findsubmatch:
           pattern: '(.*).windows\.(\d*)$'
           captureindex: 2
     kind: dockerfile
     spec:
-      file: windows/nanoserver-ltsc2019/Dockerfile
+      file: windows/nanoserver/Dockerfile
       instruction:
         keyword: ARG
         matcher: GIT_PATCH_VERSION
     scmid: default
-  ############# JDK11 Windows Server Core LTSC2019
-  setGitVersionJDK11WindowsServer2019:
-    name: Update the Git Windows version for JDK11 Windows Server Core LTSC2019
+  # Windows Server Core
+  setGitVersionWindowsServer:
+    name: Update the Git Windows version for Windows Server Core
     transformers:
       - findsubmatch:
           pattern: '(.*).windows\.(\d*)$'
           captureindex: 1
     kind: dockerfile
     spec:
-      file: windows/windowsservercore-ltsc2019/Dockerfile
+      file: windows/windowsservercore/Dockerfile
       instruction:
         keyword: ARG
         matcher: GIT_VERSION
     scmid: default
-  setGitPackagePatchJDK11WindowsServer2019:
-    name: Update the Git Package Windows patch for Windows Server Core LTSC2019
+  setGitPackagePatchWindowsServer:
+    name: Update the Git Package Windows patch for Windows Server Core
     transformers:
       - findsubmatch:
           pattern: '(.*).windows\.(\d*)$'
           captureindex: 2
     kind: dockerfile
     spec:
-      file: windows/windowsservercore-ltsc2019/Dockerfile
+      file: windows/windowsservercore/Dockerfile
       instruction:
         keyword: ARG
         matcher: GIT_PATCH_VERSION

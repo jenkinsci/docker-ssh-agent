@@ -64,26 +64,6 @@ conditions:
       image: eclipse-temurin
 
 targets:
-  setJDK11VersionNanoServer:
-    name: "Bump JDK11 default ARG version on Windows NanoServer Dockerfile"
-    kind: dockerfile
-    sourceid: jdk11LastVersion
-    spec:
-      file: windows/nanoserver-ltsc2019/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
-    scmid: default
-  setJDK11VersionServerCore:
-    name: "Bump JDK11 default ARG version on Windows Server Core Dockerfile"
-    kind: dockerfile
-    sourceid: jdk11LastVersion
-    spec:
-      file: windows/windowsservercore-ltsc2019/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
-    scmid: default
   setJDK11VersionDockerBake:
     name: "Bump JDK11 version for Linux images in the docker-bake.hcl file"
     kind: hcl
@@ -91,6 +71,14 @@ targets:
     spec:
       file: docker-bake.hcl
       path: variable.JAVA11_VERSION.default
+    scmid: default
+  setJDK11VersionDockerCompose:
+    name: "Bump JDK11 version for Windows images in the build-windows.yaml file"
+    kind: yaml
+    sourceid: jdk11LastVersion
+    spec:
+      file: build-windows.yaml
+      key: $.services.jdk11.build.args.JAVA_VERSION
     scmid: default
 actions:
   default:

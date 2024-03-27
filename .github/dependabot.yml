@@ -11,12 +11,12 @@ updates:
     interval: weekly
   open-pull-requests-limit: 10
 - package-ecosystem: docker
-  directory: "/windows/nanoserver-ltsc2019"
+  directory: "/windows/nanoserver"
   schedule:
     interval: weekly
   open-pull-requests-limit: 10
 - package-ecosystem: docker
-  directory: "/windows/windowsservercore-ltsc2019"
+  directory: "/windows/windowsservercore"
   schedule:
     interval: weekly
   open-pull-requests-limit: 10
