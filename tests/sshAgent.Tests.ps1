@@ -19,12 +19,12 @@ if ($items[1] -eq 'ltsc2019') {
 # TODO: make this name unique for concurency
 $global:CONTAINERNAME = 'pester-jenkins-ssh-agent-{0}' -f $global:IMAGE_TAG
 
-$global:CONTAINERSHELL = "powershell.exe"
+$global:CONTAINERSHELL = 'powershell.exe'
 if($global:WINDOWSFLAVOR -eq 'nanoserver') {
-    $global:CONTAINERSHELL = "pwsh.exe"
+    $global:CONTAINERSHELL = 'pwsh.exe'
 }
 
-$global:PUBLIC_SSH_KEY = "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAvnRN27LdPPQq2OH3GiFFGWX/SH5TCPVePLR21ngMFV8nAthXgYrFkRi/t+Wafe3ByTu2XYUDlXHKGIPIoAKo4gz5dIjUFfoac1ZuCDIbEiqPEjkk4tkfc2qr/BnIZsOYQi4Mbu+Z40VZEsAQU7eBinnZaHE1qGMHjS1xfrRtp2rdeO1EBz92FJ8dfnkUnohTXo3qPVSFGIPbh7UKEoKcyCosRO1P41iWD1rVsH1SLLXYAh2t49L7IPiplg09Dep6H47LyQVbxU9eXY8yMtUrRuwEk9IUX/IqpxNhk5hngHPP3JjsP0hyyrYSPkZlbs3izd9kk3y09Wn/ElHidiEk0Q=="
+$global:PUBLIC_SSH_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAvnRN27LdPPQq2OH3GiFFGWX/SH5TCPVePLR21ngMFV8nAthXgYrFkRi/t+Wafe3ByTu2XYUDlXHKGIPIoAKo4gz5dIjUFfoac1ZuCDIbEiqPEjkk4tkfc2qr/BnIZsOYQi4Mbu+Z40VZEsAQU7eBinnZaHE1qGMHjS1xfrRtp2rdeO1EBz92FJ8dfnkUnohTXo3qPVSFGIPbh7UKEoKcyCosRO1P41iWD1rVsH1SLLXYAh2t49L7IPiplg09Dep6H47LyQVbxU9eXY8yMtUrRuwEk9IUX/IqpxNhk5hngHPP3JjsP0hyyrYSPkZlbs3izd9kk3y09Wn/ElHidiEk0Q=='
 $global:PRIVATE_SSH_KEY = @"
 -----BEGIN RSA PRIVATE KEY-----
 MIIEoQIBAAKCAQEAvnRN27LdPPQq2OH3GiFFGWX/SH5TCPVePLR21ngMFV8nAthX
@@ -54,6 +54,8 @@ uiWcmBF4XtMTVXUGcS6DCm/jf/4JDI8B1eJCVQKLbZXZbENWnptDtj098NTt9NdV
 TUwLP4n7pK4J2sCIs6fRD5kEYms4BnddXeRuI2fGZHGH70Ci/Q==
 -----END RSA PRIVATE KEY-----
 "@
+
+$global:OPENSSHVERSION = 'V8.6.0.0p1-Beta'
 
 Cleanup($global:CONTAINERNAME)
 
@@ -96,7 +98,7 @@ Describe "[$global:IMAGE_NAME] checking image metadata" {
     }
 }
 
-Describe "[$global:IMAGE_NAME] image has correct version of java and git-lfs installed and in the PATH" {
+Describe "[$global:IMAGE_NAME] image has correct version of tools installed and in the PATH" {
     BeforeAll {
         docker run --detach --tty --name="$global:CONTAINERNAME" --publish-all "$global:IMAGE_NAME" $global:CONTAINERSHELL
         Is-ContainerRunning $global:CONTAINERNAME
@@ -113,10 +115,26 @@ Describe "[$global:IMAGE_NAME] image has correct version of java and git-lfs ins
         $m.Groups['major'].ToString() | Should -Be "$global:JAVAMAJORVERSION"
     }
 
-    It 'has git-lfs (and thus git) installed' {
+    It 'has git-lfs (and thus git) installed and in the path' {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`& git lfs version`""
         $exitCode | Should -Be 0
         $stdout.Trim() | Should -Match "git-lfs/${global:GITLFSVERSION}"
+    }
+
+    It 'has SSH installed and in the path' {
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"if(`$null -eq (Get-Command ssh.exe -ErrorAction SilentlyContinue)) { exit -1 } else { exit 0 }`""
+        $exitCode | Should -Be 0
+
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`& ssh -V`""
+        $exitCode | Should -Be 0
+        $stdout.Trim() | Should -Match "OpenSSH_${global:OPENSSHVERSION}"
+    }
+
+    It 'can connect via SSH to localhost' {
+        $SSH_PORT=Get-Port $global:CONTAINERNAME 22
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`& ssh -v jenkins@127.0.0.1 -p $SSH_PORT`""
+        $exitCode | Should -Be 0
+        $stdout.Trim() | Should -Match 'OpenSSH'
     }
 
     AfterAll {
@@ -133,7 +151,7 @@ Describe "[$global:IMAGE_NAME] create agent container with pubkey as argument" -
     It 'runs commands via ssh' {
         $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should -Be 0
-        $stdout | Should -Match "f00"
+        $stdout | Should -Match 'f00'
     }
 
     AfterAll {
@@ -150,7 +168,7 @@ Describe "[$global:IMAGE_NAME] create agent container with pubkey as envvar" -Sk
     It 'runs commands via ssh' {
         $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should -Be 0
-        $stdout | Should -Match "f00"
+        $stdout | Should -Match 'f00'
     }
 
     AfterAll {
@@ -159,7 +177,7 @@ Describe "[$global:IMAGE_NAME] create agent container with pubkey as envvar" -Sk
 }
 
 
-$global:DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
+$global:DOCKER_PLUGIN_DEFAULT_ARG = '/usr/sbin/sshd -D -p 22'
 Describe "[$global:IMAGE_NAME] create agent container like docker-plugin with '$global:DOCKER_PLUGIN_DEFAULT_ARG' as argument" -Skip:($global:WINDOWSFLAVOR -eq 'windowsservercore') {
     BeforeAll {
         [string]::IsNullOrWhiteSpace($global:DOCKER_PLUGIN_DEFAULT_ARG) | Should -BeFalse
@@ -170,7 +188,7 @@ Describe "[$global:IMAGE_NAME] create agent container like docker-plugin with '$
     It 'runs commands via ssh' {
         $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should -Be 0
-        $stdout | Should -Match "f00"
+        $stdout | Should -Match 'f00'
     }
 
     AfterAll {
@@ -184,8 +202,8 @@ Describe "[$global:IMAGE_NAME] build args" {
     }
 
     It 'uses build args correctly' {
-        $TEST_USER="testuser"
-        $TEST_JAW="C:/hamster"
+        $TEST_USER = 'testuser'
+        $TEST_JAW = 'C:/hamster'
         $CUSTOM_IMAGE_NAME = "custom-${IMAGE_NAME}"
 
         $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"TOOLS_WINDOWS_VERSION=${global:TOOLSWINDOWSVERSION}`" --build-arg `"JAVA_VERSION=${global:JAVAMAJORVERSION}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --build-arg `"user=$TEST_USER`" --build-arg `"JENKINS_AGENT_WORK=$TEST_JAW`" --tag=$CUSTOM_IMAGE_NAME --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
