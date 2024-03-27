@@ -80,6 +80,7 @@ targets:
       file: build-windows.yaml
       key: $.services.jdk11.build.args.JAVA_VERSION
     scmid: default
+
 actions:
   default:
     kind: github/pullrequest
