@@ -21,8 +21,6 @@ sources:
       repository: Win32-OpenSSH
       token: "{{ requiredEnv .github.token }}"
       username: "{{ .github.username }}"
-    transformers:
-      - trimprefix: "v"
 
 targets:
   setGitLfsVersionWindowsNanoserver:
