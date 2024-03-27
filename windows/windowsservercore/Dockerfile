@@ -69,9 +69,9 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath
 
 # Setup SSH server
-ARG OPENSSH_VERSION=V8.6.0.0p1-Beta
+ARG OPENSSH_VERSION=8.6.0.0p1-Beta
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
-    $url = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/{0}/OpenSSH-Win64.zip' -f $env:OPENSSH_VERSION ; `
+    $url = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v{0}/OpenSSH-Win64.zip' -f $env:OPENSSH_VERSION ; `
     Write-Host "Retrieving $url..." ; `
     Invoke-WebRequest -Uri $url -OutFile C:/openssh.zip -UseBasicParsing ; `
     Expand-Archive c:/openssh.zip 'C:/Program Files' ; `
