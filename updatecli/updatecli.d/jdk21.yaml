@@ -30,7 +30,7 @@ sources:
     spec:
       versionfilter:
         kind: regex
-        pattern: {{ .temurin.version_pattern }}
+        pattern: '{{ .temurin.version_pattern }}'
     transformers:
       - trimprefix: "jdk-"
       - replacer:
@@ -76,26 +76,6 @@ targets:
     spec:
       file: docker-bake.hcl
       path: variable.JAVA21_VERSION.default
-    scmid: default
-  setJDK21VersionAlpine:
-    name: "Bump JDK21 default ARG version on Alpine Dockerfile"
-    kind: dockerfile
-    sourceid: jdk21LastVersion
-    spec:
-      file: alpine/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
-    scmid: default
-  setJDK21VersionDebian:
-    name: "Bump JDK21 default ARG version on Debian Dockerfile"
-    kind: dockerfile
-    sourceid: jdk21LastVersion
-    spec:
-      file: debian/Dockerfile
-      instruction:
-        keyword: ARG
-        matcher: JAVA_VERSION
     scmid: default
 
 actions:
