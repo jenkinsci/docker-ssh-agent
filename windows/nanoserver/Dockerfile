@@ -66,12 +66,15 @@ ENV WindowsPATH="C:\Windows\system32;C:\Windows"
 ENV PATH="${WindowsPATH};${ProgramFiles}\PowerShell;${JAVA_HOME}\bin;C:\mingit\cmd"
 
 # Install git-lfs
-ARG GIT_LFS_VERSION=v3.1.4
+ARG GIT_LFS_VERSION=3.5.1
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
-    $url = $('https://github.com/git-lfs/git-lfs/releases/download/{0}/git-lfs-windows-amd64-{0}.zip' -f $env:GIT_LFS_VERSION) ; `
+    $url = $('https://github.com/git-lfs/git-lfs/releases/download/v{0}/git-lfs-windows-amd64-v{0}.zip' -f $env:GIT_LFS_VERSION) ; `
     Write-Host "Retrieving $url..." ; `
     Invoke-WebRequest $url -OutFile 'GitLfs.zip' -UseBasicParsing ; `
     Expand-Archive GitLfs.zip -DestinationPath c:\mingit\mingw64\bin ; `
+    $gitLfsFolder = 'c:\mingit\mingw64\bin\git-lfs-{0}' -f $env:GIT_LFS_VERSION ; `
+    Move-Item -Path "${gitLfsFolder}\git-lfs.exe" -Destination c:\mingit\mingw64\bin\ ; `
+    Remove-Item -Path $gitLfsFolder -Recurse -Force ; `
     Remove-Item GitLfs.zip -Force ; `
     & C:\mingit\cmd\git.exe lfs install
 

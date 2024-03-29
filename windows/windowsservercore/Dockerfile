@@ -56,17 +56,20 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Remove-Item mingit.zip -Force
 
 # Install git-lfs
-ARG GIT_LFS_VERSION=v3.1.4
-RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
-    $url = $('https://github.com/git-lfs/git-lfs/releases/download/{0}/git-lfs-windows-amd64-{0}.zip' -f $env:GIT_LFS_VERSION) ; `
+ARG GIT_LFS_VERSION=3.5.1
+RUN $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
+    $NewPath = $CurrentPath + ';{0}\bin;C:\mingit\cmd' -f $env:JAVA_HOME ; `
+    Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath ; `
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
+    $url = $('https://github.com/git-lfs/git-lfs/releases/download/v{0}/git-lfs-windows-amd64-v{0}.zip' -f $env:GIT_LFS_VERSION) ; `
     Write-Host "Retrieving $url..." ; `
     Invoke-WebRequest $url -OutFile 'GitLfs.zip' -UseBasicParsing ; `
     Expand-Archive GitLfs.zip -DestinationPath c:\mingit\mingw64\bin ; `
+    $gitLfsFolder = 'c:\mingit\mingw64\bin\git-lfs-{0}' -f $env:GIT_LFS_VERSION ; `
+    Move-Item -Path "${gitLfsFolder}\git-lfs.exe" -Destination c:\mingit\mingw64\bin\ ; `
+    Remove-Item -Path $gitLfsFolder -Recurse -Force ; `
     Remove-Item GitLfs.zip -Force ; `
-    & C:\mingit\cmd\git.exe lfs install ; `
-    $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
-    $NewPath = $CurrentPath + ';{0}\bin;C:\mingit\cmd' -f $env:JAVA_HOME ; `
-    Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath
+    & C:\mingit\cmd\git.exe lfs install
 
 # Setup SSH server
 ARG OPENSSH_VERSION=V8.6.0.0p1-Beta
