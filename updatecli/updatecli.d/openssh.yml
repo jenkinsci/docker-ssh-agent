@@ -23,7 +23,7 @@ sources:
       username: "{{ .github.username }}"
 
 targets:
-  setGitLfsVersionNanoserver:
+  setOpenSSHVersionNanoserver:
     name: Update the OpenSSH version for Windows Nanoserver
     kind: dockerfile
     spec:
@@ -32,7 +32,7 @@ targets:
         keyword: ARG
         matcher: OPENSSH_VERSION
     scmid: default
-  setGitLfsVersionWindowsServerCore:
+  setOpenSSHVersionWindowsServerCore:
     name: Update the OpenSSH version for Windows Server Core
     kind: dockerfile
     spec:
