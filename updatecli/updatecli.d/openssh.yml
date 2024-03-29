@@ -1,0 +1,54 @@
+name: Bump OpenSSH version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+      branch: "{{ .github.branch }}"
+
+sources:
+  lastVersion:
+    kind: githubrelease
+    name: Get the latest OpenSSH version
+    spec:
+      owner: PowerShell
+      repository: Win32-OpenSSH
+      token: "{{ requiredEnv .github.token }}"
+      username: "{{ .github.username }}"
+
+targets:
+  setOpenSSHVersionNanoserver:
+    name: Update the OpenSSH version for Windows Nanoserver
+    kind: dockerfile
+    spec:
+      file: windows/nanoserver/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: OPENSSH_VERSION
+    scmid: default
+  setOpenSSHVersionWindowsServerCore:
+    name: Update the OpenSSH version for Windows Server Core
+    kind: dockerfile
+    spec:
+      file: windows/windowsservercore/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: OPENSSH_VERSION
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    title: Bump OpenSSH version to {{ source "lastVersion" }}
+    scmid: default
+    spec:
+      labels:
+        - enhancement
+        - openssh
+        - windows
