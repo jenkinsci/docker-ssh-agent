@@ -55,7 +55,7 @@ TUwLP4n7pK4J2sCIs6fRD5kEYms4BnddXeRuI2fGZHGH70Ci/Q==
 -----END RSA PRIVATE KEY-----
 "@
 
-$global:GITLFSVERSION = '3.4.1'
+$global:GITLFSVERSION = '3.5.1'
 
 Cleanup($global:CONTAINERNAME)
 
