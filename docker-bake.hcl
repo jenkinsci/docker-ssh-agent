@@ -81,7 +81,7 @@ variable "JAVA21_PREVIEW_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "bookworm-20240311"
+  default = "bookworm-20240408"
 }
 
 target "alpine_jdk11" {
