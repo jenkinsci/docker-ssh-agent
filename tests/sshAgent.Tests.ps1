@@ -126,7 +126,7 @@ Describe "[$global:IMAGE_NAME] image has correct version of java and git-lfs ins
     }
 }
 
-Describe "[$global:IMAGE_NAME] create agent container with pubkey as argument" -Skip:($global:WINDOWSFLAVOR -eq 'windowsservercore') {
+Describe "[$global:IMAGE_NAME] create agent container with pubkey as argument" {
     BeforeAll {
         docker run --detach --tty --name="$global:CONTAINERNAME" --publish-all "$global:IMAGE_NAME" "$global:PUBLIC_SSH_KEY"
         Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
@@ -143,7 +143,7 @@ Describe "[$global:IMAGE_NAME] create agent container with pubkey as argument" -
     }
 }
 
-Describe "[$global:IMAGE_NAME] create agent container with pubkey as envvar" -Skip:($global:WINDOWSFLAVOR -eq 'windowsservercore') {
+Describe "[$global:IMAGE_NAME] create agent container with pubkey as envvar" {
     BeforeAll {
         docker run --detach --tty --name="$global:CONTAINERNAME" --publish-all --env="JENKINS_AGENT_SSH_PUBKEY=$global:PUBLIC_SSH_KEY" "$global:IMAGE_NAME"
         Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
@@ -162,7 +162,7 @@ Describe "[$global:IMAGE_NAME] create agent container with pubkey as envvar" -Sk
 
 
 $global:DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
-Describe "[$global:IMAGE_NAME] create agent container like docker-plugin with '$global:DOCKER_PLUGIN_DEFAULT_ARG' as argument" -Skip:($global:WINDOWSFLAVOR -eq 'windowsservercore') {
+Describe "[$global:IMAGE_NAME] create agent container like docker-plugin with '$global:DOCKER_PLUGIN_DEFAULT_ARG' as argument" {
     BeforeAll {
         [string]::IsNullOrWhiteSpace($global:DOCKER_PLUGIN_DEFAULT_ARG) | Should -BeFalse
         docker run --detach --tty --name="$global:CONTAINERNAME" --publish-all --env="JENKINS_AGENT_SSH_PUBKEY=$global:PUBLIC_SSH_KEY" "$global:IMAGE_NAME" "$global:DOCKER_PLUGIN_DEFAULT_ARG"
