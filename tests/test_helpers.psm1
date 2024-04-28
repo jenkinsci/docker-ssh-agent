@@ -97,7 +97,7 @@ function Is-ContainerRunning($container) {
     }
 }
 
-function Run-Program($cmd, $params, $quiet=$false) {
+function Run-Program($cmd, $params, $quiet=$true) {
     if(-not $quiet) {
         Write-Host "cmd & params: $cmd $params"
     }
