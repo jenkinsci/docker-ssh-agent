@@ -1,5 +1,5 @@
 ARG JAVA_VERSION=17.0.11_9
-ARG DEBIAN_RELEASE=bookworm-20240408
+ARG DEBIAN_RELEASE=bookworm-20240423
 FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy AS jre-build
 
 # This Build ARG is populated by Docker
