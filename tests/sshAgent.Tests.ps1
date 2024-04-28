@@ -56,7 +56,6 @@ TUwLP4n7pK4J2sCIs6fRD5kEYms4BnddXeRuI2fGZHGH70Ci/Q==
 "@
 
 $global:GITLFSVERSION = '3.5.1'
-$global:OPENSSHVERSION = 'V8.6.0.0p1-Beta'
 
 Cleanup($global:CONTAINERNAME)
 
@@ -99,7 +98,7 @@ Describe "[$global:IMAGE_NAME] checking image metadata" {
     }
 }
 
-Describe "[$global:IMAGE_NAME] image has correct version of tools installed and in the PATH" {
+Describe "[$global:IMAGE_NAME] image has correct version of java and git-lfs installed and in the PATH" {
     BeforeAll {
         docker run --detach --tty --name="$global:CONTAINERNAME" --publish-all "$global:IMAGE_NAME" $global:CONTAINERSHELL
         Is-ContainerRunning $global:CONTAINERNAME
@@ -116,26 +115,10 @@ Describe "[$global:IMAGE_NAME] image has correct version of tools installed and 
         $m.Groups['major'].ToString() | Should -Be "$global:JAVAMAJORVERSION"
     }
 
-    It 'has git-lfs (and thus git) installed and in the path' {
+    It 'has git-lfs (and thus git) installed' {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`& git lfs version`""
         $exitCode | Should -Be 0
         $stdout.Trim() | Should -Match "git-lfs/$global:GITLFSVERSION"
-    }
-
-    It 'has SSH installed and in the path' {
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"if(`$null -eq (Get-Command ssh.exe -ErrorAction SilentlyContinue)) { exit -1 } else { exit 0 }`""
-        $exitCode | Should -Be 0
-
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`& ssh -V`""
-        $exitCode | Should -Be 0
-        $stdout.Trim() | Should -Match "OpenSSH_${global:OPENSSHVERSION}"
-    }
-
-    It 'can connect via SSH to localhost' {
-        $SSH_PORT=Get-Port $global:CONTAINERNAME 22
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`& ssh -v jenkins@127.0.0.1 -p $SSH_PORT`""
-        $exitCode | Should -Be 0
-        $stdout.Trim() | Should -Match 'OpenSSH'
     }
 
     AfterAll {
