@@ -4,13 +4,28 @@ Param(
     [String] $Target = 'build',
     [String] $Build = '',
     [String] $VersionTag = '1.0-1',
-    [switch] $DryRun = $false
+    [switch] $DryRun = $false,
+    # Output debug info for tests. Accepted values:
+    # - empty (no additional test output)
+    # - 'debug' (test cmd & stderr outputed)
+    # - 'verbose' (test cmd, stderr, stdout outputed)
+    [String] $TestsDebug = ''
 )
 
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue' # Disable Progress bar for faster downloads
+
 $Repository = 'ssh-agent'
 $Organisation = 'jenkins'
 $ImageType = 'windows-ltsc2019'
+
+$baseDockerCmd = 'docker-compose --file=build-windows.yaml'
+$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
+
+if(![String]::IsNullOrWhiteSpace($env:TESTS_DEBUG)) {
+    $ImageType = $env:IMAGE_TYPE
+}
+$env:TESTS_DEBUG = $TestsDebug
 
 if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_REPO)) {
     $Repository = $env:DOCKERHUB_REPO
@@ -22,6 +37,20 @@ if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_ORGANISATION)) {
 
 if(![String]::IsNullOrWhiteSpace($env:IMAGE_TYPE)) {
     $ImageType = $env:IMAGE_TYPE
+}
+
+# Ensure constant env vars used in the docker compose file are defined
+$env:DOCKERHUB_ORGANISATION = "$Organisation"
+$env:DOCKERHUB_REPO = "$Repository"
+$env:VERSION = "$VersionTag"
+
+$items = $ImageType.Split('-')
+$env:WINDOWS_FLAVOR = $items[0]
+$env:WINDOWS_VERSION_TAG = $items[1]
+$env:TOOLS_WINDOWS_VERSION = $items[1]
+if ($items[1] -eq 'ltsc2019') {
+    # There are no eclipse-temurin:*-ltsc2019 or mcr.microsoft.com/powershell:*-ltsc2019 docker images unfortunately, only "1809" ones
+    $env:TOOLS_WINDOWS_VERSION = '1809'
 }
 
 # Check for required commands
@@ -46,25 +75,9 @@ Function Test-CommandExists {
     }
 }
 
-# Ensure constant env vars used in the docker compose file are defined
-$env:DOCKERHUB_ORGANISATION = "$Organisation"
-$env:DOCKERHUB_REPO = "$Repository"
-$env:VERSION = "$VersionTag"
-
-$items = $ImageType.Split("-")
-$env:WINDOWS_FLAVOR = $items[0]
-$env:WINDOWS_VERSION_TAG = $items[1]
-$env:TOOLS_WINDOWS_VERSION = $items[1]
-if ($items[1] -eq 'ltsc2019') {
-    # There are no eclipse-temurin:*-ltsc2019 or mcr.microsoft.com/powershell:*-ltsc2019 docker images unfortunately, only "1809" ones
-    $env:TOOLS_WINDOWS_VERSION = '1809'
-}
-
-$ProgressPreference = 'SilentlyContinue' # Disable Progress bar for faster downloads
-
-Test-CommandExists "docker"
-Test-CommandExists "docker-compose"
-Test-CommandExists "yq"
+Test-CommandExists 'docker'
+Test-CommandExists 'docker-compose'
+Test-CommandExists 'yq'
 
 function Test-Image {
     param (
@@ -104,27 +117,27 @@ $baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
 Write-Host "= PREPARE: List of $Organisation/$env:DOCKERHUB_REPO images and tags to be processed:"
 Invoke-Expression "$baseDockerCmd config"
 
-Write-Host "= BUILD: Building all images..."
+Write-Host '= BUILD: Building all images...'
     switch ($DryRun) {
         $true { Write-Host "(dry-run) $baseDockerBuildCmd" }
         $false { Invoke-Expression $baseDockerBuildCmd }
     }
-    Write-Host "= BUILD: Finished building all images."
+    Write-Host '= BUILD: Finished building all images.'
 
 if($lastExitCode -ne 0) {
     exit $lastExitCode
 }
 
-if($target -eq "test") {
+if($target -eq 'test') {
     if ($DryRun) {
-        Write-Host "= TEST: (dry-run) test harness"
+        Write-Host '= TEST: (dry-run) test harness'
     } else {
-        Write-Host "= TEST: Starting test harness"
+        Write-Host '= TEST: Starting test harness'
 
         $mod = Get-InstalledModule -Name Pester -MinimumVersion 5.3.0 -MaximumVersion 5.3.3 -ErrorAction SilentlyContinue
         if($null -eq $mod) {
-            Write-Host "= TEST: Pester 5.3.x not found: installing..."
-            $module = "c:\Program Files\WindowsPowerShell\Modules\Pester"
+            Write-Host '= TEST: Pester 5.3.x not found: installing...'
+            $module = 'C:\Program Files\WindowsPowerShell\Modules\Pester'
             if(Test-Path $module) {
                 takeown /F $module /A /R
                 icacls $module /reset
@@ -135,7 +148,7 @@ if($target -eq "test") {
         }
 
         Import-Module Pester
-        Write-Host "= TEST: Setting up Pester environment..."
+        Write-Host '= TEST: Setting up Pester environment...'
         $configuration = [PesterConfiguration]::Default
         $configuration.Run.PassThru = $true
         $configuration.Run.Path = '.\tests'
@@ -145,7 +158,7 @@ if($target -eq "test") {
         $configuration.Output.Verbosity = 'Diagnostic'
         $configuration.CodeCoverage.Enabled = $false
 
-        Write-Host "= TEST: Testing all ${agentType} images..."
+        Write-Host '= TEST: Testing all images...'
         # Only fail the run afterwards in case of any test failures
         $testFailed = $false
         Invoke-Expression "$baseDockerCmd config" | yq '.services[].image' | ForEach-Object {
@@ -154,16 +167,16 @@ if($target -eq "test") {
 
         # Fail if any test failures
         if($testFailed -ne $false) {
-            Write-Error "= TEST: stage failed!"
+            Write-Error '= TEST: stage failed!'
             exit 1
         } else {
-            Write-Host "= TEST: stage passed!"
+            Write-Host '= TEST: stage passed!'
         }
     }
 }
 
-if($target -eq "publish") {
-    Write-Host "= PUBLISH: push all images and tags"
+if($target -eq 'publish') {
+    Write-Host '= PUBLISH: push all images and tags'
     switch($DryRun) {
         $true { Write-Host "(dry-run) $baseDockerCmd push" }
         $false { Invoke-Expression "$baseDockerCmd push" }
@@ -171,14 +184,14 @@ if($target -eq "publish") {
 
     # Fail if any issues when publising the docker images
     if($lastExitCode -ne 0) {
-        Write-Error "= PUBLISH: failed!"
+        Write-Error '= PUBLISH: failed!'
         exit 1
     }
 }
 
 if($lastExitCode -ne 0) {
-    Write-Error "Build failed!"
+    Write-Error 'Build failed!'
 } else {
-    Write-Host "Build finished successfully"
+    Write-Host 'Build finished successfully'
 }
 exit $lastExitCode

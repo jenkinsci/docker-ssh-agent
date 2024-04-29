@@ -196,6 +196,23 @@ make bats
 make: 'bats' is up to date.
 ```
 
+### Building and testing on Windows
+
+From a Powershell console, set first the `IMAGE_TYPE` environment variable defining the Windows flavor ("nanoserver"/"windowsservercore") and  version you want to build.
+
+For example:
+```
+New-Item -Path env:IMAGE_TYPE -Value "nanoserver-ltsc2019"
+```
+
+Then run `.\build.ps1` to launch the build of the images for each jexdk specified in the build-windows.yaml docker compose file.
+
+Run `.\build.ps1 test` if you also want to run the tests harness suit.
+Run `.\build.ps1 test -TestsDebug 'debug'` to also get commands & stderr of tests, displayed on top of them.
+You can set it to 'verbose' to also get stdout of every test command.
+
+Finally, instead of passing -TestsDebug parameter to build.ps1, you can also set the desired value to $env:TESTS_DEBUG.
+
 ## Changelog
 
 See [GitHub Releases](https://github.com/jenkinsci/docker-ssh-agent/releases/latest).

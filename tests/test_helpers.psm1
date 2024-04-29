@@ -16,7 +16,7 @@ function Test-CommandExists($command) {
 
 # check dependencies
 if(-Not (Test-CommandExists docker)) {
-    Write-Error "docker is not available"
+    Write-Error 'docker is not available'
 }
 
 function Get-EnvOrDefault($name, $def) {
@@ -35,8 +35,8 @@ function Retry-Command {
         [scriptblock] $ScriptBlock,
         [int] $RetryCount = 3,
         [int] $Delay = 30,
-        [string] $SuccessMessage = "Command executed successfuly!",
-        [string] $FailureMessage = "Failed to execute the command"
+        [string] $SuccessMessage = 'Command executed successfuly!',
+        [string] $FailureMessage = 'Failed to execute the command'
         )
 
     process {
@@ -97,10 +97,7 @@ function Is-ContainerRunning($container) {
     }
 }
 
-function Run-Program($cmd, $params, $quiet=$true) {
-    if(-not $quiet) {
-        Write-Host "cmd & params: $cmd $params"
-    }
+function Run-Program($cmd, $params) {
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
@@ -115,13 +112,13 @@ function Run-Program($cmd, $params, $quiet=$true) {
     $stdout = $proc.StandardOutput.ReadToEnd()
     $stderr = $proc.StandardError.ReadToEnd()
     $proc.WaitForExit()
-    if(($proc.ExitCode -ne 0) -and (-not $quiet)) {
-        Write-Host "[err] stdout:`n$stdout"
-        Write-Host "[err] stderr:`n$stderr"
-        Write-Host "[err] cmd:`n$cmd"
-        Write-Host "[err] params:`n$param"
+    if(($env:TESTS_DEBUG -eq 'debug') -or ($env:TESTS_DEBUG -eq 'verbose')) {
+        Write-Host -ForegroundColor DarkBlue "[cmd] $cmd $params"
+        if ($env:TESTS_DEBUG -eq 'verbose') { Write-Host -ForegroundColor DarkGray "[stdout] $stdout" }
+        if($proc.ExitCode -ne 0){
+            Write-Host -ForegroundColor DarkRed "[stderr] $stderr"
+        }
     }
-
     return $proc.ExitCode, $stdout, $stderr
 }
 
@@ -133,9 +130,9 @@ function Get-Port($container, $port=22) {
 
 # run a given command through ssh on the test container.
 function Run-ThruSSH($container, $privateKeyVal, $cmd) {
-    $SSH_PORT=Get-Port $container 22
+    $SSH_PORT = Get-Port $container 22
     if([System.String]::IsNullOrWhiteSpace($SSH_PORT)) {
-        Write-Error "Failed to get SSH port"
+        Write-Error 'Failed to get SSH port'
         return -1, $null, $null
     } else {
         $TMP_PRIV_KEY_FILE = New-TemporaryFile
