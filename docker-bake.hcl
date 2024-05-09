@@ -81,7 +81,7 @@ variable "default_jdk" {
 }
 
 # Return "true" if the jdk passed as parameter is the same as the default jdk, "false" otherwise
-function "short_tag" {
+function "is_default_jdk" {
   params = [jdk]
   result = equal(default_jdk, jdk) ? "true" : "false"
 }
@@ -128,15 +128,15 @@ target "alpine" {
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine-jdk${jdk}" : "",
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine${ALPINE_SHORT_TAG}-jdk${jdk}" : "",
     # If the jdk is the default one, add Alpine short tags
-    equal(short_tag(jdk), "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine" : "",
-    equal(short_tag(jdk), "true") ? "${REGISTRY}/${JENKINS_REPO}:alpine${ALPINE_SHORT_TAG}" : "",
-    equal(short_tag(jdk), "true") ? "${REGISTRY}/${JENKINS_REPO}:latest-alpine${ALPINE_SHORT_TAG}" : "",
+    is_default_jdk(jdk) ? "${REGISTRY}/${JENKINS_REPO}:alpine" : "",
+    is_default_jdk(jdk) ? "${REGISTRY}/${JENKINS_REPO}:alpine${ALPINE_SHORT_TAG}" : "",
+    is_default_jdk(jdk) ? "${REGISTRY}/${JENKINS_REPO}:latest-alpine${ALPINE_SHORT_TAG}" : "",
     "${REGISTRY}/${JENKINS_REPO}:alpine-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-alpine-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:alpine${ALPINE_SHORT_TAG}-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-alpine${ALPINE_SHORT_TAG}-jdk${jdk}",
   ]
-  platforms = alpine_platforms("${jdk}")
+  platforms = alpine_platforms(jdk)
 }
 
 target "debian" {
@@ -154,9 +154,9 @@ target "debian" {
     # If there is a tag, add versioned tag suffixed by the jdk
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk${jdk}" : "",
     # If there is a tag and if the jdk is the default one, add versioned short tag
-    equal(ON_TAG, "true") ? (equal(short_tag(jdk), "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}" : "") : "",
+    equal(ON_TAG, "true") ? (is_default_jdk(jdk) ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}" : "") : "",
     # If the jdk is the default one, add latest short tag
-    equal(short_tag(jdk), "true") ? "${REGISTRY}/${JENKINS_REPO}:latest" : "",
+    is_default_jdk(jdk) ? "${REGISTRY}/${JENKINS_REPO}:latest" : "",
     "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:debian-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:jdk${jdk}",
@@ -164,7 +164,7 @@ target "debian" {
     "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk${jdk}",
   ]
-  platforms = debian_platforms("${jdk}")
+  platforms = debian_platforms(jdk)
 }
 
 target "debian_jdk21-preview" {
