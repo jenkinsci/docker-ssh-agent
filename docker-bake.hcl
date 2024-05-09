@@ -93,26 +93,23 @@ function "javaversion" {
     ? "${JAVA11_VERSION}"
     : (equal(17, jdk)
       ? "${JAVA17_VERSION}"
-      : "${JAVA21_VERSION}")
-  )
+      : "${JAVA21_VERSION}"))
 }
 
 # Return an array of Alpine platforms to use depending on the jdk passed as parameter
-function "alpine_platform" {
+function "alpine_platforms" {
   params = [jdk]
   result = (equal(21, jdk)
     ? ["linux/amd64", "linux/arm64"]
-    : ["linux/amd64"]
-  )
+    : ["linux/amd64"])
 }
 
 # Return an array of Debian platforms to use depending on the jdk passed as parameter
-function "debian_platform" {
+function "debian_platforms" {
   params = [jdk]
   result = (equal(17, jdk)
     ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
-    : ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"]
-  )
+    : ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"])
 }
 
 target "alpine" {
@@ -127,7 +124,7 @@ target "alpine" {
     JAVA_VERSION = "${javaversion(jdk)}"
   }
   tags = [
-    # If there is a tag, add the versioned tags
+    # If there is a tag, add versioned tags suffixed by the jdk
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine-jdk${jdk}" : "",
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-alpine${ALPINE_SHORT_TAG}-jdk${jdk}" : "",
     # If the jdk is the default one, add Alpine short tags
@@ -139,7 +136,7 @@ target "alpine" {
     "${REGISTRY}/${JENKINS_REPO}:alpine${ALPINE_SHORT_TAG}-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-alpine${ALPINE_SHORT_TAG}-jdk${jdk}",
   ]
-  platforms = alpine_platform("${jdk}")
+  platforms = alpine_platforms("${jdk}")
 }
 
 target "debian" {
@@ -154,9 +151,9 @@ target "debian" {
     JAVA_VERSION   = "${javaversion(jdk)}"
   }
   tags = [
-    # If there is a tag, add the versioned tag suffixed by the jdk
+    # If there is a tag, add versioned tag suffixed by the jdk
     equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk${jdk}" : "",
-    # If there is a tag and if the jdk is the default one, add the versioned short tag
+    # If there is a tag and if the jdk is the default one, add versioned short tag
     equal(ON_TAG, "true") ? (equal(short_tag(jdk), "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}" : "") : "",
     # If the jdk is the default one, add latest short tag
     equal(short_tag(jdk), "true") ? "${REGISTRY}/${JENKINS_REPO}:latest" : "",
@@ -167,7 +164,7 @@ target "debian" {
     "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk${jdk}",
   ]
-  platforms = ["linux/amd64", "linux/arm64", "linux/s390x", "linux/ppc64le"]
+  platforms = debian_platforms("${jdk}")
 }
 
 target "debian_jdk21-preview" {
