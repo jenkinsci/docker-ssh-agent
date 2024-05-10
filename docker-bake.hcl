@@ -77,7 +77,7 @@ variable "DEBIAN_RELEASE" {
 }
 
 variable "default_jdk" {
-  default = 17
+  default = 11
 }
 
 # Return "true" if the jdk passed as parameter is the same as the default jdk, "false" otherwise
