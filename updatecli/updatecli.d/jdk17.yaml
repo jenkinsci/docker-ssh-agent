@@ -79,6 +79,10 @@ targets:
     spec:
       file: build-windows.yaml
       key: $.services.jdk17.build.args.JAVA_VERSION
+    transformers:
+      - replacer:
+          from: _
+          to: +
     scmid: default
   setJDK17VersionAlpine:
     name: "Bump JDK17 default ARG version on Alpine Dockerfile"
