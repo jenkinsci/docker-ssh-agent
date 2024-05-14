@@ -22,7 +22,26 @@
 
 ARG JAVA_VERSION=17.0.11_9
 ARG ALPINE_TAG=3.19.1
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-alpine AS jre-build
+FROM alpine:"${ALPINE_TAG}" AS jre-build
+
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+
+# This Build ARG is populated by Docker
+# Ref. https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
+ARG TARGETPLATFORM
+
+COPY jdk-download-url.sh /usr/bin/local/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/local/jdk-download.sh
+
+ARG JAVA_VERSION=17.0.11_9
+# hadolint ignore=DL3018
+RUN apk add --no-cache \
+    ca-certificates \
+    jq \
+    curl \
+  && /usr/bin/local/jdk-download.sh alpine
+
+ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
 RUN if [ "$TARGETPLATFORM" != 'linux/arm/v7' ]; then \
     case "$(jlink --version 2>&1)" in \
