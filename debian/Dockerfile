@@ -1,4 +1,3 @@
-
 # The MIT License
 #
 #  Copyright (c) 2015-2024, CloudBees, Inc. and other Jenkins contributors
