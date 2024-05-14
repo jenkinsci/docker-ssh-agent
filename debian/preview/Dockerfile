@@ -20,30 +20,9 @@ RUN apt-get update \
 
 ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
-# Generate smaller java runtime without unneeded files
-# for now we include the full module path to maintain compatibility
-# while still saving space (approx 200mb from the full distribution)
-RUN if test "${TARGETPLATFORM}" != 'linux/arm/v7'; then \
-    case "$(jlink --version 2>/dev/null)" in \
-        # jlink version 11 has less features than JDK17+
-        "11."*) strip_java_debug_flags=("--strip-debug") ;; \
-        *) strip_java_debug_flags=("--strip-java-debug-attributes") ;; \
-    esac; \
-    if test "${TARGETPLATFORM}" != 'linux/amd/64'; then \
-        # posix_spawn (default for JDK12+) fails erratically with qemu on non x86 CPUs - https://github.com/openzipkin/docker-java/issues/34#issuecomment-721673618
-        export JAVA_TOOL_OPTIONS='-Djdk.lang.Process.launchMechanism=vfork'; \
-    fi; \
-    jlink \
-        --add-modules ALL-MODULE-PATH \
-        "${strip_java_debug_flags[@]}" \
-        --no-man-pages \
-        --no-header-files \
-        --compress=2 \
-        --output /javaruntime; \
-    # It is acceptable to have a larger image in arm/v7 (arm 32 bits) environment.
-    # Because jlink fails with the error "jmods: Value too large for defined data type" error.
-    else cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
-    fi
+# It is acceptable to have a larger image in arm/v7 (arm 32 bits) environment.
+# Because jlink fails with the error "jmods: Value too large for defined data type" error.
+RUN cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
 
 FROM debian:"${DEBIAN_RELEASE}"
 
