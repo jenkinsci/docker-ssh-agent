@@ -22,7 +22,7 @@ ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
 # It is acceptable to have a larger image in arm/v7 (arm 32 bits) environment.
 # Because jlink fails with the error "jmods: Value too large for defined data type" error.
-RUN cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime; \
+RUN cp -r "/opt/jdk-${JAVA_VERSION}" /javaruntime
 
 FROM debian:"${DEBIAN_RELEASE}"
 
