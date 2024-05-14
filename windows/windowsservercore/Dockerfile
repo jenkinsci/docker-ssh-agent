@@ -22,10 +22,21 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-ARG JAVA_VERSION
 ARG WINDOWS_VERSION_TAG
 ARG TOOLS_WINDOWS_VERSION
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-windowsservercore-"${TOOLS_WINDOWS_VERSION}" AS jdk-core
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}" AS jdk-core
+
+# $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+ARG JAVA_VERSION
+RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
+    $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
+    $msiUrl = 'https://api.adoptium.net/v3/installer/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION.Replace('+', '%2B') ; `
+    Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.msi' ; `
+    $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', 'C:\temp\jdk.msi', '/L*V', 'C:\temp\OpenJDK.log', '/quiet', 'ADDLOCAL=FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome',  "INSTALLDIR=C:\openjdk-${javaMajorVersion}" -Wait -Passthru ; `
+    $proc.WaitForExit() ; `
+    Remove-Item -Path C:\temp -Recurse | Out-Null
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}"
 
@@ -44,7 +55,7 @@ ENV JENKINS_AGENT_WORK ${JENKINS_AGENT_WORK}
 USER ContainerAdministrator
 
 # Install git
-ARG GIT_VERSION=2.45.0
+ARG GIT_VERSION=2.45.1
 ARG GIT_PATCH_VERSION=1
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
     # The patch "windows.1" always have a different URL than the subsequent patch (ZIP filename is different)

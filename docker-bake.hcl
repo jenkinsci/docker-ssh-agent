@@ -73,7 +73,7 @@ variable "JAVA21_PREVIEW_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "bookworm-20240423"
+  default = "bookworm-20240513"
 }
 
 variable "default_jdk" {
@@ -93,7 +93,7 @@ function "javaversion" {
     ? "${JAVA11_VERSION}"
     : (equal(17, jdk)
       ? "${JAVA17_VERSION}"
-      : "${JAVA21_VERSION}"))
+  : "${JAVA21_VERSION}"))
 }
 
 # Return an array of Alpine platforms to use depending on the jdk passed as parameter
@@ -101,7 +101,7 @@ function "alpine_platforms" {
   params = [jdk]
   result = (equal(21, jdk)
     ? ["linux/amd64", "linux/arm64"]
-    : ["linux/amd64"])
+  : ["linux/amd64"])
 }
 
 # Return an array of Debian platforms to use depending on the jdk passed as parameter
@@ -109,7 +109,7 @@ function "debian_platforms" {
   params = [jdk]
   result = (equal(17, jdk)
     ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
-    : ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"])
+  : ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"])
 }
 
 target "alpine" {
