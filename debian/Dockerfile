@@ -1,12 +1,46 @@
-ARG JAVA_VERSION=17.0.11_9
+# The MIT License
+#
+#  Copyright (c) 2015-2024, CloudBees, Inc. and other Jenkins contributors
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
 ARG DEBIAN_RELEASE=bookworm-20240513
-FROM eclipse-temurin:"${JAVA_VERSION}"-jdk-jammy AS jre-build
+FROM debian:"${DEBIAN_RELEASE}"-slim as jre-build
+
+SHELL ["/bin/bash", "-e", "-u", "-o", "pipefail", "-c"]
 
 # This Build ARG is populated by Docker
 # Ref. https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 ARG TARGETPLATFORM
 
-SHELL ["/bin/bash","-e", "-u", "-o", "pipefail", "-c"]
+COPY jdk-download-url.sh /usr/bin/local/jdk-download-url.sh
+COPY jdk-download.sh /usr/bin/local/jdk-download.sh
+
+ARG JAVA_VERSION=17.0.11_9
+# hadolint ignore=DL3008
+RUN set -x; apt-get update \
+  && apt-get install --no-install-recommends -y \
+    ca-certificates \
+    jq \
+    curl \
+  && /usr/bin/local/jdk-download.sh
+
+ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
