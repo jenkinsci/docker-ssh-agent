@@ -24,7 +24,7 @@ pipeline {
                 axes {
                     axis {
                         name 'IMAGE_TYPE'
-                        values 'linux', 'nanoserver-1809', 'windowsservercore-ltsc2019'
+                        values 'linux', 'nanoserver-1809', 'nanoserver-ltsc2019', 'nanoserver-ltsc2022', 'windowsservercore-ltsc2019', 'windowsservercore-ltsc2022'
                     }
                 }
                 stages {
@@ -33,7 +33,7 @@ pipeline {
                             label agentSelector(env.IMAGE_TYPE)
                         }
                         options {
-                            timeout(time: 30, unit: 'MINUTES')
+                            timeout(time: 60, unit: 'MINUTES')
                         }
                         environment {
                             DOCKERHUB_ORGANISATION = "${infra.isTrusted() ? 'jenkins' : 'jenkins4eval'}"

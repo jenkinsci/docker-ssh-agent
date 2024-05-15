@@ -79,6 +79,10 @@ targets:
     spec:
       file: build-windows.yaml
       key: $.services.jdk11.build.args.JAVA_VERSION
+    transformers:
+      - replacer:
+          from: _
+          to: +
     scmid: default
 
 actions:
