@@ -81,15 +81,19 @@ Test-CommandExists 'yq'
 
 function Test-Image {
     param (
-        $ImageName
+        $ImageNameAndJavaVersion
     )
 
+    $items = $ImageNameAndJavaVersion.Split("|")
+    $imageName = $items[0]
+    $javaVersion = $items[1]
     $imageNameItems = $imageName.Split(":")
     $imageTag = $imageNameItems[1]
 
     Write-Host "= TEST: Testing ${ImageName} image"
 
     $env:IMAGE_NAME = $ImageName
+    $env:JAVA_VERSION = "$javaVersion"
 
     $targetPath = '.\target\{0}' -f $imageTag
     if(Test-Path $targetPath) {
@@ -107,6 +111,7 @@ function Test-Image {
         Write-Host "There were $($TestResults.PassedCount) passed tests in ${ImageName}"
     }
     Remove-Item env:\IMAGE_NAME
+    Remove-Item env:\JAVA_VERSION
 
     return $failed
 }
@@ -161,8 +166,9 @@ if($target -eq 'test') {
         Write-Host '= TEST: Testing all images...'
         # Only fail the run afterwards in case of any test failures
         $testFailed = $false
-        Invoke-Expression "$baseDockerCmd config" | yq '.services[].image' | ForEach-Object {
-            $testFailed = $testFailed -or (Test-Image $_)
+        $jdks = Invoke-Expression "$baseDockerCmd config" | yq --unwrapScalar --output-format json '.services' | ConvertFrom-Json
+        foreach ($jdk in $jdks.PSObject.Properties) {
+            $testFailed = $testFailed -or (Test-Image ('{0}|{1}' -f $jdk.Value.image, $jdk.Value.build.args.JAVA_VERSION))
         }
 
         # Fail if any test failures
