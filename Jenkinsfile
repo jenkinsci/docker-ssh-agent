@@ -1,13 +1,13 @@
 def agentSelector(String imageType) {
-    // Image type running on a Linux agent
+    // Linux agent
     if (imageType == 'linux') {
         return 'linux'
     }
-    // Image types running on a Windows Server Core 2022 agent
+    // Windows Server Core 2022 agent
     if (imageType.contains('2022')) {
         return 'windows-2022'
     }
-    // Remaining image types running on a Windows Server Core 2019 agent: (nanoserver|windowservercore)-(1809|2019)
+    // Windows Server Core 2019 agent (for nanoserver 1809 & ltsc2019 and for windowservercore ltsc2019)
     return 'windows-2019'
 }
 
@@ -20,6 +20,9 @@ pipeline {
 
     stages {
         stage('docker-ssh-agent') {
+            environment {
+                DOCKERHUB_ORGANISATION = "${infra.isTrusted() ? 'jenkins' : 'jenkins4eval'}"
+            }
             matrix {
                 axes {
                     axis {
@@ -34,9 +37,6 @@ pipeline {
                         }
                         options {
                             timeout(time: 60, unit: 'MINUTES')
-                        }
-                        environment {
-                            DOCKERHUB_ORGANISATION = "${infra.isTrusted() ? 'jenkins' : 'jenkins4eval'}"
                         }
                         stages {
                             stage('Prepare Docker') {
@@ -75,6 +75,10 @@ pipeline {
                                 when {
                                     buildingTag()
                                 }
+                                environment {
+                                    ON_TAG = 'true'
+                                    VERSION = "${env.TAG_NAME}"
+                                }
                                 steps {
                                     script {
                                         // This function is defined in the jenkins-infra/pipeline-library
@@ -82,7 +86,7 @@ pipeline {
                                             if (isUnix()) {
                                                 sh 'make publish'
                                             } else {
-                                                powershell "& ./build.ps1 -VersionTag ${env.TAG_NAME} publish"
+                                                powershell '& ./build.ps1 publish'
                                             }
                                         }
                                     }
