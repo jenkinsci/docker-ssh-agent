@@ -120,14 +120,15 @@ If you want to build a specific image, you can issue the following command:
 make build-<OS>_<JDK_VERSION>
 ```
 
-That would give for JDK 11 on Alpine Linux:
+That would give for JDK 17 on Alpine Linux:
 
 ```bash
-make build-alpine_jdk11
+make build-alpine_jdk17
 ```
 
-#### Building all images
-Then, you can build all the images by running:
+#### Building images supported by your current architecture
+
+Then, you can build the images supported by your current architecture by running:
 
 ```bash
 make build
@@ -135,7 +136,7 @@ make build
 
 #### Testing all images
 
-If you want to test the images, you can run:
+If you want to test these images, you can run:
 
 ```bash
 make test
@@ -148,10 +149,18 @@ If you want to test a specific image, you can run:
 make test-<OS>_<JDK_VERSION>
 ```
 
-That would give for JDK 11 on Alpine Linux:
+That would give for JDK 17 on Alpine Linux:
 
 ```bash
-make test-alpine_jdk11
+make test-alpine_jdk17
+```
+
+#### Building all images
+
+You can build all images (even those unsupported by your current architecture) by running:
+
+```bash
+make buildall
 ```
 
 #### Other `make` targets
@@ -195,6 +204,10 @@ make show
 make bats
 make: 'bats' is up to date.
 ```
+
+`publish` allows the publication of all images targeted by 'linux' to a registry.
+
+`ci-init` is dedicated to Jenkins infrastructure for initialising docker and isn't required in other contexts.
 
 ### Building and testing on Windows
 
