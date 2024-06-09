@@ -4,6 +4,7 @@ Param(
     [String] $Target = 'build',
     [String] $Build = '',
     [String] $VersionTag = '1.0-1',
+    [String] $ImageType = 'nanoserver-ltsc2019',
     [switch] $DryRun = $false,
     # Output debug info for tests. Accepted values:
     # - empty (no additional test output)
@@ -15,12 +16,11 @@ Param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Disable Progress bar for faster downloads
 
-$Repository = 'ssh-agent'
-$Organisation = 'jenkins'
-$ImageType = 'windows-ltsc2019'
-
 $baseDockerCmd = 'docker-compose --file=build-windows.yaml'
 $baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
+
+$Repository = 'ssh-agent'
+$Organisation = 'jenkins'
 
 if(![String]::IsNullOrWhiteSpace($env:TESTS_DEBUG)) {
     $TestsDebug = $env:TESTS_DEBUG
@@ -119,9 +119,6 @@ function Test-Image {
 
     return $failed
 }
-
-$baseDockerCmd = 'docker-compose --file=build-windows.yaml'
-$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
 
 Write-Host '= PREPARE: List of images and tags to be processed:'
 Invoke-Expression "$baseDockerCmd config"
