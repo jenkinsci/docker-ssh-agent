@@ -39,6 +39,10 @@ if(![String]::IsNullOrWhiteSpace($env:IMAGE_TYPE)) {
     $ImageType = $env:IMAGE_TYPE
 }
 
+if(![String]::IsNullOrWhiteSpace($env:VERSION)) {
+    $VersionTag = $env:VERSION
+}
+
 # Ensure constant env vars used in the docker compose file are defined
 $env:DOCKERHUB_ORGANISATION = "$Organisation"
 $env:DOCKERHUB_REPO = "$Repository"
