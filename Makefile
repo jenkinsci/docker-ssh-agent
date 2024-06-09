@@ -43,11 +43,11 @@ init: check-reqs
 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
 build: check-reqs
-	@set -x; $(bake_cli) --set '*.platform=linux/$(ARCH)' $(shell make --silent list)
+	@set -x; $(bake_cli) $(shell make --silent list) --set '*.platform=linux/$(ARCH)'
 
 build-%:
 	@$(call check_image,$*)
-	@set -x; $(bake_cli) --set '*.platform=linux/$(ARCH)' '$*'
+	@set -x; $(bake_cli) '$*' --set '*.platform=linux/$(ARCH)'
 
 buildall: check-reqs
 	@set -x; $(bake_base_cli) linux
