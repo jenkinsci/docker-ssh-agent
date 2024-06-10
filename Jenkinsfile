@@ -87,7 +87,7 @@ pipeline {
                                         // This function is defined in the jenkins-infra/pipeline-library
                                         infra.withDockerCredentials {
                                             if (isUnix()) {
-                                                sh ' docker buildx bake --push --file docker-bake.hcl linux'
+                                                sh 'docker buildx bake --push --file docker-bake.hcl linux'
                                             } else {
                                                 powershell '& ./build.ps1 publish'
                                             }
