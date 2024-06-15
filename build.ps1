@@ -2,7 +2,6 @@
 Param(
     [Parameter(Position=1)]
     [String] $Target = 'build',
-    [String] $Build = '',
     [String] $VersionTag = '1.0-1',
     [switch] $DryRun = $false,
     # Output debug info for tests. Accepted values:
@@ -97,7 +96,6 @@ function Test-Image {
         Remove-Item -Recurse -Force $targetPath
     }
     New-Item -Path $targetPath -Type Directory | Out-Null
-    # $configuration.Run.Path = 'tests\sshAgent.Tests.ps1'
     $configuration.TestResult.OutputPath = '{0}\junit-results.xml' -f $targetPath
     $TestResults = Invoke-Pester -Configuration $configuration
     $failed = $false
