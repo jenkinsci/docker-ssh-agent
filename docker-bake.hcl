@@ -2,7 +2,6 @@ group "linux" {
   targets = [
     "alpine",
     "debian",
-    "debian_jdk21-preview",
   ]
 }
 
@@ -10,12 +9,6 @@ group "linux-arm64" {
   targets = [
     "debian",
     "alpine_jdk21",
-  ]
-}
-
-group "linux-arm32" {
-  targets = [
-    "debian_jdk21-preview",
   ]
 }
 
@@ -66,10 +59,6 @@ variable "JAVA17_VERSION" {
 
 variable "JAVA21_VERSION" {
   default = "21.0.3_9"
-}
-
-variable "JAVA21_PREVIEW_VERSION" {
-  default = "21.0.1+12"
 }
 
 variable "DEBIAN_RELEASE" {
@@ -167,22 +156,3 @@ target "debian" {
   platforms = debian_platforms(jdk)
 }
 
-target "debian_jdk21-preview" {
-  dockerfile = "debian/preview/Dockerfile"
-  context    = "."
-  args = {
-    JAVA_VERSION   = JAVA21_PREVIEW_VERSION
-    DEBIAN_RELEASE = DEBIAN_RELEASE
-  }
-  tags = [
-    # If there is a tag, add the versioned tag suffixed by the jdk
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk21-preview" : "",
-    "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk21-preview",
-    "${REGISTRY}/${JENKINS_REPO}:debian-jdk21-preview",
-    "${REGISTRY}/${JENKINS_REPO}:jdk21-preview",
-    "${REGISTRY}/${JENKINS_REPO}:latest-bookworm-jdk21-preview",
-    "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk21-preview",
-    "${REGISTRY}/${JENKINS_REPO}:latest-jdk21-preview",
-  ]
-  platforms = ["linux/arm/v7"]
-}
