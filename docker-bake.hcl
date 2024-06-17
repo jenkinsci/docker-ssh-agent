@@ -73,7 +73,7 @@ variable "JAVA21_PREVIEW_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "bookworm-20240513"
+  default = "bookworm-20240612"
 }
 
 variable "default_jdk" {
