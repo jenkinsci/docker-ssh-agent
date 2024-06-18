@@ -31,6 +31,10 @@ if(![String]::IsNullOrWhiteSpace($env:DOCKERHUB_ORGANISATION)) {
     $Organisation = $env:DOCKERHUB_ORGANISATION
 }
 
+if(![String]::IsNullOrWhiteSpace($env:VERSION)) {
+    $VersionTag = $env:VERSION
+}
+
 if(![String]::IsNullOrWhiteSpace($env:IMAGE_TYPE)) {
     $ImageType = $env:IMAGE_TYPE
 }
