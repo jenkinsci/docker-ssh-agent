@@ -2,7 +2,6 @@ group "linux" {
   targets = [
     "alpine",
     "debian",
-    "debian_jdk21-preview",
   ]
 }
 
@@ -10,12 +9,6 @@ group "linux-arm64" {
   targets = [
     "debian",
     "alpine_jdk21",
-  ]
-}
-
-group "linux-arm32" {
-  targets = [
-    "debian_jdk21-preview",
   ]
 }
 
@@ -30,6 +23,14 @@ group "linux-ppc64le" {
   targets = [
     "debian"
   ]
+}
+
+variable "jdks_to_build" {
+  default = [11, 17, 21]
+}
+
+variable "default_jdk" {
+  default = 17
 }
 
 variable "REGISTRY" {
@@ -68,18 +69,11 @@ variable "JAVA21_VERSION" {
   default = "21.0.3_9"
 }
 
-variable "JAVA21_PREVIEW_VERSION" {
-  default = "21.0.1+12"
-}
-
 variable "DEBIAN_RELEASE" {
-  default = "bookworm-20240513"
+  default = "bookworm-20240612"
 }
 
-variable "default_jdk" {
-  default = 17
-}
-
+## Common functions
 # Return "true" if the jdk passed as parameter is the same as the default jdk, "false" otherwise
 function "is_default_jdk" {
   params = [jdk]
@@ -96,6 +90,7 @@ function "javaversion" {
   : "${JAVA21_VERSION}"))
 }
 
+# Specific functions
 # Return an array of Alpine platforms to use depending on the jdk passed as parameter
 function "alpine_platforms" {
   params = [jdk]
@@ -114,7 +109,7 @@ function "debian_platforms" {
 
 target "alpine" {
   matrix = {
-    jdk = [11, 17, 21]
+    jdk = jdks_to_build
   }
   name       = "alpine_${jdk}"
   dockerfile = "alpine/Dockerfile"
@@ -141,7 +136,7 @@ target "alpine" {
 
 target "debian" {
   matrix = {
-    jdk = [11, 17, 21]
+    jdk = jdks_to_build
   }
   name       = "debian_${jdk}"
   dockerfile = "debian/Dockerfile"
@@ -167,22 +162,3 @@ target "debian" {
   platforms = debian_platforms(jdk)
 }
 
-target "debian_jdk21-preview" {
-  dockerfile = "debian/preview/Dockerfile"
-  context    = "."
-  args = {
-    JAVA_VERSION   = JAVA21_PREVIEW_VERSION
-    DEBIAN_RELEASE = DEBIAN_RELEASE
-  }
-  tags = [
-    # If there is a tag, add the versioned tag suffixed by the jdk
-    equal(ON_TAG, "true") ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}-jdk21-preview" : "",
-    "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk21-preview",
-    "${REGISTRY}/${JENKINS_REPO}:debian-jdk21-preview",
-    "${REGISTRY}/${JENKINS_REPO}:jdk21-preview",
-    "${REGISTRY}/${JENKINS_REPO}:latest-bookworm-jdk21-preview",
-    "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk21-preview",
-    "${REGISTRY}/${JENKINS_REPO}:latest-jdk21-preview",
-  ]
-  platforms = ["linux/arm/v7"]
-}
