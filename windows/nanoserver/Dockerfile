@@ -60,7 +60,7 @@ RUN $javaMajorVersion = $env:JAVA_HOME.Substring($env:JAVA_HOME.Length - 2); `
     New-Item -Path "C:\jdk-${javaMajorVersion}" -ItemType SymbolicLink -Value "${env:JAVA_HOME}"
 
 # Install git
-ARG GIT_VERSION=2.45.1
+ARG GIT_VERSION=2.45.2
 ARG GIT_PATCH_VERSION=1
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
     # The patch "windows.1" always have a different URL than the subsequent patch (ZIP filename is different)
