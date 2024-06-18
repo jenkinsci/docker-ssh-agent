@@ -44,7 +44,7 @@ pipeline {
                                     environment name: 'IMAGE_TYPE', value: 'linux'
                                 }
                                 steps {
-                                    sh 'make ci-init'
+                                    sh 'make docker-init'
                                 }
                             }
                             stage('Build and Test') {

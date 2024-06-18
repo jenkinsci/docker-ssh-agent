@@ -39,7 +39,7 @@ check-reqs:
 	@$(call check_cli,jq)
 
 ## This function is specific to Jenkins infrastructure and isn't required in other contexts
-ci-init: check-reqs
+docker-init: check-reqs
 	@set -x; docker buildx create --use
 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
