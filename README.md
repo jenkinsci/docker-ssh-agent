@@ -160,7 +160,7 @@ make test-alpine_jdk17
 You can build all images (even those unsupported by your current architecture) by running:
 
 ```bash
-make buildall
+make every-build
 ```
 
 #### Other `make` targets

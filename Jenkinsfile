@@ -58,7 +58,7 @@ pipeline {
                                             sh 'make build'
                                             sh 'make test'
                                             // If the tests are passing for Linux AMD64, then we can build all the CPU architectures
-                                            sh 'make buildall'
+                                            sh 'make every-build'
                                         } else {
                                             powershell '& ./build.ps1 test'
                                         }

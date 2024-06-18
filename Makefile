@@ -50,7 +50,7 @@ build-%:
 	@$(call check_image,$*)
 	@set -x; $(bake_cli) '$*' --set '*.platform=linux/$(ARCH)'
 
-buildall: check-reqs
+every-build: check-reqs
 	@set -x; $(bake_base_cli) linux
 
 show:
