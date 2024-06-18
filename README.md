@@ -207,7 +207,7 @@ make: 'bats' is up to date.
 
 `publish` allows the publication of all images targeted by 'linux' to a registry.
 
-`ci-init` is dedicated to Jenkins infrastructure for initialising docker and isn't required in other contexts.
+`ci-init` is dedicated to Jenkins infrastructure for initializing docker and isn't required in other contexts.
 
 ### Building and testing on Windows
 
