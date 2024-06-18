@@ -25,6 +25,14 @@ group "linux-ppc64le" {
   ]
 }
 
+variable "jdks_to_build" {
+  default = [11, 17, 21]
+}
+
+variable "default_jdk" {
+  default = 17
+}
+
 variable "REGISTRY" {
   default = "docker.io"
 }
@@ -65,10 +73,7 @@ variable "DEBIAN_RELEASE" {
   default = "bookworm-20240612"
 }
 
-variable "default_jdk" {
-  default = 17
-}
-
+## Common functions
 # Return "true" if the jdk passed as parameter is the same as the default jdk, "false" otherwise
 function "is_default_jdk" {
   params = [jdk]
@@ -85,6 +90,7 @@ function "javaversion" {
   : "${JAVA21_VERSION}"))
 }
 
+# Specific functions
 # Return an array of Alpine platforms to use depending on the jdk passed as parameter
 function "alpine_platforms" {
   params = [jdk]
@@ -103,7 +109,7 @@ function "debian_platforms" {
 
 target "alpine" {
   matrix = {
-    jdk = [11, 17, 21]
+    jdk = jdks_to_build
   }
   name       = "alpine_${jdk}"
   dockerfile = "alpine/Dockerfile"
@@ -130,7 +136,7 @@ target "alpine" {
 
 target "debian" {
   matrix = {
-    jdk = [11, 17, 21]
+    jdk = jdks_to_build
   }
   name       = "debian_${jdk}"
   dockerfile = "debian/Dockerfile"
