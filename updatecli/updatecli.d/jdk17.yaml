@@ -72,18 +72,6 @@ targets:
       file: docker-bake.hcl
       path: variable.JAVA17_VERSION.default
     scmid: default
-  setJDK17VersionDockerCompose:
-    name: "Bump JDK17 version for Windows images in the build-windows.yaml file"
-    kind: yaml
-    sourceid: jdk17LastVersion
-    spec:
-      file: build-windows.yaml
-      key: $.services.jdk17.build.args.JAVA_VERSION
-    transformers:
-      - replacer:
-          from: _
-          to: +
-    scmid: default
   setJDK17VersionAlpine:
     name: "Bump JDK17 default ARG version on Alpine Dockerfile"
     kind: dockerfile
