@@ -1,22 +1,29 @@
 [CmdletBinding()]
 Param(
     [Parameter(Position=1)]
+    # Default build.ps1 target
     [String] $Target = 'build',
-    [String] $VersionTag = '1.0-1',
+    # Image version
+    [String] $VersionTag = '0.0.1',
+    # Windows flavor and windows version to build
+    [String] $ImageType = 'nanoserver-ltsc2019',
+    # Generate a docker compose file even if it already exists
+    [switch] $OverwriteDockerComposeFile = $false,
+    # Print the build and publish command instead of executing them if set
     [switch] $DryRun = $false,
-    # Output debug info for tests. Accepted values:
-    # - empty (no additional test output)
-    # - 'debug' (test cmd & stderr outputed)
-    # - 'verbose' (test cmd, stderr, stdout outputed)
+    # Output debug info for tests: 'empty' (no additional test output), 'debug' (test cmd & stderr outputed), 'verbose' (test cmd, stderr, stdout outputed)
     [String] $TestsDebug = ''
 )
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Disable Progress bar for faster downloads
 
+$dockerComposeFile = 'build-windows.yaml'
+$baseDockerCmd = 'docker-compose --file={0}' -f $dockerComposeFile
+$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
+
 $Repository = 'ssh-agent'
 $Organisation = 'jenkins'
-$ImageType = 'windows-ltsc2019'
 
 if(![String]::IsNullOrWhiteSpace($env:TESTS_DEBUG)) {
     $TestsDebug = $env:TESTS_DEBUG
@@ -44,15 +51,6 @@ $env:DOCKERHUB_ORGANISATION = "$Organisation"
 $env:DOCKERHUB_REPO = "$Repository"
 $env:VERSION = "$VersionTag"
 
-$items = $ImageType.Split('-')
-$env:WINDOWS_FLAVOR = $items[0]
-$env:WINDOWS_VERSION_TAG = $items[1]
-$env:TOOLS_WINDOWS_VERSION = $items[1]
-if ($items[1] -eq 'ltsc2019') {
-    # There are no eclipse-temurin:*-ltsc2019 or mcr.microsoft.com/powershell:*-ltsc2019 docker images unfortunately, only "1809" ones
-    $env:TOOLS_WINDOWS_VERSION = '1809'
-}
-
 # Check for required commands
 Function Test-CommandExists {
     # From https://devblogs.microsoft.com/scripting/use-a-powershell-function-to-see-if-a-command-exists/
@@ -63,8 +61,14 @@ Function Test-CommandExists {
     $oldPreference = $ErrorActionPreference
     $ErrorActionPreference = 'stop'
     try {
-        if(Get-Command $command){
+        # Special case to test "docker buildx"
+        if ($command.Contains(" ")) {
+            Invoke-Expression $command | Out-Null
             Write-Debug "$command exists"
+        } else {
+            if(Get-Command $command){
+                Write-Debug "$command exists"
+            }
         }
     }
     Catch {
@@ -75,17 +79,14 @@ Function Test-CommandExists {
     }
 }
 
-Test-CommandExists 'docker'
-Test-CommandExists 'docker-compose'
-Test-CommandExists 'yq'
-
 function Test-Image {
     param (
         $ImageNameAndJavaVersion
     )
 
+    # Ex: docker.io/jenkins/ssh-agent:windowsservercore-ltsc2019-jdk21|21.0.3_9
     $items = $ImageNameAndJavaVersion.Split('|')
-    $imageName = $items[0]
+    $imageName = $items[0] -replace 'docker.io/', ''
     $javaVersion = $items[1]
     $imageNameItems = $imageName.Split(':')
     $imageTag = $imageNameItems[1]
@@ -115,10 +116,56 @@ function Test-Image {
     return $failed
 }
 
-$baseDockerCmd = 'docker-compose --file=build-windows.yaml'
-$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
+function Initialize-DockerComposeFile {
+    $baseDockerBakeCmd = 'docker buildx bake --progress=plain --file=docker-bake.hcl'
 
-Write-Host "= PREPARE: List of images and tags to be processed:"
+    $items = $ImageType.Split('-')
+    $windowsFlavor = $items[0]
+    $windowsVersion = $items[1]
+
+    # Override the list of Windows versions taken defined in docker-bake.hcl by the version from image type
+    $env:WINDOWS_VERSION_OVERRIDE = $windowsVersion
+
+    # Retrieve the targets from docker buildx bake --print output
+    # Remove the 'output' section (unsupported by docker compose)
+    # For each target name as service key, return a map consisting of:
+    # - 'image' set to the first tag value
+    # - 'build' set to the content of the bake target
+    $yqMainQuery = '''.target[]' + `
+        ' | del(.output)' + `
+        ' | {(. | key): {\"image\": .tags[0], \"build\": .}}'''
+    # Encapsulate under a top level 'services' map
+    $yqServicesQuery = '''{\"services\": .}'''
+
+    # - Use docker buildx bake to output image definitions from the "<windowsFlavor>" bake target
+    # - Convert with yq to the format expected by docker compose
+    # - Store the result in the docker compose file
+    $generateDockerComposeFileCmd = ' {0} {1} --print' -f $baseDockerBakeCmd, $windowsFlavor + `
+        ' | yq --prettyPrint {0} | yq {1}' -f $yqMainQuery, $yqServicesQuery + `
+        ' | Out-File -FilePath {0}' -f $dockerComposeFile
+
+    Write-Host "= PREPARE: Docker compose file generation command`n$generateDockerComposeFileCmd"
+
+    Invoke-Expression $generateDockerComposeFileCmd
+
+    # Remove override
+    Remove-Item env:\WINDOWS_VERSION_OVERRIDE
+}
+
+Test-CommandExists 'docker'
+Test-CommandExists 'docker-compose'
+Test-CommandExists 'docker buildx'
+Test-CommandExists 'yq'
+
+# Generate the docker compose file if it doesn't exists or if the parameter OverwriteDockerComposeFile is set
+if ((Test-Path $dockerComposeFile) -and -not $OverwriteDockerComposeFile) {
+    Write-Host "= PREPARE: The docker compose file '$dockerComposeFile' containing the image definitions already exists."
+} else {
+    Write-Host "= PREPARE: Initialize the docker compose file '$dockerComposeFile' containing the image definitions."
+    Initialize-DockerComposeFile
+}
+
+Write-Host '= PREPARE: List of images and tags to be processed:'
 Invoke-Expression "$baseDockerCmd config"
 
 Write-Host '= BUILD: Building all images...'
@@ -165,9 +212,9 @@ if($target -eq 'test') {
         Write-Host '= TEST: Testing all images...'
         # Only fail the run afterwards in case of any test failures
         $testFailed = $false
-        $jdks = Invoke-Expression "$baseDockerCmd config" | yq --unwrapScalar --output-format json '.services' | ConvertFrom-Json
-        foreach ($jdk in $jdks.PSObject.Properties) {
-            $testFailed = $testFailed -or (Test-Image ('{0}|{1}' -f $jdk.Value.image, $jdk.Value.build.args.JAVA_VERSION))
+        $imageDefinitions = Invoke-Expression "$baseDockerCmd config" | yq --unwrapScalar --output-format json '.services' | ConvertFrom-Json
+        foreach ($imageDefinition in $imageDefinitions.PSObject.Properties) {
+            $testFailed = $testFailed -or (Test-Image ('{0}|{1}' -f $imageDefinition.Value.image, $imageDefinition.Value.build.args.JAVA_VERSION))
         }
 
         # Fail if any test failures

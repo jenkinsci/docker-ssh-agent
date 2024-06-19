@@ -3,3 +3,4 @@ bats-core/
 bats/
 target/
 /.vscode/
+build-windows.yaml
