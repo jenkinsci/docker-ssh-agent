@@ -102,7 +102,7 @@ function "javaversion" {
       : "${JAVA21_VERSION}"))
 }
 
-# Specific functions
+## Specific functions
 # Return an array of Alpine platforms to use depending on the jdk passed as parameter
 function "alpine_platforms" {
   params = [jdk]
