@@ -94,6 +94,7 @@ Should you want to build this image on your machine (before submitting a pull re
 * Docker BuildX plugin [installed](https://github.com/docker/buildx#installing) on older versions of Docker (from `19.03`). Docker Buildx is included in recent versions of Docker Desktop for Windows, macOS, and Linux. Docker Linux packages also include Docker Buildx when installed using the DEB or RPM packages.
 * [GNU Make](https://www.gnu.org/software/make/) [installed](https://command-not-found.com/make)
 * jq [installed](https://command-not-found.com/jq)
+* yq [installed](https://github.com/mikefarah/yq) (for Windows)
 * [GNU Bash](https://www.gnu.org/software/bash/) [installed](https://command-not-found.com/bash)
 * git [installed](https://command-not-found.com/git)
 * curl [installed](https://command-not-found.com/curl)
@@ -211,20 +212,51 @@ make: 'bats' is up to date.
 
 ### Building and testing on Windows
 
-From a Powershell console, set first the `IMAGE_TYPE` environment variable defining the Windows flavor ("nanoserver"/"windowsservercore") and  version you want to build.
+#### Building all images
 
-For example:
-```
-New-Item -Path env:IMAGE_TYPE -Value "nanoserver-ltsc2019"
+Run `.\build.ps1` to launch the build of the images corresponding to the "windows" target of docker-bake.hcl.
+
+Internally, the first time you'll run this script and if there is no build-windows.yaml file in your repository, it will use a combination of `docker buildx bake` and `yq` to generate a  build-windows.yaml docker compose file containing all Windows image definitions from docker-bake.hcl. Then it will run `docker compose` on this file to build these images.
+
+You can modify this docker compose file as you want, then rerun `.\build.ps1`.
+It won't regenerate the docker compose file from docker-bake.hcl unless you add the `-OverwriteDockerComposeFile` build.ps1 parameter:  `.\build.ps1 -OverwriteDockerComposeFile`.
+
+Note: you can generate this docker compose file from docker-bake.hcl yourself with the following command (require `docker buildx` and `yq`):
+
+```console
+# - Use docker buildx bake to output image definitions from the "windows" bake target
+# - Convert with yq to the format expected by docker compose
+# - Store the result in the docker compose file
+
+$ docker buildx bake --progress=plain --file=docker-bake.hcl windows --print `
+    | yq --prettyPrint '.target[] | del(.output) | {(. | key): {\"image\": .tags[0], \"build\": .}}' | yq '{\"services\": .}' `
+    | Out-File -FilePath build-windows.yaml
 ```
 
-Then run `.\build.ps1` to launch the build of the images for each jexdk specified in the build-windows.yaml docker compose file.
+Note that you don't need build.ps1 to build (or to publish) your images from this docker compose file, you can use `docker compose --file=build-windows.yaml build`.
+
+#### Testing all images
 
 Run `.\build.ps1 test` if you also want to run the tests harness suit.
-Run `.\build.ps1 test -TestsDebug 'debug'` to also get commands & stderr of tests, displayed on top of them.
-You can set it to 'verbose' to also get stdout of every test command.
 
-Finally, instead of passing -TestsDebug parameter to build.ps1, you can also set the desired value to $env:TESTS_DEBUG.
+Run `.\build.ps1 test -TestsDebug 'debug'` to also get commands & stderr of tests, displayed on top of them.
+You can set it to `'verbose'` to also get stdout of every test command.
+
+Note that instead of passing `-TestsDebug` parameter to build.ps1, you can set the  $env:TESTS_DEBUG environment variable to the desired value.
+
+Also note that contrary to the Linux part, you have to build the images before testing them.
+
+#### Dry run
+
+Add the `-DryRun` parameter to print out any build, publish or tests commands instead of executing them: `.\build.ps1 test -DryRun`
+
+#### Building and testing a specific image
+
+You can build (and test) only one image type by setting `-ImageType` to a combination of Windows flavors ("nanoserver" & "windowsservercore") and Windows versions ("1809", "ltsc2019", "ltsc2022").
+
+Ex: `.\build.ps1 -ImageType 'nanoserver-ltsc2019'`
+
+Warning: trying to build `windowsservercore-1809` will fail as there is no corresponding image from Microsoft.
 
 ## Changelog
 
