@@ -57,7 +57,7 @@ variable "VERSION" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.20.0"
+  default = "3.20.1"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -99,7 +99,7 @@ function "javaversion" {
     ? "${JAVA11_VERSION}"
     : (equal(17, jdk)
       ? "${JAVA17_VERSION}"
-      : "${JAVA21_VERSION}"))
+  : "${JAVA21_VERSION}"))
 }
 
 ## Specific functions
@@ -108,7 +108,7 @@ function "alpine_platforms" {
   params = [jdk]
   result = (equal(21, jdk)
     ? ["linux/amd64", "linux/arm64"]
-    : ["linux/amd64"])
+  : ["linux/amd64"])
 }
 
 # Return an array of Debian platforms to use depending on the jdk passed as parameter
@@ -116,7 +116,7 @@ function "debian_platforms" {
   params = [jdk]
   result = (equal(17, jdk)
     ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
-    : ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"])
+  : ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"])
 }
 
 # Return array of Windows version(s) to build
@@ -129,7 +129,7 @@ function "windowsversions" {
     ? [WINDOWS_VERSION_OVERRIDE]
     : (equal(flavor, "windowsservercore")
       ? ["ltsc2019", "ltsc2022"]
-      : ["1809", "ltsc2019", "ltsc2022"]))
+  : ["1809", "ltsc2019", "ltsc2022"]))
 }
 
 # Return the Windows version to use as base image for the Windows version passed as parameter
@@ -138,7 +138,7 @@ function "toolsversion" {
   params = [version]
   result = (equal("ltsc2019", version)
     ? "1809"
-    : version)
+  : version)
 }
 
 target "alpine" {
@@ -198,17 +198,17 @@ target "debian" {
 
 target "nanoserver" {
   matrix = {
-    jdk = jdks_to_build
+    jdk             = jdks_to_build
     windows_version = windowsversions("nanoserver")
   }
   name       = "nanoserver-${windows_version}_jdk${jdk}"
   dockerfile = "windows/nanoserver/Dockerfile"
   context    = "."
   args = {
-    JAVA_HOME = "C:/openjdk-${jdk}"
-    JAVA_VERSION   = "${replace(javaversion(jdk), "_", "+")}"
+    JAVA_HOME             = "C:/openjdk-${jdk}"
+    JAVA_VERSION          = "${replace(javaversion(jdk), "_", "+")}"
     TOOLS_WINDOWS_VERSION = "${toolsversion(windows_version)}"
-    WINDOWS_VERSION_TAG = windows_version
+    WINDOWS_VERSION_TAG   = windows_version
   }
   tags = [
     # If there is a tag, add versioned tag suffixed by the jdk
@@ -223,17 +223,17 @@ target "nanoserver" {
 
 target "windowsservercore" {
   matrix = {
-    jdk = jdks_to_build
+    jdk             = jdks_to_build
     windows_version = windowsversions("windowsservercore")
   }
   name       = "windowsservercore-${windows_version}_jdk${jdk}"
   dockerfile = "windows/windowsservercore/Dockerfile"
   context    = "."
   args = {
-    JAVA_HOME = "C:/openjdk-${jdk}"
-    JAVA_VERSION   = "${replace(javaversion(jdk), "_", "+")}"
+    JAVA_HOME             = "C:/openjdk-${jdk}"
+    JAVA_VERSION          = "${replace(javaversion(jdk), "_", "+")}"
     TOOLS_WINDOWS_VERSION = "${toolsversion(windows_version)}"
-    WINDOWS_VERSION_TAG = windows_version
+    WINDOWS_VERSION_TAG   = windows_version
   }
   tags = [
     # If there is a tag, add versioned tag suffixed by the jdk
