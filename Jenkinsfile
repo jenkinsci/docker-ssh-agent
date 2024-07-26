@@ -54,13 +54,16 @@ pipeline {
                                 }
                                 steps {
                                     script {
-                                        if(isUnix()) {
-                                            sh 'make build'
-                                            sh 'make test'
-                                            // If the tests are passing for Linux AMD64, then we can build all the CPU architectures
-                                            sh 'make every-build'
-                                        } else {
-                                            powershell '& ./build.ps1 test'
+                                        // This function is defined in the jenkins-infra/pipeline-library
+                                        infra.withDockerCredentials {
+                                            if(isUnix()) {
+                                                sh 'make build'
+                                                sh 'make test'
+                                                // If the tests are passing for Linux AMD64, then we can build all the CPU architectures
+                                                sh 'make every-build'
+                                            } else {
+                                                powershell '& ./build.ps1 test'
+                                            }
                                         }
                                     }
                                 }
