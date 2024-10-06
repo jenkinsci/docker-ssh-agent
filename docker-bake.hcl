@@ -21,7 +21,6 @@ group "linux-arm64" {
 
 group "linux-s390x" {
   targets = [
-    "debian_jdk11",
     "debian_jdk21"
   ]
 }
@@ -33,7 +32,7 @@ group "linux-ppc64le" {
 }
 
 variable "jdks_to_build" {
-  default = [11, 17, 21]
+  default = [17, 21]
 }
 
 variable "default_jdk" {
@@ -64,10 +63,6 @@ variable "ALPINE_SHORT_TAG" {
   default = regex_replace(ALPINE_FULL_TAG, "\\.\\d+$", "")
 }
 
-variable "JAVA11_VERSION" {
-  default = "11.0.24_8"
-}
-
 variable "JAVA17_VERSION" {
   default = "17.0.12_7"
 }
@@ -95,11 +90,9 @@ function "is_default_jdk" {
 # Return the complete Java version corresponding to the jdk passed as parameter
 function "javaversion" {
   params = [jdk]
-  result = (equal(11, jdk)
-    ? "${JAVA11_VERSION}"
-    : (equal(17, jdk)
+  result = (equal(17, jdk)
       ? "${JAVA17_VERSION}"
-  : "${JAVA21_VERSION}"))
+  : "${JAVA21_VERSION}")
 }
 
 ## Specific functions
