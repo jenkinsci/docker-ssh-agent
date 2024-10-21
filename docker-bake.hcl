@@ -72,7 +72,7 @@ variable "JAVA21_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "bookworm-20240926"
+  default = "bookworm-20241016"
 }
 
 # Set this value to a specific Windows version to override Windows versions to build returned by windowsversions function
@@ -91,7 +91,7 @@ function "is_default_jdk" {
 function "javaversion" {
   params = [jdk]
   result = (equal(17, jdk)
-      ? "${JAVA17_VERSION}"
+    ? "${JAVA17_VERSION}"
   : "${JAVA21_VERSION}")
 }
 
