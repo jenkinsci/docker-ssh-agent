@@ -67,7 +67,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Remove-Item mingit.zip -Force
 
 # Install git-lfs
-ARG GIT_LFS_VERSION=3.5.1
+ARG GIT_LFS_VERSION=3.6.0
 RUN $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
     $NewPath = $CurrentPath + ';{0}\bin;C:\mingit\cmd' -f $env:JAVA_HOME ; `
     Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath ; `
