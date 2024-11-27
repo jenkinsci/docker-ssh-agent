@@ -69,7 +69,6 @@ targets:
       - replacer:
           from: "+"
           to: "_"
-    sourceid: jdk17LastVersion
     spec:
       file: debian/Dockerfile
       instruction:
