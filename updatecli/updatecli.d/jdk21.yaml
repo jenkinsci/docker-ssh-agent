@@ -25,7 +25,7 @@ scms:
 sources:
   jdk21LastVersion:
     kind: temurin
-    name: Get the latest Adoptium JDK21 version via the API
+    name: Get the latest Adoptium JDK21 version
     spec:
       featureversion: 21
     transformers:
