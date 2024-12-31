@@ -96,14 +96,10 @@ RUN sed -i /etc/ssh/sshd_config \
         -e 's/#PasswordAuthentication.*/PasswordAuthentication no/' \
         -e 's/#SyslogFacility.*/SyslogFacility AUTH/' \
         -e 's/#LogLevel.*/LogLevel INFO/' && \
-    mkdir /var/run/sshd
-
-# modify PAM to allow SSH access to container
-RUN sed -i 's/\(session\s*\)required\(\s*pam_loginuid.so\)/\1optional\2/' \
-	/etc/pam.d/sshd
-
-# remove motd to have quiet login
-RUN rm -f /etc/update-motd.d/10-uname; cat /dev/null >/etc/motd
+    mkdir /var/run/sshd; \
+    sed -i 's/\(session\s*\)required\(\s*pam_loginuid.so\)/\1optional\2/' \
+        /etc/pam.d/sshd; \
+    rm -f /etc/update-motd.d/10-uname; cat /dev/null >/etc/motd
 
 # VOLUME directive must happen after setting up permissions and content
 VOLUME "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}"/.jenkins "/tmp" "/run" "/var/run"
