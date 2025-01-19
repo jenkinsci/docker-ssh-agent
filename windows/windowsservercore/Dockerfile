@@ -56,7 +56,7 @@ USER ContainerAdministrator
 
 # Install git
 ARG GIT_VERSION=2.47.1
-ARG GIT_PATCH_VERSION=1
+ARG GIT_PATCH_VERSION=2
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
     # The patch "windows.1" always have a different URL than the subsequent patch (ZIP filename is different)
     if($env:GIT_PATCH_VERSION -eq 1) { $url = $('https://github.com/git-for-windows/git/releases/download/v{0}.windows.{1}/MinGit-{0}-64-bit.zip' -f $env:GIT_VERSION, $env:GIT_PATCH_VERSION); } `
@@ -67,7 +67,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Remove-Item mingit.zip -Force
 
 # Install git-lfs
-ARG GIT_LFS_VERSION=3.6.0
+ARG GIT_LFS_VERSION=3.6.1
 RUN $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path).Path ; `
     $NewPath = $CurrentPath + ';{0}\bin;C:\mingit\cmd' -f $env:JAVA_HOME ; `
     Set-ItemProperty -path 'hklm:\system\currentcontrolset\control\session manager\environment' -Name Path -Value $NewPath ; `
