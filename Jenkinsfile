@@ -36,7 +36,7 @@ pipeline {
                             label agentSelector(env.IMAGE_TYPE)
                         }
                         options {
-                            timeout(time: 60, unit: 'MINUTES')
+                            timeout(time: 120, unit: 'MINUTES')
                         }
                         stages {
                             stage('Prepare Docker') {
