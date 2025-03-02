@@ -22,6 +22,7 @@ pipeline {
         stage('docker-ssh-agent') {
             environment {
                 DOCKERHUB_ORGANISATION = "${infra.isTrusted() ? 'jenkins' : 'jenkins4eval'}"
+                TESTS_DEBUG = 'verbose'
             }
             matrix {
                 axes {
