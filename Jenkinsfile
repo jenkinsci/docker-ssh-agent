@@ -101,7 +101,7 @@ pipeline {
     }
     post {
         always {
-            archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'build-windows*.yaml', allowEmptyArchive: true
         }
     }
 }
