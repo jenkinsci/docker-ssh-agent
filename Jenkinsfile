@@ -98,6 +98,11 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
+        }
+    }
 }
 
 // vim: ft=groovy
