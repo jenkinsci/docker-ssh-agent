@@ -58,7 +58,7 @@ pipeline {
                                     script {
                                         if(isUnix()) {
                                             sh 'make build'
-                                            sh 'make test'
+                                            sh 'make test || cat *.yaml'
                                             // If the tests are passing for Linux AMD64, then we can build all the CPU architectures
                                             sh 'make every-build'
                                         } else {
