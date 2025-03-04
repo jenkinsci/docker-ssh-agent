@@ -131,24 +131,25 @@ Describe "[$global:IMAGE_NAME] image has correct version of java and git-lfs ins
     }
 }
 
-Describe "[$global:IMAGE_NAME] create agent container with pubkey as argument" {
-    BeforeAll {
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all `"$global:IMAGE_NAME`" `"$global:PUBLIC_SSH_KEY`""
-        $exitCode | Should -Be 0
-        Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
-        Start-Sleep -Seconds 10
-    }
+# TODO: restore when https://github.com/jenkins-infra/helpdesk/issues/4557 infra issue is resolved
+# Describe "[$global:IMAGE_NAME] create agent container with pubkey as argument" {
+#     BeforeAll {
+#         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all `"$global:IMAGE_NAME`" `"$global:PUBLIC_SSH_KEY`""
+#         $exitCode | Should -Be 0
+#         Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
+#         Start-Sleep -Seconds 10
+#     }
 
-    It 'runs commands via ssh' {
-        $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
-        $exitCode | Should -Be 0
-        $stdout | Should -Match 'f00'
-    }
+#     It 'runs commands via ssh' {
+#         $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
+#         $exitCode | Should -Be 0
+#         $stdout | Should -Match 'f00'
+#     }
 
-    AfterAll {
-        Cleanup($global:CONTAINERNAME)
-    }
-}
+#     AfterAll {
+#         Cleanup($global:CONTAINERNAME)
+#     }
+# }
 
 # TODO: restore when https://github.com/jenkins-infra/helpdesk/issues/4557 infra issue is resolved
 # Describe "[$global:IMAGE_NAME] create agent container with pubkey as envvar" {
