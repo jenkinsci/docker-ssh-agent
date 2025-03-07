@@ -56,7 +56,7 @@ variable "VERSION" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.21.2"
+  default = "3.21.3"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -72,7 +72,7 @@ variable "JAVA21_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "bookworm-20250203"
+  default = "bookworm-20250224"
 }
 
 # Set this value to a specific Windows version to override Windows versions to build returned by windowsversions function
