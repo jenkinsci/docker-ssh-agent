@@ -40,7 +40,7 @@ check-reqs:
 
 ## This function is specific to Jenkins infrastructure and isn't required in other contexts
 docker-init: check-reqs
-	@set -x; docker buildx create --use
+	@set -x; docker buildx create --use --bootstrap --name docker-ssh-agent --driver docker-container --config /etc/buildkitd.toml
 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
 build: check-reqs
