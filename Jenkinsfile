@@ -88,8 +88,8 @@ parallelStages = [failFast: false]
                             stage('Build and Test') {
                                 // ci.jenkins.io builds (e.g. no publication)
                                 if (isUnix()) {
-                                    sh './build.sh'
-                                    sh './build.sh test'
+                                    sh 'make build'
+                                    sh 'make test'
                                 } else {
                                     powershell '& ./build.ps1 test'
                                     archiveArtifacts artifacts: 'build-windows_*.yaml', allowEmptyArchive: true
