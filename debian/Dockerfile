@@ -20,7 +20,7 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 ARG DEBIAN_RELEASE=bookworm-20250317
-FROM debian:"${DEBIAN_RELEASE}"-slim as jre-build
+FROM debian:"${DEBIAN_RELEASE}"-slim AS jre-build
 
 SHELL ["/bin/bash", "-e", "-u", "-o", "pipefail", "-c"]
 
