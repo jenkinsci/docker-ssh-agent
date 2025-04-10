@@ -95,7 +95,7 @@ ENV JENKINS_AGENT_USER=${user}
 ENV JENKINS_AGENT_WORK=${JENKINS_AGENT_WORK}
 
 # Setup SSH server
-ARG OPENSSH_VERSION=v9.8.1.0p1-Preview
+ARG OPENSSH_VERSION=v9.8.2.0p2-Preview
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
     $url = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/{0}/OpenSSH-Win64.zip' -f $env:OPENSSH_VERSION ; `
     Write-Host "Retrieving $url..." ; `
