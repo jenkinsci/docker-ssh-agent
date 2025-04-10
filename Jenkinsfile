@@ -41,7 +41,7 @@ def spotAgentSelector(String agentLabel, int counter) {
 }
 
 // Specify parallel stages
-parallelStages = [failFast: false]
+def parallelStages = [failFast: false]
 [
     'linux',
     'nanoserver-1809',
@@ -52,7 +52,10 @@ parallelStages = [failFast: false]
     'windowsservercore-ltsc2022'
 ].each { imageType ->
     parallelStages[imageType] = {
-        withEnv(["IMAGE_TYPE=${imageType}", "REGISTRY_ORG=${infra.isTrusted() ? 'jenkins' : 'jenkins4eval'}"]) {
+        withEnv([
+          "IMAGE_TYPE=${imageType}", 
+          "REGISTRY_ORG=${infra.isTrusted() ? 'jenkins' : 'jenkins4eval'}",
+        ]) {
             int retryCounter = 0
             retry(count: 2, conditions: [agent(), nonresumable()]) {
                 // Use local variable to manage concurrency and increment BEFORE spinning up any agent
@@ -72,7 +75,7 @@ parallelStages = [failFast: false]
                             stage('Deploy to DockerHub') {
                                 withEnv([
                                     "ON_TAG=true",
-                                    VERSION = "${env.TAG_NAME}"
+                                    "VERSION=${env.TAG_NAME}",
                                 ]) {
                                     // This function is defined in the jenkins-infra/pipeline-library
                                     infra.withDockerCredentials {

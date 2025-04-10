@@ -49,8 +49,8 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPref
 
 ARG user=jenkins
 ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"
-ENV JENKINS_AGENT_USER ${user}
-ENV JENKINS_AGENT_WORK ${JENKINS_AGENT_WORK}
+ENV JENKINS_AGENT_USER=${user}
+ENV JENKINS_AGENT_WORK=${JENKINS_AGENT_WORK}
 
 USER ContainerAdministrator
 

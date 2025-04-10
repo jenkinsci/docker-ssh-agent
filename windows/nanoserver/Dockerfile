@@ -91,8 +91,8 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
 
 ARG user=jenkins
 ARG JENKINS_AGENT_WORK="C:/Users/${user}/Work"
-ENV JENKINS_AGENT_USER ${user}
-ENV JENKINS_AGENT_WORK ${JENKINS_AGENT_WORK}
+ENV JENKINS_AGENT_USER=${user}
+ENV JENKINS_AGENT_WORK=${JENKINS_AGENT_WORK}
 
 # Setup SSH server
 ARG OPENSSH_VERSION=v9.8.1.0p1-Preview
