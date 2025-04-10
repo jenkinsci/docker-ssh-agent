@@ -86,6 +86,23 @@ Describe "[$global:IMAGE_NAME] image has setup-sshd.ps1 in the correct location"
     }
 }
 
+Describe "[$global:IMAGE_NAME] image has no pre-existing SSH host keys" {
+    BeforeAll {
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all `"$global:IMAGE_NAME`" `"$global:CONTAINERSHELL`""
+        $exitCode | Should -Be 0
+        Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
+    }
+
+    It 'has has no SSH host key present in C:\ProgramData\ssh' {
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"if(Test-Path C:/ProgramData/ssh/ssh_host*_key*) { exit 0 } else { exit 1 }`""
+        $exitCode | Should -Be 1
+    }
+
+    AfterAll {
+        Cleanup($global:CONTAINERNAME)
+    }
+}
+
 Describe "[$global:IMAGE_NAME] checking image metadata" {
     It 'has correct volumes' {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "inspect --format '{{.Config.Volumes}}' $global:IMAGE_NAME"

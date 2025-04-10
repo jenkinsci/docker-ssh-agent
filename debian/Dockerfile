@@ -87,7 +87,10 @@ RUN apt-get update \
         netcat-traditional \
         openssh-server \
         patch \
-    && rm -rf /var/lib/apt/lists/*
+    # Cleanup APT cache
+    && rm -rf /var/lib/apt/lists/* \
+    # Cleanup SSH host keys if any
+    && rm -f /etc/ssh/ssh_host*_key*
 
 # setup SSH server
 RUN sed -i /etc/ssh/sshd_config \
