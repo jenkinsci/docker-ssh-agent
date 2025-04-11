@@ -88,7 +88,9 @@ RUN apk add --no-cache \
     musl-locales \
     netcat-openbsd \
     openssh \
-    patch
+    patch \
+  # Cleanup SSH host keys if any
+  && rm -f /etc/ssh/ssh_host*_key*
 
 # setup SSH server
 RUN sed -i /etc/ssh/sshd_config \

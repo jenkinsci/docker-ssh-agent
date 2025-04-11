@@ -19,8 +19,8 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-ARG DEBIAN_RELEASE=bookworm-20250317
-FROM debian:"${DEBIAN_RELEASE}"-slim as jre-build
+ARG DEBIAN_RELEASE=bookworm-20250407
+FROM debian:"${DEBIAN_RELEASE}"-slim AS jre-build
 
 SHELL ["/bin/bash", "-e", "-u", "-o", "pipefail", "-c"]
 
@@ -87,7 +87,10 @@ RUN apt-get update \
         netcat-traditional \
         openssh-server \
         patch \
-    && rm -rf /var/lib/apt/lists/*
+    # Cleanup APT cache
+    && rm -rf /var/lib/apt/lists/* \
+    # Cleanup SSH host keys if any
+    && rm -f /etc/ssh/ssh_host*_key*
 
 # setup SSH server
 RUN sed -i /etc/ssh/sshd_config \

@@ -52,6 +52,17 @@ docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhos
   clean_test_container "${test_container_name}"
 }
 
+@test "[${SUT_IMAGE}] image has no pre-existing SSH host keys" {
+  local test_container_name=${AGENT_CONTAINER}-ssh-hostkeys
+  clean_test_container "${test_container_name}"
+  docker run --name="${test_container_name}" --name="${test_container_name}" "${docker_run_opts[@]}" "${PUBLIC_SSH_KEY}"
+
+  run docker exec "${test_container_name}" ls -l /etc/ssh/ssh_host*_key*
+  assert_failure
+
+  clean_test_container "${test_container_name}"
+}
+
 @test "[${SUT_IMAGE}] create agent container with pubkey as argument" {
   local test_container_name=${AGENT_CONTAINER}-pubkey-arg
   clean_test_container "${test_container_name}"
