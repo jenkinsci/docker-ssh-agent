@@ -31,7 +31,7 @@ ARG TARGETPLATFORM
 COPY jdk-download-url.sh /usr/bin/local/jdk-download-url.sh
 COPY jdk-download.sh /usr/bin/local/jdk-download.sh
 
-ARG JAVA_VERSION=17.0.14_7
+ARG JAVA_VERSION=17.0.15_6
 # hadolint ignore=DL3008
 RUN set -x; apt-get update \
   && apt-get install --no-install-recommends -y \
