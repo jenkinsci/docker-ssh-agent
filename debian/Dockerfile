@@ -99,7 +99,7 @@ RUN sed -i /etc/ssh/sshd_config \
         -e 's/#PasswordAuthentication.*/PasswordAuthentication no/' \
         -e 's/#SyslogFacility.*/SyslogFacility AUTH/' \
         -e 's/#LogLevel.*/LogLevel INFO/' && \
-    mkdir /var/run/sshd && \
+    mkdir -p /var/run/sshd && \
     sed -i /etc/pam.d/sshd \
         -e 's/\(session\s*\)required\(\s*pam_loginuid.so\)/\1optional\2/' \
         -e '/pam_motd/s/^/#/'
