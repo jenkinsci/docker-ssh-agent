@@ -179,10 +179,10 @@ target "debian" {
     equal(ON_TAG, "true") ? (is_default_jdk(jdk) ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}" : "") : "",
     # If the jdk is the default one, add latest short tag
     is_default_jdk(jdk) ? "${REGISTRY}/${JENKINS_REPO}:latest" : "",
-    "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk${jdk}",
+    "${REGISTRY}/${JENKINS_REPO}:trixie-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:debian-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:jdk${jdk}",
-    "${REGISTRY}/${JENKINS_REPO}:latest-bookworm-jdk${jdk}",
+    "${REGISTRY}/${JENKINS_REPO}:latest-trixie-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk${jdk}",
   ]
