@@ -72,7 +72,7 @@ variable "JAVA21_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "bookworm-20250811"
+  default = "trixie-20250811"
 }
 
 # Set this value to a specific Windows version to override Windows versions to build returned by windowsversions function
@@ -179,10 +179,10 @@ target "debian" {
     equal(ON_TAG, "true") ? (is_default_jdk(jdk) ? "${REGISTRY}/${JENKINS_REPO}:${VERSION}" : "") : "",
     # If the jdk is the default one, add latest short tag
     is_default_jdk(jdk) ? "${REGISTRY}/${JENKINS_REPO}:latest" : "",
-    "${REGISTRY}/${JENKINS_REPO}:bookworm-jdk${jdk}",
+    "${REGISTRY}/${JENKINS_REPO}:trixie-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:debian-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:jdk${jdk}",
-    "${REGISTRY}/${JENKINS_REPO}:latest-bookworm-jdk${jdk}",
+    "${REGISTRY}/${JENKINS_REPO}:latest-trixie-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk${jdk}",
   ]
