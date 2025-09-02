@@ -19,7 +19,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-ARG DEBIAN_RELEASE=bookworm-20250811
+ARG DEBIAN_RELEASE=trixie-20250811
 FROM debian:"${DEBIAN_RELEASE}"-slim AS jre-build
 
 SHELL ["/bin/bash", "-e", "-u", "-o", "pipefail", "-c"]
@@ -99,7 +99,7 @@ RUN sed -i /etc/ssh/sshd_config \
         -e 's/#PasswordAuthentication.*/PasswordAuthentication no/' \
         -e 's/#SyslogFacility.*/SyslogFacility AUTH/' \
         -e 's/#LogLevel.*/LogLevel INFO/' && \
-    mkdir /var/run/sshd && \
+    mkdir -p /var/run/sshd && \
     sed -i /etc/pam.d/sshd \
         -e 's/\(session\s*\)required\(\s*pam_loginuid.so\)/\1optional\2/' \
         -e '/pam_motd/s/^/#/'
