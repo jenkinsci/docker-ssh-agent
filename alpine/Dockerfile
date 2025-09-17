@@ -43,10 +43,14 @@ RUN apk add --no-cache \
 
 ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
+ARG JLINK_MODULES
+
 RUN case "$(jlink --version 2>&1)" in \
     "17."*) set -- "--compress=2" --add-modules ALL-MODULE-PATH ;; \
     "21."*) set -- "--compress=zip-6" --add-modules ALL-MODULE-PATH ;; \
-    "25"*) set -- "--compress=zip-6" --add-modules java.base,java.logging,java.xml,java.management,java.net.http,jdk.crypto.ec ;; \
+    # JDK 25 switches to a minimal module set for smaller images. Override with JLINK_MODULES to restore broader compatibility if needed.
+    "25"*) mod_list="${JLINK_MODULES:-java.base,java.logging,java.xml,java.management,java.net.http,jdk.crypto.ec}"; \
+           set -- "--compress=zip-6" --add-modules "$mod_list" ;; \
     *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
   esac; \
   jlink \
