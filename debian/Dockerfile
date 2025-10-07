@@ -42,8 +42,6 @@ RUN set -x; apt-get update \
 
 ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
-ARG JLINK_MODULES
-
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)

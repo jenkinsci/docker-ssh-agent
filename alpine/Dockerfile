@@ -43,8 +43,6 @@ RUN apk add --no-cache \
 
 ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
-ARG JLINK_MODULES
-
 RUN case "$(jlink --version 2>&1)" in \
     "17."*) set -- "--compress=2" --add-modules ALL-MODULE-PATH ;; \
     "21."*) set -- "--compress=zip-6" --add-modules ALL-MODULE-PATH ;; \
