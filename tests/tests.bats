@@ -12,7 +12,7 @@ ARCH=${ARCH:-x86_64}
 AGENT_CONTAINER=bats-jenkins-ssh-agent
 
 # TODO: uncomment when git-lfs version is the same across all images
-# GIT_LFS_VERSION='3.7.0'
+# GIT_LFS_VERSION='3.7.1'
 
 # About the health CMD: the netcat command (`nc`) needs the options `-w1` to return 1s after reaches EOF. It's a portable option of `nc` (on BSD, Debian, Windows, busybox).
 # Of course, to reach EOF, you need to provide something to the stding: it's the reason of the `echo` piped command

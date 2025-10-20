@@ -60,7 +60,7 @@ RUN case "$(jlink --version 2>&1)" in \
       --output /javaruntime
 
 # Downloading git-lfs from this intermediate stage as there is no wget/curl in the final one
-ARG GIT_LFS_VERSION=3.6.1
+ARG GIT_LFS_VERSION=3.7.1
 RUN arch=$(uname -m | sed -e 's/x86_64/amd64/g' -e 's/aarch64/arm64/g') \
   && curl -L -s -o git-lfs.tgz "https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/git-lfs-linux-${arch}-v${GIT_LFS_VERSION}.tar.gz"
 
