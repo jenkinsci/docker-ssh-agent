@@ -11,6 +11,9 @@ SUT_IMAGE=$(get_sut_image)
 ARCH=${ARCH:-x86_64}
 AGENT_CONTAINER=bats-jenkins-ssh-agent
 
+# TODO: uncomment when git-lfs version is the same across all images
+# GIT_LFS_VERSION='3.7.0'
+
 # About the health CMD: the netcat command (`nc`) needs the options `-w1` to return 1s after reaches EOF. It's a portable option of `nc` (on BSD, Debian, Windows, busybox).
 # Of course, to reach EOF, you need to provide something to the stding: it's the reason of the `echo` piped command
 docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhost 22' '--health-start-period=2s' '--health-interval=2s' '--health-retries=10' '--health-timeout=2s' "${SUT_IMAGE}")
@@ -228,11 +231,13 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
   run docker exec "${test_container_name}" patch --version
   assert_success
 
-  run docker exec "${test_container_name}" git clone https://github.com/lemeurherve/git-lfs-testing-repo.git
+  run docker exec "${test_container_name}" git clone https://github.com/jenkinsci/docker-ssh-agent.git
   assert_success
 
-  run docker exec "${test_container_name}" cd git-lfs-testing-repo && git lfs ls-files
-  assert_output --partial "large.psd"
+  run docker exec "${test_container_name}" git lfs env
+  assert_success
+  # TODO: replace assert_success with assert_output when git-lfs version is the same across all images
+  # assert_output --partial "${GIT_LFS_VERSION}"
 
   clean_test_container "${test_container_name}"
 }
