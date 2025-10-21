@@ -58,7 +58,7 @@ TUwLP4n7pK4J2sCIs6fRD5kEYms4BnddXeRuI2fGZHGH70Ci/Q==
 -----END RSA PRIVATE KEY-----
 "@
 
-$global:GITLFSVERSION = '3.7.0'
+$global:GITLFSVERSION = '3.7.1'
 
 Cleanup($global:CONTAINERNAME)
 
@@ -138,9 +138,12 @@ Describe "[$global:IMAGE_NAME] image has correct version of java and git-lfs ins
     }
 
     It 'has git-lfs (and thus git) installed and in the path' {
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`& git lfs version`""
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`& git lfs env`""
         $exitCode | Should -Be 0
-        $stdout.Trim() | Should -Match "git-lfs/$global:GITLFSVERSION"
+        $r = [regex] "^git-lfs/(?<version>\d+\.\d+\.\d+)"
+        $m = $r.Match($stdout)
+        $m | Should -Not -Be $null
+        $m.Groups['version'].ToString() | Should -Be "$global:GITLFSVERSION"
     }
 
     AfterAll {

@@ -59,6 +59,11 @@ RUN case "$(jlink --version 2>&1)" in \
     --no-header-files \
     --output /javaruntime
 
+# Downloading git-lfs from this intermediate stage as there is no wget/curl in the final one
+ARG GIT_LFS_VERSION=3.7.1
+RUN arch=$(uname -m | sed -e 's/x86_64/amd64/g' -e 's/aarch64/arm64/g') \
+  && curl -L -s -o git-lfs.tgz "https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/git-lfs-linux-${arch}-v${GIT_LFS_VERSION}.tar.gz"
+
 FROM debian:"${DEBIAN_RELEASE}"
 
 ARG user=jenkins
@@ -82,7 +87,7 @@ RUN groupadd -g ${gid} ${group} \
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         ca-certificates \
-        git-lfs \
+        git \
         less \
         netcat-traditional \
         openssh-server \
@@ -91,6 +96,12 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     # Cleanup SSH host keys if any
     && rm -f /etc/ssh/ssh_host*_key*
+
+# Retrieve git-lfs from the build stage and install it
+COPY --from=jre-build git-lfs.tgz git-lfs.tgz
+RUN tar xzf git-lfs.tgz \
+  && bash git-lfs-*/install.sh \
+  && rm -rf git-lfs*
 
 # setup SSH server
 RUN sed -i /etc/ssh/sshd_config \
