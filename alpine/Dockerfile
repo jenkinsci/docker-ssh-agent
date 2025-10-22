@@ -44,18 +44,18 @@ RUN apk add --no-cache \
 ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 
 RUN case "$(jlink --version 2>&1)" in \
-      "17."*) set -- "--compress=2" ;; \
-      # the compression argument is different for JDK21
-      "21."*) set -- "--compress=zip-6" ;; \
-      *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
-    esac; \
-    jlink \
-      --strip-java-debug-attributes \
-      "$1" \
-      --add-modules ALL-MODULE-PATH \
-      --no-man-pages \
-      --no-header-files \
-      --output /javaruntime
+    "17."*) set -- "--compress=2" --add-modules ALL-MODULE-PATH ;; \
+    "21."*) set -- "--compress=zip-6" --add-modules ALL-MODULE-PATH ;; \
+    # JDK 25 switches to a minimal module set for smaller images
+    "25"*) set -- "--compress=zip-6" --add-modules "java.base,java.logging,java.xml,java.management,java.net.http,jdk.crypto.ec" ;; \
+    *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
+  esac; \
+  jlink \
+    --strip-java-debug-attributes \
+    "$@" \
+    --no-man-pages \
+    --no-header-files \
+    --output /javaruntime
 
 # Downloading git-lfs from this intermediate stage as there is no wget/curl in the final one
 ARG GIT_LFS_VERSION=3.7.1
