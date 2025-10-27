@@ -35,10 +35,6 @@ variable "jdks_to_build" {
   default = [17, 21, 25]
 }
 
-variable "jdks_to_build_windows" {
-  default = [17, 21]
-}
-
 variable "default_jdk" {
   default = 17
 }
@@ -201,7 +197,7 @@ target "debian" {
 
 target "nanoserver" {
   matrix = {
-    jdk             = jdks_to_build_windows
+    jdk             = jdks_to_build
     windows_version = windowsversions("nanoserver")
   }
   name       = "nanoserver-${windows_version}_jdk${jdk}"
@@ -226,7 +222,7 @@ target "nanoserver" {
 
 target "windowsservercore" {
   matrix = {
-    jdk             = jdks_to_build_windows
+    jdk             = jdks_to_build
     windows_version = windowsversions("windowsservercore")
   }
   name       = "windowsservercore-${windows_version}_jdk${jdk}"
