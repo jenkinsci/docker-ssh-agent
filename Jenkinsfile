@@ -95,7 +95,7 @@ def parallelStages = [failFast: false]
                                     sh 'make build'
                                 } else {
                                     powershell '& ./build.ps1 build'
-                                    archiveArtifacts artifacts: 'build-windows_*.yaml', allowEmptyArchive: true
+                                    archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
                                 }
                             }
                             stage('Test') {
