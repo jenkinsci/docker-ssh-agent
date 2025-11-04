@@ -76,7 +76,7 @@ variable "JAVA25_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "trixie-20251020"
+  default = "trixie-20251103"
 }
 
 # Set this value to a specific Windows version to override Windows versions to build returned by windowsversions function
@@ -96,7 +96,7 @@ function "javaversion" {
   params = [jdk]
   result = (equal(17, jdk)
     ? "${JAVA17_VERSION}"
-  : equal(21, jdk)
+    : equal(21, jdk)
     ? "${JAVA21_VERSION}"
   : "${JAVA25_VERSION}")
 }
@@ -107,7 +107,7 @@ function "alpine_platforms" {
   params = [jdk]
   result = (equal(17, jdk)
     ? ["linux/amd64"]
-    : ["linux/amd64", "linux/arm64"])
+  : ["linux/amd64", "linux/arm64"])
 }
 
 # Return an array of Debian platforms to use depending on the jdk passed as parameter
