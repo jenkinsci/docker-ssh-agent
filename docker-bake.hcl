@@ -68,7 +68,7 @@ variable "JAVA17_VERSION" {
 }
 
 variable "JAVA21_VERSION" {
-  default = "21.0.8_9"
+  default = "21.0.9_10"
 }
 
 variable "JAVA25_VERSION" {
@@ -96,7 +96,7 @@ function "javaversion" {
   params = [jdk]
   result = (equal(17, jdk)
     ? "${JAVA17_VERSION}"
-  : equal(21, jdk)
+    : equal(21, jdk)
     ? "${JAVA21_VERSION}"
   : "${JAVA25_VERSION}")
 }
@@ -107,7 +107,7 @@ function "alpine_platforms" {
   params = [jdk]
   result = (equal(17, jdk)
     ? ["linux/amd64"]
-    : ["linux/amd64", "linux/arm64"])
+  : ["linux/amd64", "linux/arm64"])
 }
 
 # Return an array of Debian platforms to use depending on the jdk passed as parameter
