@@ -84,6 +84,35 @@ The image has several supported configurations, which can be accessed via the fo
 * `nanoserver-1809`, `nanoserver-ltsc2019`, `nanoserver-1809-jdk11`, `nanoserver-ltsc2019-jdk11`, `${IMAGE_VERSION}-nanoserver-1809`, `${IMAGE_VERSION}-nanoserver-ltsc2019`, `${IMAGE_VERSION}-nanoserver-1809-jdk11`, `${IMAGE_VERSION}-nanoserver-ltsc2019-jdk11` ([Dockerfile](windows/nanoserver-ltsc2019/Dockerfile))
 * `windowsservercore-1809`, `windowsservercore-ltsc2019`, `windowsservercore-1809-jdk11`, `windowsservercore-ltsc2019-jdk11`, `${IMAGE_VERSION}-windowsservercore-1809`, `${IMAGE_VERSION}-windowsservercore-ltsc2019`, `${IMAGE_VERSION}-windowsservercore-1809-jdk11`, `${IMAGE_VERSION}-windowsservercore-ltsc2019-jdk11` ([Dockerfile](windows/windowsservercore-ltsc2019/Dockerfile))
 
+## Host keys
+
+Host keys are generated with `ssh-keygen -A` in `setup-httpd`. Host keys reside inside the container. When the container is recreated, different host keys are also generated. Jenkins master may need to re-trust new host keys.
+
+We can preserve host keys in mounted volume.
+
+Steps:
+1. Copy host keys from the mounted volume to /etc/ssh/
+2. Run ssh-keygen -A to generate host keys
+3. Copy host keys from /etc/ssh/ to the mounted volume
+4. Run setup-sshd
+
+Entry point example:
+
+```
+#!/bin/bash
+
+# /mnt/agent is the mounted volume
+mkdir -p /mnt/agent/host_keys/
+
+cp -u /mnt/agent/host_keys/ssh_host*_key* /etc/ssh/
+
+ssh-keygen -A
+
+cp -u /etc/ssh/ssh_host*_key* /mnt/agent/host_keys/
+
+setup-ssd "$@"
+```
+
 ## Building instructions
 
 ### Pre-requisites
