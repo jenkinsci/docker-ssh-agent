@@ -128,7 +128,7 @@ function "windowsversions" {
     ? [WINDOWS_VERSION_OVERRIDE]
     : (equal(flavor, "windowsservercore")
       ? ["ltsc2019", "ltsc2022"]
-  : ["1809", "ltsc2019", "ltsc2022"]))
+  : ["1809", "ltsc2019", "ltsc2022", "ltsc2025"]))
 }
 
 # Return the Windows version to use as base image for the Windows version passed as parameter

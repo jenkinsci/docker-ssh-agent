@@ -47,9 +47,11 @@ def parallelStages = [failFast: false]
     'nanoserver-1809',
     'nanoserver-ltsc2019',
     'nanoserver-ltsc2022',
+    'nanoserver-ltsc2025',
     'windowsservercore-1809',
     'windowsservercore-ltsc2019',
-    'windowsservercore-ltsc2022'
+    'windowsservercore-ltsc2022',
+    'windowsservercore-ltsc2025'
 ].each { imageType ->
     parallelStages[imageType] = {
         withEnv([
