@@ -62,13 +62,6 @@ $global:GITLFSVERSION = '3.7.1'
 
 Cleanup($global:CONTAINERNAME)
 
-Describe "[$global:IMAGE_TAG] image can be built" {
-    It 'builds image' {
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"TOOLS_WINDOWS_VERSION=${global:TOOLSWINDOWSVERSION}`" --build-arg `"JAVA_VERSION=${global:JAVA_VERSION}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --tag=${global:IMAGE_TAG} --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
-        $exitCode | Should -Be 0
-    }
-}
-
 Describe "[$global:IMAGE_TAG] image has setup-sshd.ps1 in the correct location" {
     BeforeAll {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all `"$global:IMAGE_NAME`" `"$global:CONTAINERSHELL`""
@@ -205,6 +198,13 @@ Describe "[$global:IMAGE_TAG] create agent container like docker-plugin with '$g
 
     AfterAll {
         Cleanup($global:CONTAINERNAME)
+    }
+}
+
+Describe "[$global:IMAGE_TAG] image can be built" {
+    It 'builds image' {
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"TOOLS_WINDOWS_VERSION=${global:TOOLSWINDOWSVERSION}`" --build-arg `"JAVA_VERSION=${global:JAVA_VERSION}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --tag=${global:IMAGE_TAG} --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
+        $exitCode | Should -Be 0
     }
 }
 
