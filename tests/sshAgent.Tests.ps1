@@ -208,7 +208,7 @@ Describe "[$global:IMAGE_TAG] image can be built" {
     }
 }
 
-Describe "[$global:IMAGE_TAG] build args" {
+Describe "[$global:IMAGE_TAG] image can be built with custom build args" {
     BeforeAll {
         Push-Location -StackName 'agent' -Path "$PSScriptRoot/.."
     }
