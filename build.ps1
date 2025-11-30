@@ -121,6 +121,7 @@ function Initialize-Docker() {
     Get-WindowsFeature Containers
     Enable-WindowsOptionalFeature -Online -FeatureName Containers -All -NoRestart
     Get-WindowsFeature Containers
+    & $PSScriptRoot/Debug-ContainerHost.ps1
     Invoke-Expression 'docker info'
 }
 
