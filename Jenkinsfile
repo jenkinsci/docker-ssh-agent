@@ -19,7 +19,6 @@ def parallelStages = [failFast: false]
             int retryCounter = 0
             retry(count: 2, conditions: [agent(), nonresumable()]) {
                 // Use local variable to manage concurrency and increment BEFORE spinning up any agent
-                final String resolvedAgentLabel = spotAgentSelector(agentSelector(imageType), retryCounter)
                 retryCounter++
                 node('windows-2022') {
                     timeout(time: 60, unit: 'MINUTES') {
