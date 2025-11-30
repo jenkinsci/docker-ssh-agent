@@ -62,14 +62,14 @@ $global:GITLFSVERSION = '3.7.1'
 
 Cleanup($global:CONTAINERNAME)
 
-Describe "[$global:IMAGE_NAME] image can be built" {
+Describe "[$global:IMAGE_TAG] image can be built" {
     It 'builds image' {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"TOOLS_WINDOWS_VERSION=${global:TOOLSWINDOWSVERSION}`" --build-arg `"JAVA_VERSION=${global:JAVA_VERSION}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --tag=${global:IMAGE_TAG} --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
         $exitCode | Should -Be 0
     }
 }
 
-Describe "[$global:IMAGE_NAME] image has setup-sshd.ps1 in the correct location" {
+Describe "[$global:IMAGE_TAG] image has setup-sshd.ps1 in the correct location" {
     BeforeAll {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all `"$global:IMAGE_NAME`" `"$global:CONTAINERSHELL`""
         $exitCode | Should -Be 0
@@ -86,7 +86,7 @@ Describe "[$global:IMAGE_NAME] image has setup-sshd.ps1 in the correct location"
     }
 }
 
-Describe "[$global:IMAGE_NAME] image has no pre-existing SSH host keys" {
+Describe "[$global:IMAGE_TAG] image has no pre-existing SSH host keys" {
     BeforeAll {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all `"$global:IMAGE_NAME`" `"$global:CONTAINERSHELL`""
         $exitCode | Should -Be 0
@@ -103,7 +103,7 @@ Describe "[$global:IMAGE_NAME] image has no pre-existing SSH host keys" {
     }
 }
 
-Describe "[$global:IMAGE_NAME] checking image metadata" {
+Describe "[$global:IMAGE_TAG] checking image metadata" {
     It 'has correct volumes' {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "inspect --format '{{.Config.Volumes}}' $global:IMAGE_NAME"
         $exitCode | Should -Be 0
@@ -119,7 +119,7 @@ Describe "[$global:IMAGE_NAME] checking image metadata" {
     }
 }
 
-Describe "[$global:IMAGE_NAME] image has correct version of java and git-lfs installed and in the PATH" {
+Describe "[$global:IMAGE_TAG] image has correct version of java and git-lfs installed and in the PATH" {
     BeforeAll {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all `"$global:IMAGE_NAME`" `"$global:PUBLIC_SSH_KEY`""
         $exitCode | Should -Be 0
@@ -151,7 +151,7 @@ Describe "[$global:IMAGE_NAME] image has correct version of java and git-lfs ins
     }
 }
 
-Describe "[$global:IMAGE_NAME] create agent container with pubkey as argument" {
+Describe "[$global:IMAGE_TAG] create agent container with pubkey as argument" {
     BeforeAll {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all `"$global:IMAGE_NAME`" `"$global:PUBLIC_SSH_KEY`""
         $exitCode | Should -Be 0
@@ -169,7 +169,7 @@ Describe "[$global:IMAGE_NAME] create agent container with pubkey as argument" {
     }
 }
 
-Describe "[$global:IMAGE_NAME] create agent container with pubkey as envvar" {
+Describe "[$global:IMAGE_TAG] create agent container with pubkey as envvar" {
     BeforeAll {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all `"$global:IMAGE_NAME`" `"$global:PUBLIC_SSH_KEY`""
         $exitCode | Should -Be 0
@@ -189,7 +189,7 @@ Describe "[$global:IMAGE_NAME] create agent container with pubkey as envvar" {
 
 
 $global:DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
-Describe "[$global:IMAGE_NAME] create agent container like docker-plugin with '$global:DOCKER_PLUGIN_DEFAULT_ARG' as argument" {
+Describe "[$global:IMAGE_TAG] create agent container like docker-plugin with '$global:DOCKER_PLUGIN_DEFAULT_ARG' as argument" {
     BeforeAll {
         [string]::IsNullOrWhiteSpace($global:DOCKER_PLUGIN_DEFAULT_ARG) | Should -BeFalse
         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all --env=`"JENKINS_AGENT_SSH_PUBKEY=$global:PUBLIC_SSH_KEY`" `"$global:IMAGE_NAME`" `"$global:DOCKER_PLUGIN_DEFAULT_ARG`""
@@ -208,7 +208,7 @@ Describe "[$global:IMAGE_NAME] create agent container like docker-plugin with '$
     }
 }
 
-Describe "[$global:IMAGE_NAME] build args" {
+Describe "[$global:IMAGE_TAG] build args" {
     BeforeAll {
         Push-Location -StackName 'agent' -Path "$PSScriptRoot/.."
     }
