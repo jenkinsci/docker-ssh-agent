@@ -6,50 +6,10 @@ properties([
     pipelineTriggers([cron(cronExpr)]),
 ])
 
-def agentSelector(String imageType) {
-    // Linux agent
-    if (imageType == 'linux') {
-        // This function is defined in the jenkins-infra/pipeline-library
-        if (infra.isTrusted()) {
-            return 'linux'
-        } else {
-            // Need Docker and a LOT of memory for faster builds (due to multi archs) or fallback to linux (trusted.ci)
-            return 'docker-highmem'
-        }
-    }
-    // Windows Server Core 2022 agent
-    if (imageType.contains('2022')) {
-        return 'windows-2022'
-    }
-    // Windows Server Core 2019 agent (for nanoserver 1809 & ltsc2019 and for windowservercore ltsc2019)
-    return 'windows-2019'
-}
-
-// Ref. https://github.com/jenkins-infra/pipeline-library/pull/917
-def spotAgentSelector(String agentLabel, int counter) {
-    // This function is defined in the jenkins-infra/pipeline-library
-    if (infra.isTrusted()) {
-        // Return early if on trusted (no spot agent)
-        return agentLabel
-    }
-
-    if (counter > 1) {
-        return agentLabel + ' && nonspot'
-    }
-
-    return agentLabel + ' && spot'
-}
-
 // Specify parallel stages
 def parallelStages = [failFast: false]
 [
-    'linux',
-    'nanoserver-1809',
-    'nanoserver-ltsc2019',
-    'nanoserver-ltsc2022',
-    'windowsservercore-1809',
-    'windowsservercore-ltsc2019',
-    'windowsservercore-ltsc2022'
+    'windowsservercore-ltsc2022',
 ].each { imageType ->
     parallelStages[imageType] = {
         withEnv([
@@ -61,58 +21,87 @@ def parallelStages = [failFast: false]
                 // Use local variable to manage concurrency and increment BEFORE spinning up any agent
                 final String resolvedAgentLabel = spotAgentSelector(agentSelector(imageType), retryCounter)
                 retryCounter++
-                node(resolvedAgentLabel) {
+                node('windows-2022') {
                     timeout(time: 60, unit: 'MINUTES') {
                         checkout scm
-                        if (imageType == "linux") {
-                            stage('Prepare Docker') {
-                                sh 'make docker-init'
-                            }
-                        }
-                        // This function is defined in the jenkins-infra/pipeline-library
-                        if (infra.isTrusted()) {
-                            // trusted.ci.jenkins.io builds (e.g. publication to DockerHub)
-                            stage('Deploy to DockerHub') {
-                                withEnv([
-                                    "ON_TAG=true",
-                                    "VERSION=${env.TAG_NAME}",
-                                ]) {
-                                    // This function is defined in the jenkins-infra/pipeline-library
-                                    infra.withDockerCredentials {
-                                        if (isUnix()) {
-                                            sh 'make publish'
-                                        } else {
-                                            powershell '& ./build.ps1 build'
-                                            powershell '& ./build.ps1 publish'
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            // ci.jenkins.io builds (e.g. no publication)
-                            stage('Build') {
-                                if (isUnix()) {
-                                    sh 'make build'
-                                } else {
-                                    powershell '& ./build.ps1 build'
-                                    archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
-                                }
-                            }
-                            stage('Test') {
-                                if (isUnix()) {
-                                    sh 'make test'
-                                } else {
-                                    powershell '& ./build.ps1 test'
-                                }
-                                junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
-                            }
-                            // If the tests are passing for Linux AMD64, then we can build all the CPU architectures
-                            if (isUnix()) {
-                                stage('Multi-Arch Build') {
+                        stage('Prepare Docker') {
+                            powershell '''
+                            $ErrorActionPreference = "Stop"
+                            $ConfirmPreference = "None"
+                            $ProgressPreference = "SilentlyContinue"
 
-                                    sh 'make every-build'
-                                }
-                            }
+                            Get-ComputerInfo | Select WindowsVersion, OsName, OsBuildNumber
+                            Get-WindowsFeature Containers, Hyper-V
+                            docker info
+                            Enable-WindowsOptionalFeature -Online -FeatureName Containers -All -NoRestart
+                            Get-WindowsFeature Containers, Hyper-V
+                            docker info
+                            '''
+                        }
+                        // ci.jenkins.io builds (e.g. no publication)
+                        stage('Build') {
+                            powershell '& ./build.ps1 build'
+                            archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
+                        }
+                        // stage('Test') {
+                        //     powershell '& ./build.ps1 test'
+                        //     junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
+                        // }
+                    }
+                }
+                node('windows-2025') {
+                    timeout(time: 60, unit: 'MINUTES') {
+                        checkout scm
+                        stage('Prepare Docker') {
+                            powershell '''
+                            $ErrorActionPreference = "Stop"
+                            $ConfirmPreference = "None"
+                            $ProgressPreference = "SilentlyContinue"
+
+                            Get-ComputerInfo | Select WindowsVersion, OsName, OsBuildNumber
+                            Get-WindowsFeature Containers, Hyper-V
+                            docker info
+                            Enable-WindowsOptionalFeature -Online -FeatureName Containers -All -NoRestart
+                            Get-WindowsFeature Containers, Hyper-V
+                            docker info
+                            '''
+                        }
+                        // ci.jenkins.io builds (e.g. no publication)
+                        stage('Build') {
+                            powershell '& ./build.ps1 build'
+                            archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
+                        }
+                        // stage('Test') {
+                        //     powershell '& ./build.ps1 test'
+                        //     junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
+                        // }
+                    }
+                }
+                node('windows-2025') {
+                    timeout(time: 60, unit: 'MINUTES') {
+                        checkout scm
+                        stage('Prepare Docker') {
+                            powershell '''
+                            $ErrorActionPreference = "Stop"
+                            $ConfirmPreference = "None"
+                            $ProgressPreference = "SilentlyContinue"
+
+                            Get-ComputerInfo | Select WindowsVersion, OsName, OsBuildNumber
+                            Get-WindowsFeature Containers, Hyper-V
+                            docker info
+                            Enable-WindowsOptionalFeature -Online -FeatureName Containers -All -NoRestart
+                            Get-WindowsFeature Containers, Hyper-V
+                            docker info
+                            '''
+                        }
+                        // ci.jenkins.io builds (e.g. no publication)
+                        stage('Build') {
+                            powershell '& ./build.ps1 build'
+                            archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
+                        }
+                        stage('Test') {
+                            powershell '& ./build.ps1 test'
+                            junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
                         }
                     }
                 }
@@ -120,6 +109,7 @@ def parallelStages = [failFast: false]
         }
     }
 }
+
 
 // Execute parallel stages
 parallel parallelStages
