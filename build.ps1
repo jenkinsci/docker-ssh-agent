@@ -121,7 +121,7 @@ function Initialize-Docker() {
     Get-WindowsFeature Containers
     Enable-WindowsOptionalFeature -Online -FeatureName Containers -All -NoRestart
     Get-WindowsFeature Containers
-    Invoke-Expression docker info
+    Invoke-Expression 'docker info'
 }
 
 function Initialize-DockerComposeFile {
