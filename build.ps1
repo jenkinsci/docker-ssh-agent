@@ -122,13 +122,15 @@ function Initialize-Docker() {
     $dockerDaemonConfigPath = 'C:\ProgramData\Docker\config\daemon.json'
     if (Test-Path $dockerDaemonConfigPath) {
         $dockerDaemonConfig = Get-Content -Path $dockerDaemonConfigPath -Raw | ConvertFrom-Json
-        # # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
-        # Remove-Item -Path $dockerDaemonConfig
+        Write-Host "${dockerDaemonConfigPath} file content:"
+        $dockerDaemonConfig | ConvertTo-Json
+        # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
+        Remove-Item -Path $dockerDaemonConfig
 
-        Push-Location -Path 'C:\Windows'
-        Rename-Item SystemTemp SystemTemp.old
-        cmd.exe /c 'mklink /D SystemTemp {0}' -f $dockerDaemonConfig.PSObject.Properties['data-root'].Value
-        Pop-Location
+        # Push-Location -Path 'C:\Windows'
+        # Rename-Item SystemTemp SystemTemp.old
+        # cmd.exe /c 'mklink /D SystemTemp {0}' -f $dockerDaemonConfig.PSObject.Properties['data-root'].Value
+        # Pop-Location
     }
     Get-ComputerInfo | Select-Object OsName, OsBuildNumber, WindowsVersion
     Get-WindowsFeature Containers | Out-String
