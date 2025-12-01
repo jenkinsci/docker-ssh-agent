@@ -120,7 +120,7 @@ function Initialize-Docker() {
     Get-ChildItem env: | Select-Object Name, Value
     # Cf https://github.com/jenkins-infra/jenkins-infra/blob/production/modules/profile/templates/jenkinscontroller/casc/clouds-ec2.yaml.erb
     $dockerDaemonConfig = 'C:\ProgramData\Docker\config\daemon.json'
-    if ($path | Test-Path) {
+    if (Test-Path $dockerDaemonConfig) {
         Write-Host "${dockerDaemon} docker daemon config file content:"
         Get-Content -Path $dockerDaemonConfig
         # # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
