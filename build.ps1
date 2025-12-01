@@ -123,8 +123,13 @@ function Initialize-Docker() {
     if ($path | Test-Path) {
         Write-Host "${dockerDaemon} docker daemon config file content:"
         Get-Content -Path $dockerDaemonConfig
-        # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
-        Remove-Item -Path $dockerDaemonConfig
+        # # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
+        # Remove-Item -Path $dockerDaemonConfig
+
+        cd 'C:\Windows'
+        ren SystemTemp SystemTemp.old
+        mklink /D SystemTemp $dockerDaemonConfig
+        cd -
     }
     Get-ComputerInfo | Select-Object OsName, OsBuildNumber, WindowsVersion
     Get-WindowsFeature Containers | Out-String
