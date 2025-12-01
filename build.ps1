@@ -127,7 +127,7 @@ function Initialize-Docker() {
         # Remove-Item -Path $dockerDaemonConfig
 
         cd 'C:\Windows'
-        ren SystemTemp SystemTemp.old
+        Rename-Item SystemTemp SystemTemp.old
         mklink /D SystemTemp $dockerDaemonConfig
         cd -
     }
