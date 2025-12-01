@@ -128,7 +128,7 @@ function Initialize-Docker() {
 
         cd 'C:\Windows'
         Rename-Item SystemTemp SystemTemp.old
-        mklink /D SystemTemp $dockerDaemonConfig
+        cmd.exe /c "mklink /D SystemTemp 'Z:\docker'"
         cd -
     }
     Get-ComputerInfo | Select-Object OsName, OsBuildNumber, WindowsVersion
