@@ -126,10 +126,10 @@ function Initialize-Docker() {
         # # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
         # Remove-Item -Path $dockerDaemonConfig
 
-        cd 'C:\Windows'
+        Push-Location -Path 'C:\Windows'
         Rename-Item SystemTemp SystemTemp.old
         cmd.exe /c "mklink /D SystemTemp 'Z:\docker'"
-        cd -
+        Pop-Location
     }
     Get-ComputerInfo | Select-Object OsName, OsBuildNumber, WindowsVersion
     Get-WindowsFeature Containers | Out-String
