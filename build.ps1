@@ -119,16 +119,15 @@ function Test-Image {
 function Initialize-Docker() {
     Get-ChildItem env: | Select-Object Name, Value
     # Cf https://github.com/jenkins-infra/jenkins-infra/blob/production/modules/profile/templates/jenkinscontroller/casc/clouds-ec2.yaml.erb
-    $dockerDaemonConfig = 'C:\ProgramData\Docker\config\daemon.json'
-    if (Test-Path $dockerDaemonConfig) {
-        Write-Host "${dockerDaemon} docker daemon config file content:"
-        Get-Content -Path $dockerDaemonConfig
+    $dockerDaemonConfigPath = 'C:\ProgramData\Docker\config\daemon.json'
+    if (Test-Path $dockerDaemonConfigPath) {
+        $dockerDaemonConfig = Get-Content -Path $dockerDaemonConfigPath -Raw | ConvertFrom-Json
         # # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
         # Remove-Item -Path $dockerDaemonConfig
 
         Push-Location -Path 'C:\Windows'
         Rename-Item SystemTemp SystemTemp.old
-        cmd.exe /c "mklink /D SystemTemp 'Z:\docker'"
+        cmd.exe /c 'mklink /D SystemTemp {0}' -f $dockerDaemonConfig.PSObject.Properties['data-root'].Value
         Pop-Location
     }
     Get-ComputerInfo | Select-Object OsName, OsBuildNumber, WindowsVersion
