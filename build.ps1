@@ -118,12 +118,12 @@ function Test-Image {
 
 function Initialize-Docker() {
     Get-ChildItem env: | Select-Object Name, Value
-    # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount)
     # Cf https://github.com/jenkins-infra/jenkins-infra/blob/production/modules/profile/templates/jenkinscontroller/casc/clouds-ec2.yaml.erb
     $dockerDaemonConfig = 'C:\ProgramData\Docker\config\daemon.json'
     if ($path | Test-Path) {
-        Write-Host "${dockerDaemon} docker daemon config file content before deletion:"
+        Write-Host "${dockerDaemon} docker daemon config file content:"
         Get-Content -Path $dockerDaemonConfig
+        # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
         Remove-Item -Path $dockerDaemonConfig
     }
     Get-ComputerInfo | Select-Object OsName, OsBuildNumber, WindowsVersion
