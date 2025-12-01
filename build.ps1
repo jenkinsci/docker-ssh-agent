@@ -125,7 +125,7 @@ function Initialize-Docker() {
         Write-Host "${dockerDaemonConfigPath} file content:"
         $dockerDaemonConfig | ConvertTo-Json
         # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
-        Remove-Item -Path $dockerDaemonConfig
+        Remove-Item -Path $dockerDaemonConfigPath
 
         # Push-Location -Path 'C:\Windows'
         # Rename-Item SystemTemp SystemTemp.old
