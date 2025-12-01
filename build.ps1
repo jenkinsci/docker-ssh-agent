@@ -97,7 +97,7 @@ function Test-Image {
     $env:JAVA_VERSION = "$javaVersion"
 
     $targetPath = '.\target\{0}' -f $imageTag
-    if(Test-Path $targetPath) {
+    if (Test-Path $targetPath) {
         Remove-Item -Recurse -Force $targetPath
     }
     New-Item -Path $targetPath -Type Directory | Out-Null
