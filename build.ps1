@@ -126,7 +126,7 @@ function Initialize-Docker() {
         $dockerDaemonConfig | ConvertTo-Json
         # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
         Remove-Item -Path $dockerDaemonConfigPath
-
+        Restart-Service docker
         # Push-Location -Path 'C:\Windows'
         # Rename-Item SystemTemp SystemTemp.old
         # cmd.exe /c 'mklink /D SystemTemp {0}' -f $dockerDaemonConfig.PSObject.Properties['data-root'].Value
