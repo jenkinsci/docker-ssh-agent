@@ -32,7 +32,8 @@ group "linux-ppc64le" {
 }
 
 variable "jdks_to_build" {
-  default = [17, 21, 25]
+  # default = [17, 21, 25]
+  default = [25]
 }
 
 variable "default_jdk" {
