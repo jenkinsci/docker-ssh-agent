@@ -40,9 +40,9 @@ RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
 
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
+SHELL ["cmd.exe"]
+
 ARG JAVA_HOME
-ENV PSHOME="C:\Program Files\PowerShell"
-ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
 
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
 COPY --from=jdk-core /windows/system32/netapi32.dll /windows/system32/netapi32.dll
@@ -50,13 +50,13 @@ COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
 COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
 
 # Download and install PowerShell 7
-RUN curl.exe -L https://github.com/PowerShell/PowerShell/releases/download/v7.5.4/PowerShell-7.5.4-win-x64.zip -o pwsh.zip && \
-    mkdir C:\PowerShell7 && \
-    tar.exe -xf pwsh.zip -C C:\PowerShell7 && \
+ARG POWERSHELL_VERSION=7.5.4
+ENV PSHOME="C:\PowerShell7"
+ENV PATH="C:\Windows\system32;C:\Windows;%PSHOME%;"
+RUN curl.exe --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output pwsh.zip && \
+    mkdir %PSHOME% && \
+    tar.exe -xf pwsh.zip -C %PSHOME% && \
     del pwsh.zip
-
-# Add PowerShell to PATH
-RUN setx /M PATH "%PATH%;C:\PowerShell7"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
