@@ -60,8 +60,8 @@ USER ContainerAdministrator
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
 COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
 COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
-COPY --from=jdk-core /windows/system32/netapi32.dll /netapi32.dll
-RUN if (!(Test-Path 'C:/windows/system32/netapi32.dll')) { Move-Item 'C:/netapi32.dll' 'C:/windows/system32/netapi32.dll' }
+COPY --from=jdk-core /windows/system32/netapi32.dll C:/windows/TEMP/netapi32.dll
+RUN if (!(Test-Path 'C:/windows/system32/netapi32.dll')) { Move-Item 'C:/windows/TEMP/netapi32.dll' 'C:/windows/system32/netapi32.dll' }
 
 # Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
 RUN $javaMajorVersion = $env:JAVA_HOME.Substring($env:JAVA_HOME.Length - 2); `
