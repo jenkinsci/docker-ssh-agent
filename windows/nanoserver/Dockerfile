@@ -40,7 +40,7 @@ RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
 
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
-SHELL ["cmd.exe"]
+SHELL ["cmd.exe", "/c"]
 
 ARG JAVA_HOME
 
