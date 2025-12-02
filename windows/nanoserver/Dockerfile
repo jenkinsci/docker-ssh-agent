@@ -44,6 +44,8 @@ SHELL ["cmd.exe"]
 
 ARG JAVA_HOME
 
+RUN env
+
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
 COPY --from=jdk-core /windows/system32/netapi32.dll /windows/system32/netapi32.dll
 COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
