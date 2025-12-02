@@ -44,11 +44,6 @@ SHELL ["cmd.exe", "/c"]
 
 ARG JAVA_HOME
 
-# The nanoserver image is nice and small, but we need a couple of things to get SSH working
-COPY --from=jdk-core /windows/system32/netapi32.dll /windows/system32/netapi32.dll
-COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
-COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
-
 # Download and install PowerShell 7
 ARG POWERSHELL_VERSION=7.5.4
 ENV PSHOME="C:\PowerShell7"
@@ -62,6 +57,14 @@ SCRIPT
 
 SHELL ["C:/PowerShell7/pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
+
+# The nanoserver image is nice and small, but we need a couple of things to get SSH working
+COPY --from=jdk-core /windows/system32/netapi32.dll /netapi32.dll
+RUN if (!(Test-Path 'C:/windows/system32/netapi32.dll')) { Move-Item 'C:/netapi32.dll' 'C:/windows/system32/netapi32.dll' }
+
+COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
+COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
+
 
 # Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
 RUN $javaMajorVersion = $env:JAVA_HOME.Substring($env:JAVA_HOME.Length - 2); `
