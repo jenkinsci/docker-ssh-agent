@@ -51,7 +51,7 @@ ENV PSHOME="C:\Program Files\Powershell"
 ENV PATH="C:\Windows\system32;C:\Windows;C:\Program Files\Powershell;"
 RUN curl.exe --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output C:/windows/TEMP/pwsh.zip
 RUN mkdir %PSHOME%
-RUN tar.exe -xf "C:/windows/TEMP/pwsh.zip" -C %PSHOME%
+RUN tar.exe -xf "C:/windows/TEMP/pwsh.zip" -C "%PSHOME%"
 RUN if exist "C:\windows\TEMP\pwsh.zip" del "C:\windows\TEMP\pwsh.zip"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
