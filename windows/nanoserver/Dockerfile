@@ -47,15 +47,14 @@ ARG JAVA_HOME
 # Download and install PowerShell 7
 ARG POWERSHELL_VERSION=7.5.4
 ENV POWERSHELL_VERSION=${POWERSHELL_VERSION}
-ENV PSHOME="C:\PowerShell7"
+ENV PSHOME="%ProgramFiles%\Powershell"
 ENV PATH="C:\Windows\system32;C:\Windows;%PSHOME%;"
-RUN set
 RUN curl.exe --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output C:/windows/TEMP/pwsh.zip
 RUN mkdir %PSHOME%
 RUN tar.exe -xf C:/windows/TEMP/pwsh.zip -C %PSHOME%
 RUN del "C:\windows\TEMP\pwsh.zip"
 
-SHELL ["C:/PowerShell7/pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
 
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
@@ -85,7 +84,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
 # Add java & git to PATH
 ENV ProgramFiles="C:\Program Files"
 ENV WindowsPATH="C:\Windows\system32;C:\Windows"
-ENV PATH="${PATH};${WindowsPATH};${JAVA_HOME}\bin;C:\mingit\cmd"
+ENV PATH="${WindowsPATH};${ProgramFiles}\PowerShell;${JAVA_HOME}\bin;C:\mingit\cmd"
 
 # Install git-lfs
 ARG GIT_LFS_VERSION=3.7.1
