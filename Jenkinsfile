@@ -45,7 +45,7 @@ def parallelStages = [failFast: false]
 [
     // 'linux',
     // 'nanoserver-1809',
-    // 'nanoserver-ltsc2019',
+    'nanoserver-ltsc2019',
     'nanoserver-ltsc2022',
     'nanoserver-ltsc2025',
     // 'windowsservercore-1809',
@@ -70,7 +70,8 @@ def parallelStages = [failFast: false]
                             if (isUnix()) {
                                 sh 'make docker-init'
                             } else {
-                                powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
+                                // Check CPU name
+                                powershell 'Get-CimInstance -ClassName Win32_Processor | Out-String'
                                 powershell './build.ps1 docker-init'
                             }
                         }
@@ -99,7 +100,11 @@ def parallelStages = [failFast: false]
                                 if (isUnix()) {
                                     sh 'make build'
                                 } else {
+                                    // Free space before building images
+                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                     powershell '& ./build.ps1 build'
+                                    // Free space remaining after building images
+                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                     archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
                                 }
                             }
@@ -107,7 +112,10 @@ def parallelStages = [failFast: false]
                                 if (isUnix()) {
                                     sh 'make test'
                                 } else {
+                                    // Free space before testing images
+                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                     powershell '& ./build.ps1 test'
+                                    // Free space remaining after testing images
                                     powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                 }
                                 junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
