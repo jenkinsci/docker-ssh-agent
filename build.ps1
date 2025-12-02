@@ -117,7 +117,6 @@ function Test-Image {
 }
 
 function Initialize-Docker() {
-    Get-ChildItem env: | Select-Object Name, Value
     # Cf https://github.com/jenkins-infra/jenkins-infra/blob/production/modules/profile/templates/jenkinscontroller/casc/clouds-ec2.yaml.erb
     $dockerDaemonConfigPath = 'C:\ProgramData\Docker\config\daemon.json'
     if (Test-Path $dockerDaemonConfigPath) {

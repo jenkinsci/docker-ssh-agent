@@ -70,6 +70,7 @@ def parallelStages = [failFast: false]
                             if (isUnix()) {
                                 sh 'make docker-init'
                             } else {
+                                powershell 'Get-ChildItem env: | Select-Object Name, Value'
                                 powershell './build.ps1 docker-init'
                             }
                         }
