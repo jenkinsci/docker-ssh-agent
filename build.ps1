@@ -134,6 +134,7 @@ function Initialize-Docker() {
     Get-ComputerInfo | Select-Object OsName, OsBuildNumber, WindowsVersion
     Get-WindowsFeature Containers | Out-String
     Invoke-Expression 'docker info'
+    Get-CimInstance -ClassName Win32_Processor
 }
 
 function Initialize-DockerComposeFile {
