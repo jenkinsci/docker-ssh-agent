@@ -53,7 +53,7 @@ RUN set
 RUN curl.exe --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output C:/windows/TEMP/pwsh.zip
 RUN mkdir %PSHOME%
 RUN tar.exe -xf C:/windows/TEMP/pwsh.zip -C %PSHOME%
-RUN del C:/windows/TEMP/pwsh.zip
+RUN del "C:\windows\TEMP\pwsh.zip"
 
 SHELL ["C:/PowerShell7/pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
