@@ -87,15 +87,15 @@ RUN addgroup -g "${gid}" "${group}" \
 
 
 RUN apk add --no-cache \
-    bash \
-    git \
-    less \
-    musl-locales \
-    netcat-openbsd \
-    openssh \
-    patch \
-  # Cleanup SSH host keys if any
-  && rm -f /etc/ssh/ssh_host*_key*
+        bash \
+        git \
+        less \
+        musl-locales \
+        netcat-openbsd \
+        openssh \
+        patch \
+    # Cleanup SSH host keys if any
+    && rm -f /etc/ssh/ssh_host*_key*
 
 # Retrieve git-lfs from the build stage and install it
 COPY --from=jre-build git-lfs.tgz git-lfs.tgz
