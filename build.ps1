@@ -166,7 +166,7 @@ function Initialize-DockerComposeFile {
 
     Write-Host "= PREPARE: Docker compose file generation command`n$generateDockerComposeFileCmd"
 
-    Invoke-Expression $generateDockerComposeFileCmd
+    Invoke-Expression $generateDockerComposeFileCmd | Out-Null
 
     # Remove override
     Remove-Item env:\WINDOWS_VERSION_OVERRIDE
