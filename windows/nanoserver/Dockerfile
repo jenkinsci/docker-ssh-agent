@@ -48,10 +48,10 @@ ARG JAVA_HOME
 ARG POWERSHELL_VERSION=7.5.4
 ENV PSHOME="C:\PowerShell7"
 ENV PATH="C:\Windows\system32;C:\Windows;%PSHOME%;"
-RUN curl.exe --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output pwsh.zip
+RUN curl.exe --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output C:/temp/pwsh.zip
 RUN mkdir %PSHOME%
-RUN tar.exe -xf pwsh.zip -C %PSHOME%
-RUN del pwsh.zip
+RUN tar.exe -xf C:/temp/pwsh.zip -C %PSHOME%
+RUN del C:/temp/pwsh.zip
 
 SHELL ["C:/PowerShell7/pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
