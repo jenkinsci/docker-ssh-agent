@@ -60,7 +60,7 @@ tar.exe -xf pwsh.zip -C %PSHOME%
 del pwsh.zip
 SCRIPT
 
-SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+SHELL ["C:\PowerShell7\pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
 
 # Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
