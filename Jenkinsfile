@@ -70,7 +70,7 @@ def parallelStages = [failFast: false]
                             if (isUnix()) {
                                 sh 'make docker-init'
                             } else {
-                                powershell 'Get-ChildItem env: | Select-Object Name, Value'
+                                powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                 powershell './build.ps1 docker-init'
                             }
                         }
@@ -108,6 +108,7 @@ def parallelStages = [failFast: false]
                                     sh 'make test'
                                 } else {
                                     powershell '& ./build.ps1 test'
+                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                 }
                                 junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
                             }
