@@ -51,8 +51,8 @@ ENV PSHOME="%ProgramFiles%\Powershell"
 ENV PATH="C:\Windows\system32;C:\Windows;%PSHOME%;"
 RUN curl.exe --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output C:/windows/TEMP/pwsh.zip
 RUN mkdir %PSHOME%
-RUN mkdir C:/temp
-RUN tar.exe -xf C:/windows/TEMP/pwsh.zip -C %PSHOME%
+RUN mkdir "C:/temp"
+RUN tar.exe -xf "C:/windows/TEMP/pwsh.zip" -C %PSHOME%
 RUN if exist "C:\windows\TEMP\pwsh.zip" del "C:\windows\TEMP\pwsh.zip"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
@@ -61,7 +61,7 @@ USER ContainerAdministrator
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
 COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
 COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
-COPY --from=jdk-core /windows/system32/netapi32.dll C:/temp/netapi32.dll
+COPY --from=jdk-core /windows/system32/netapi32.dll /temp/netapi32.dll
 RUN if (!(Test-Path 'C:/windows/system32/netapi32.dll')) { Move-Item 'C:/temp/netapi32.dll' 'C:/windows/system32/netapi32.dll' }
 
 # Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
