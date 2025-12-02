@@ -48,7 +48,15 @@ ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
 COPY --from=jdk-core /windows/system32/netapi32.dll /windows/system32/netapi32.dll
 COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
 COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
-COPY --from=jdk-core $PSHOME $PSHOME
+
+# Download and install PowerShell 7
+RUN curl.exe -L https://github.com/PowerShell/PowerShell/releases/download/v7.5.4/PowerShell-7.5.4-win-x64.zip -o pwsh.zip && \
+    mkdir C:\PowerShell7 && \
+    tar.exe -xf pwsh.zip -C C:\PowerShell7 && \
+    del pwsh.zip
+
+# Add PowerShell to PATH
+RUN setx /M PATH "%PATH%;C:\PowerShell7"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
