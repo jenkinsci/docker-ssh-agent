@@ -80,7 +80,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
 # Add java & git to PATH
 ENV ProgramFiles="C:\Program Files"
 ENV WindowsPATH="C:\Windows\system32;C:\Windows"
-ENV PATH="${WindowsPATH};${ProgramFiles}\PowerShell;${JAVA_HOME}\bin;C:\mingit\cmd"
+ENV PATH="${PATH};${WindowsPATH};${JAVA_HOME}\bin;C:\mingit\cmd"
 
 # Install git-lfs
 ARG GIT_LFS_VERSION=3.7.1
