@@ -135,6 +135,7 @@ function Initialize-Docker() {
     Get-WindowsFeature Containers | Out-String
     Invoke-Expression 'docker info'
     Get-CimInstance -ClassName Win32_Processor
+    Get-ChildItem env: | Select-Object Name, Value
 }
 
 function Initialize-DockerComposeFile {
