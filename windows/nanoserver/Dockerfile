@@ -47,8 +47,8 @@ ARG JAVA_HOME
 # Download and install PowerShell 7
 ARG POWERSHELL_VERSION=7.5.4
 ENV POWERSHELL_VERSION=${POWERSHELL_VERSION}
-ENV PSHOME="%ProgramFiles%\Powershell"
-ENV PATH="C:\Windows\system32;C:\Windows;%PSHOME%;"
+ENV PSHOME="C:\Program Files\Powershell"
+ENV PATH="C:\Windows\system32;C:\Windows;C:\Program Files\Powershell;"
 RUN curl.exe --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output C:/windows/TEMP/pwsh.zip
 RUN mkdir %PSHOME%
 RUN tar.exe -xf "C:/windows/TEMP/pwsh.zip" -C %PSHOME%
@@ -132,7 +132,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('Match User {0}' -f $env:JENKINS_AGENT_USER) ; `
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('       AuthorizedKeysFile C:/Users/{0}/.ssh/authorized_keys' -f $env:JENKINS_AGENT_USER) ; `
     New-Item -Path HKLM:\SOFTWARE -Name OpenSSH -Force | Out-Null ; `
-    New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\PowerShell7\pwsh.exe' -PropertyType string -Force | Out-Null ; `
+    New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\Program Files\Powershell\pwsh.exe' -PropertyType string -Force | Out-Null ; `
     Remove-Item -Path "C:\ProgramData\ssh\ssh_host*_key*"
 
 COPY CreateProfile.psm1 C:/
