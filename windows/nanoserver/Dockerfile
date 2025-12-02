@@ -46,6 +46,7 @@ ARG JAVA_HOME
 
 # Download and install PowerShell 7
 ARG POWERSHELL_VERSION=7.5.4
+ENV POWERSHELL_VERSION=${POWERSHELL_VERSION}
 ENV PSHOME="C:\PowerShell7"
 ENV PATH="C:\Windows\system32;C:\Windows;%PSHOME%;"
 RUN curl.exe --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output C:/temp/pwsh.zip
