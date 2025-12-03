@@ -62,6 +62,7 @@ ENV PSHOME="C:\Program Files\PowerShell"
 COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
 COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
 COPY --from=jdk-core /windows/system32/netapi32.dll $PSHOME/netapi32.dll
+# While nanoserver-ltsc2025 includes netapi32.dll, older versions don't
 RUN If (!(Test-Path 'C:/windows/system32/netapi32.dll') -And (Test-Path "$env:PSHOME/netapi32.dll")) { Move-Item "$env:PSHOME/netapi32.dll" 'C:/windows/system32/netapi32.dll' } Else { Write-Host "No $env:PSHOME/netapi32.dll or windows/system32/netapi32.dll alreay exists" }
 
 # Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
