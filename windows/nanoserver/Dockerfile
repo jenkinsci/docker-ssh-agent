@@ -56,6 +56,8 @@ RUN curl.exe --silent --location "https://github.com/PowerShell/PowerShell/relea
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
 
+ENV PSHOME="C:\Program Files\PowerShell"
+
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
 COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
 COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
