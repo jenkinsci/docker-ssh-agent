@@ -135,11 +135,14 @@ function "windowsversions" {
 
 # Return the Windows version to use as base image for the Windows version passed as parameter
 # There is no mcr.microsoft.com/powershell ltsc2019 base image, using a "1809" instead
+# There is no mcr.microsoft.com/powershell ltsc2025 base image, using a ltsc2022 instead
 function "toolsversion" {
   params = [version]
   result = (equal("ltsc2019", version)
     ? "1809"
-  : version)
+    : (equal("ltsc2025", version)
+    ? "ltsc2022"
+    : version)
 }
 
 target "alpine" {
