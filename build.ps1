@@ -97,7 +97,7 @@ function Test-Image {
     $env:JAVA_VERSION = "$javaVersion"
 
     $targetPath = '.\target\{0}' -f $imageTag
-    if(Test-Path $targetPath) {
+    if (Test-Path $targetPath) {
         Remove-Item -Recurse -Force $targetPath
     }
     New-Item -Path $targetPath -Type Directory | Out-Null
@@ -114,6 +114,28 @@ function Test-Image {
     Remove-Item env:\JAVA_VERSION
 
     return $failed
+}
+
+function Initialize-Docker() {
+    # Cf https://github.com/jenkins-infra/jenkins-infra/blob/production/modules/profile/templates/jenkinscontroller/casc/clouds-ec2.yaml.erb
+    $dockerDaemonConfigPath = 'C:\ProgramData\Docker\config\daemon.json'
+    if (Test-Path $dockerDaemonConfigPath) {
+        $dockerDaemonConfig = Get-Content -Path $dockerDaemonConfigPath -Raw | ConvertFrom-Json
+        Write-Host "${dockerDaemonConfigPath} file content:"
+        $dockerDaemonConfig | ConvertTo-Json
+        # Remove docker daemon config setting "data-root" to Z:\docker (NVMe mount) to avoid hitting moby/moby#48093
+        Remove-Item -Path $dockerDaemonConfigPath
+        Restart-Service docker
+        # Push-Location -Path 'C:\Windows'
+        # Rename-Item SystemTemp SystemTemp.old
+        # cmd.exe /c 'mklink /D SystemTemp {0}' -f $dockerDaemonConfig.PSObject.Properties['data-root'].Value
+        # Pop-Location
+    }
+    Get-ComputerInfo | Select-Object OsName, OsBuildNumber, WindowsVersion
+    Get-WindowsFeature Containers | Out-String
+    Invoke-Expression 'docker info'
+    Get-CimInstance -ClassName Win32_Processor
+    Get-ChildItem env: | Select-Object Name, Value
 }
 
 function Initialize-DockerComposeFile {
@@ -146,7 +168,7 @@ function Initialize-DockerComposeFile {
 
     Write-Host "= PREPARE: Docker compose file generation command`n$generateDockerComposeFileCmd"
 
-    Invoke-Expression $generateDockerComposeFileCmd
+    Invoke-Expression $generateDockerComposeFileCmd | Out-Null
 
     # Remove override
     Remove-Item env:\WINDOWS_VERSION_OVERRIDE
@@ -156,6 +178,10 @@ Test-CommandExists 'docker'
 Test-CommandExists 'docker-compose'
 Test-CommandExists 'docker buildx'
 Test-CommandExists 'yq'
+
+if($target -eq 'docker-init') {
+    Initialize-Docker
+}
 
 # Generate the docker compose file if it doesn't exists or if the parameter OverwriteDockerComposeFile is set
 if ((Test-Path $dockerComposeFile) -and -not $OverwriteDockerComposeFile) {
