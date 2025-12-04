@@ -38,22 +38,32 @@ RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
     $proc.WaitForExit() ; `
     Remove-Item -Path C:\temp -Recurse | Out-Null
 
-FROM mcr.microsoft.com/powershell:nanoserver-"${TOOLS_WINDOWS_VERSION}" AS pwsh-source
-
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
-ARG JAVA_HOME
-ENV PSHOME="C:\Program Files\PowerShell"
-ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
+SHELL ["cmd.exe", "/c"]
 
-# The nanoserver image is nice and small, but we need a couple of things to get SSH working
-COPY --from=jdk-core /windows/system32/netapi32.dll /windows/system32/netapi32.dll
-COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
-COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
-COPY --from=pwsh-source $PSHOME $PSHOME
+ARG JAVA_HOME
+
+# Download and install PowerShell 7
+ARG POWERSHELL_VERSION=7.5.4
+ENV POWERSHELL_VERSION=${POWERSHELL_VERSION}
+ENV PATH="C:\Windows\system32;C:\Windows;C:\Program Files\Powershell;"
+RUN curl.exe --silent --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output C:/windows/TEMP/pwsh.zip `
+&& mkdir "C:\Program Files\Powershell" `
+&& tar.exe -xf C:\windows\TEMP\pwsh.zip -C "C:\Program Files\Powershell" `
+&& if exist "C:\windows\TEMP\pwsh.zip" del "C:\windows\TEMP\pwsh.zip"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
+
+ENV PSHOME="C:\Program Files\PowerShell"
+
+# The nanoserver image is nice and small, but we need a couple of things to get SSH working
+COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
+COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
+COPY --from=jdk-core /windows/system32/netapi32.dll $PSHOME/netapi32.dll
+# While nanoserver-ltsc2025 includes netapi32.dll, older versions don't
+RUN If (!(Test-Path 'C:/windows/system32/netapi32.dll') -And (Test-Path "$env:PSHOME/netapi32.dll")) { Move-Item "$env:PSHOME/netapi32.dll" 'C:/windows/system32/netapi32.dll' } Else { Write-Host "No $env:PSHOME/netapi32.dll or windows/system32/netapi32.dll alreay exists" }
 
 # Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
 RUN $javaMajorVersion = $env:JAVA_HOME.Substring($env:JAVA_HOME.Length - 2); `
