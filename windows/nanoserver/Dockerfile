@@ -73,6 +73,9 @@ ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
 COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
 COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
 COPY --from=pwsh-source $PSHOME $PSHOME
+
+SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
 # While nanoserver-ltsc2025 includes netapi32.dll, older versions don't
 COPY --from=jdk-core /windows/system32/netapi32.dll C:/Windows/System32/netapi32.dll
 
