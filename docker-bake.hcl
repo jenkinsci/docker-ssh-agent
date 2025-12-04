@@ -142,7 +142,7 @@ function "toolsversion" {
     ? "1809"
     : (equal("ltsc2025", version)
     ? "ltsc2022"
-    : version)
+    : version))
 }
 
 target "alpine" {
