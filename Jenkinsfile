@@ -114,7 +114,7 @@ def parallelStages = [failFast: false]
                                 } else {
                                     // Free space before testing images
                                     powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
-                                    powershell '& ./build.ps1 test'
+                                    powershell '& ./build.ps1 test -TestsDebug verbose'
                                     // Free space remaining after testing images
                                     powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                 }
