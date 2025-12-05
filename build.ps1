@@ -116,6 +116,22 @@ function Test-Image {
     return $failed
 }
 
+function Initialize-Docker() {
+    # Cf https://github.com/jenkins-infra/jenkins-infra/blob/production/modules/profile/templates/jenkinscontroller/casc/clouds-ec2.yaml.erb
+    $dockerDaemonConfigPath = 'C:\ProgramData\Docker\config\daemon.json'
+    if (Test-Path $dockerDaemonConfigPath) {
+        $dockerDaemonConfig = Get-Content -Path $dockerDaemonConfigPath -Raw | ConvertFrom-Json
+        Write-Host "${dockerDaemonConfigPath} file content:"
+        $dockerDaemonConfig | ConvertTo-Json
+    }
+    # OS info
+    Get-ComputerInfo | Select-Object OsName, OsBuildNumber, WindowsVersion
+    # CPU info
+    Get-CimInstance -ClassName Win32_Processor | Out-String
+
+    Get-WindowsFeature Containers | Out-String
+    Invoke-Expression 'docker info'
+}
 function Initialize-DockerComposeFile {
     $baseDockerBakeCmd = 'docker buildx bake --progress=plain --file=docker-bake.hcl'
 
@@ -156,6 +172,10 @@ Test-CommandExists 'docker'
 Test-CommandExists 'docker-compose'
 Test-CommandExists 'docker buildx'
 Test-CommandExists 'yq'
+
+if($target -eq 'docker-init') {
+    Initialize-Docker
+}
 
 # Generate the docker compose file if it doesn't exists or if the parameter OverwriteDockerComposeFile is set
 if ((Test-Path $dockerComposeFile) -and -not $OverwriteDockerComposeFile) {
