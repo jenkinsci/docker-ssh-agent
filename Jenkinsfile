@@ -64,9 +64,11 @@ def parallelStages = [failFast: false]
                 node(resolvedAgentLabel) {
                     timeout(time: 60, unit: 'MINUTES') {
                         checkout scm
-                        if (imageType == "linux") {
-                            stage('Prepare Docker') {
+                        stage('Prepare Docker') {
+                            if (isUnix()) {
                                 sh 'make docker-init'
+                            } else {
+                                powershell '& ./build.ps1 docker-init'
                             }
                         }
                         // This function is defined in the jenkins-infra/pipeline-library
