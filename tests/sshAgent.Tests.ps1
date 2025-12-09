@@ -18,6 +18,10 @@ $global:TOOLSWINDOWSVERSION = $items[1]
 if ($items[1] -eq 'ltsc2019') {
     $global:TOOLSWINDOWSVERSION = '1809'
 }
+# There is no mcr.microsoft.com/powershell:*-ltsc2025 docker images unfortunately, using a ltsc2022 instead
+if ($items[1] -eq 'ltsc2025') {
+    $global:TOOLSWINDOWSVERSION = 'ltsc2022'
+}
 
 # TODO: make this name unique for concurency
 $global:CONTAINERNAME = 'pester-jenkins-ssh-agent-{0}' -f $global:IMAGE_TAG
