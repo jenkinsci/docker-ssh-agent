@@ -32,7 +32,8 @@ group "linux-ppc64le" {
 }
 
 variable "jdks_to_build" {
-  default = [17, 21, 25]
+  # default = [17, 21, 25]
+  default = [25]
 }
 
 variable "default_jdk" {
@@ -80,6 +81,7 @@ variable "DEBIAN_RELEASE" {
 }
 
 # Set this value to a specific Windows version to override Windows versions to build returned by windowsversions function
+# Accept multiple coma-separated versions, ex: ltsc2022,ltsc2025
 variable "WINDOWS_VERSION_OVERRIDE" {
   default = ""
 }
@@ -120,24 +122,27 @@ function "debian_platforms" {
 
 # Return array of Windows version(s) to build
 # There is no mcr.microsoft.com/windows/servercore:1809 image
-# Can be overriden by setting WINDOWS_VERSION_OVERRIDE to a specific Windows version
+# Can be overriden by setting WINDOWS_VERSION_OVERRIDE to one or many specific Windows version
 # Ex: WINDOWS_VERSION_OVERRIDE=1809 docker buildx bake windows
 function "windowsversions" {
   params = [flavor]
   result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
-    ? [WINDOWS_VERSION_OVERRIDE]
+    ? split(",", WINDOWS_VERSION_OVERRIDE)
     : (equal(flavor, "windowsservercore")
       ? ["ltsc2019", "ltsc2022"]
-  : ["1809", "ltsc2019", "ltsc2022"]))
+  : ["1809", "ltsc2019", "ltsc2022", "ltsc2025"]))
 }
 
 # Return the Windows version to use as base image for the Windows version passed as parameter
 # There is no mcr.microsoft.com/powershell ltsc2019 base image, using a "1809" instead
+# There is no mcr.microsoft.com/powershell ltsc2025 base image, using a ltsc2022 instead
 function "toolsversion" {
   params = [version]
   result = (equal("ltsc2019", version)
     ? "1809"
-  : version)
+    : (equal("ltsc2025", version)
+    ? "ltsc2022"
+    : version))
 }
 
 target "alpine" {
