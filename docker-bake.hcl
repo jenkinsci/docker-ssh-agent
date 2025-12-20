@@ -1,36 +1,4 @@
-group "linux" {
-  targets = [
-    "alpine",
-    "debian",
-  ]
-}
-
-group "windows" {
-  targets = [
-    "nanoserver",
-    "windowsservercore"
-  ]
-}
-
-group "linux-arm64" {
-  targets = [
-    "debian",
-    "alpine_jdk21",
-  ]
-}
-
-group "linux-s390x" {
-  targets = [
-    "debian_jdk21"
-  ]
-}
-
-group "linux-ppc64le" {
-  targets = [
-    "debian"
-  ]
-}
-
+## Variables
 variable "jdks_to_build" {
   default = [17, 21, 25]
 }
@@ -84,62 +52,7 @@ variable "WINDOWS_VERSION_OVERRIDE" {
   default = ""
 }
 
-## Common functions
-# Return "true" if the jdk passed as parameter is the same as the default jdk, "false" otherwise
-function "is_default_jdk" {
-  params = [jdk]
-  result = equal(default_jdk, jdk) ? "true" : "false"
-}
-
-# Return the complete Java version corresponding to the jdk passed as parameter
-function "javaversion" {
-  params = [jdk]
-  result = (equal(17, jdk)
-    ? "${JAVA17_VERSION}"
-    : equal(21, jdk)
-    ? "${JAVA21_VERSION}"
-  : "${JAVA25_VERSION}")
-}
-
-## Specific functions
-# Return an array of Alpine platforms to use depending on the jdk passed as parameter
-function "alpine_platforms" {
-  params = [jdk]
-  result = (equal(17, jdk)
-    ? ["linux/amd64"]
-  : ["linux/amd64", "linux/arm64"])
-}
-
-# Return an array of Debian platforms to use depending on the jdk passed as parameter
-function "debian_platforms" {
-  params = [jdk]
-  result = (equal(17, jdk)
-    ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
-  : ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"])
-}
-
-# Return array of Windows version(s) to build
-# There is no mcr.microsoft.com/windows/servercore:1809 image
-# Can be overriden by setting WINDOWS_VERSION_OVERRIDE to a specific Windows version
-# Ex: WINDOWS_VERSION_OVERRIDE=1809 docker buildx bake windows
-function "windowsversions" {
-  params = [flavor]
-  result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
-    ? [WINDOWS_VERSION_OVERRIDE]
-    : (equal(flavor, "windowsservercore")
-      ? ["ltsc2019", "ltsc2022"]
-  : ["1809", "ltsc2019", "ltsc2022"]))
-}
-
-# Return the Windows version to use as base image for the Windows version passed as parameter
-# There is no mcr.microsoft.com/powershell ltsc2019 base image, using a "1809" instead
-function "toolsversion" {
-  params = [version]
-  result = (equal("ltsc2019", version)
-    ? "1809"
-  : version)
-}
-
+## Targets
 target "alpine" {
   matrix = {
     jdk = jdks_to_build
@@ -243,4 +156,94 @@ target "windowsservercore" {
     "${REGISTRY}/${JENKINS_REPO}:windowsservercore-${windows_version}-jdk${jdk}",
   ]
   platforms = ["windows/amd64"]
+}
+
+## Groups
+group "linux" {
+  targets = [
+    "alpine",
+    "debian",
+  ]
+}
+
+group "windows" {
+  targets = [
+    "nanoserver",
+    "windowsservercore"
+  ]
+}
+
+group "linux-arm64" {
+  targets = [
+    "debian",
+    "alpine_jdk21",
+  ]
+}
+
+group "linux-s390x" {
+  targets = [
+    "debian_jdk21"
+  ]
+}
+
+group "linux-ppc64le" {
+  targets = [
+    "debian"
+  ]
+}
+
+## Common functions
+# Return "true" if the jdk passed as parameter is the same as the default jdk, "false" otherwise
+function "is_default_jdk" {
+  params = [jdk]
+  result = equal(default_jdk, jdk) ? "true" : "false"
+}
+
+# Return the complete Java version corresponding to the jdk passed as parameter
+function "javaversion" {
+  params = [jdk]
+  result = (equal(17, jdk)
+    ? "${JAVA17_VERSION}"
+    : equal(21, jdk)
+    ? "${JAVA21_VERSION}"
+  : "${JAVA25_VERSION}")
+}
+
+## Specific functions
+# Return an array of Alpine platforms to use depending on the jdk passed as parameter
+function "alpine_platforms" {
+  params = [jdk]
+  result = (equal(17, jdk)
+    ? ["linux/amd64"]
+  : ["linux/amd64", "linux/arm64"])
+}
+
+# Return an array of Debian platforms to use depending on the jdk passed as parameter
+function "debian_platforms" {
+  params = [jdk]
+  result = (equal(17, jdk)
+    ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
+  : ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x"])
+}
+
+# Return array of Windows version(s) to build
+# There is no mcr.microsoft.com/windows/servercore:1809 image
+# Can be overriden by setting WINDOWS_VERSION_OVERRIDE to a specific Windows version
+# Ex: WINDOWS_VERSION_OVERRIDE=1809 docker buildx bake windows
+function "windowsversions" {
+  params = [flavor]
+  result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
+    ? [WINDOWS_VERSION_OVERRIDE]
+    : (equal(flavor, "windowsservercore")
+      ? ["ltsc2019", "ltsc2022"]
+  : ["1809", "ltsc2019", "ltsc2022"]))
+}
+
+# Return the Windows version to use as base image for the Windows version passed as parameter
+# There is no mcr.microsoft.com/powershell ltsc2019 base image, using a "1809" instead
+function "toolsversion" {
+  params = [version]
+  result = (equal("ltsc2019", version)
+    ? "1809"
+  : version)
 }
