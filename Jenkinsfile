@@ -17,9 +17,9 @@ def agentSelector(String imageType) {
             return 'docker-highmem'
         }
     }
-    // Windows Server Core 2022 agent
+    // 2022 and 2025 images build from a Windows Server Core 2025 agent
     if (imageType.contains('2022')) {
-        return 'windows-2022'
+        return 'windows-2025'
     }
     // Windows Server Core 2019 agent (for nanoserver 1809 & ltsc2019 and for windowservercore ltsc2019)
     return 'windows-2019'
@@ -64,9 +64,11 @@ def parallelStages = [failFast: false]
                 node(resolvedAgentLabel) {
                     timeout(time: 60, unit: 'MINUTES') {
                         checkout scm
-                        if (imageType == "linux") {
-                            stage('Prepare Docker') {
+                        stage('Prepare Docker') {
+                            if (isUnix()) {
                                 sh 'make docker-init'
+                            } else {
+                                powershell '& ./build.ps1 docker-init'
                             }
                         }
                         // This function is defined in the jenkins-infra/pipeline-library
