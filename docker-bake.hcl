@@ -24,7 +24,7 @@ variable "VERSION" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.23.2"
+  default = "3.23.3"
 }
 
 variable "ALPINE_SHORT_TAG" {
