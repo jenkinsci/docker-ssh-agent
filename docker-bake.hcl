@@ -32,7 +32,7 @@ variable "ALPINE_SHORT_TAG" {
 }
 
 variable "JAVA17_VERSION" {
-  default = "17.0.17_10"
+  default = "17.0.18_8"
 }
 
 variable "JAVA21_VERSION" {
@@ -233,7 +233,7 @@ function "windowsversions" {
   params = [flavor]
   result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
     ? [WINDOWS_VERSION_OVERRIDE]
-    : ["ltsc2019", "ltsc2022"])
+  : ["ltsc2019", "ltsc2022"])
 }
 
 # Return the Windows version to use as base image for the Windows version passed as parameter

@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-ARG JAVA_VERSION=17.0.17_10
+ARG JAVA_VERSION=17.0.18_8
 ARG ALPINE_TAG=3.23.3
 FROM alpine:"${ALPINE_TAG}" AS jre-build
 
@@ -33,7 +33,7 @@ ARG TARGETPLATFORM
 COPY jdk-download-url.sh /usr/bin/local/jdk-download-url.sh
 COPY jdk-download.sh /usr/bin/local/jdk-download.sh
 
-ARG JAVA_VERSION=17.0.17_10
+ARG JAVA_VERSION=17.0.18_8
 # hadolint ignore=DL3018
 RUN apk add --no-cache \
     ca-certificates \
