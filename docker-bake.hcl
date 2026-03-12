@@ -4,7 +4,7 @@ variable "jdks_to_build" {
 }
 
 variable "default_jdk" {
-  default = 17
+  default = 21
 }
 
 variable "REGISTRY" {
