@@ -22,7 +22,7 @@ $ProgressPreference = 'SilentlyContinue' # Disable Progress bar for faster downl
 
 $dockerComposeFile = 'build-windows.yaml'
 $baseDockerCmd = 'docker-compose --file={0}' -f $dockerComposeFile
-$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
+$baseDockerBuildCmd = '{0} build --pull' -f $baseDockerCmd
 
 $Repository = 'ssh-agent'
 $Organisation = 'jenkins'
