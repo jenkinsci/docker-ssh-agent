@@ -67,7 +67,7 @@ You should be all set.
 Should you need to extend the image, you could use something along those lines:
 
 ```Dockerfile
-FROM jenkins/ssh-agent:debian-jdk17 as ssh-agent
+FROM jenkins/ssh-agent:debian-jdk21 as ssh-agent
 # [...]
 COPY --chown=jenkins mykey "${JENKINS_AGENT_HOME}"/.ssh/mykey
 # [...]
@@ -133,10 +133,10 @@ If you want to see the target images that will be built, you can issue the follo
 
 ```bash
 make list
-alpine_jdk11
-alpine_jdk17
-debian_jdk11
-debian_jdk17
+alpine_21
+alpine_25
+debian_21
+debian_25
 ```
 
 #### Building a specific image
@@ -147,10 +147,10 @@ If you want to build a specific image, you can issue the following command:
 make build-<OS>_<JDK_VERSION>
 ```
 
-That would give for JDK 17 on Alpine Linux:
+That would give for JDK 21 on Alpine Linux:
 
 ```bash
-make build-alpine_jdk17
+make build-alpine_21
 ```
 
 #### Building images supported by your current architecture
@@ -176,10 +176,10 @@ If you want to test a specific image, you can run:
 make test-<OS>_<JDK_VERSION>
 ```
 
-That would give for JDK 17 on Alpine Linux:
+That would give for JDK 21 on Alpine Linux:
 
 ```bash
-make test-alpine_jdk17
+make test-alpine_21
 ```
 
 #### Building all images
@@ -198,28 +198,50 @@ make every-build
 make show
 {
   "group": {
+    "alpine": {
+      "targets": [
+        "alpine_21",
+        "alpine_25"
+      ]
+    },
+    "debian": {
+      "targets": [
+        "debian_21",
+        "debian_25"
+      ]
+    },
     "default": {
       "targets": [
-        "alpine_jdk17",
-        "alpine_jdk11",
-        "debian_jdk11",
-        "debian_jdk17",
+        "linux"
+      ]
+    },
+    "linux": {
+      "targets": [
+        "alpine",
+        "debian"
       ]
     }
   },
   "target": {
-    "alpine_jdk11": {
+    "alpine_21": {
       "context": ".",
       "dockerfile": "alpine/Dockerfile",
+      "args": {
+        "ALPINE_TAG": "3.23.4",
+        "JAVA_VERSION": "21.0.11_10"
+      },
       "tags": [
-        "docker.io/jenkins/ssh-agent:alpine-jdk11",
-        "docker.io/jenkins/ssh-agent:latest-alpine-jdk11"
+        "docker.io/jenkins/ssh-agent:alpine",
+        "docker.io/jenkins/ssh-agent:alpine3.23",
+        "docker.io/jenkins/ssh-agent:latest-alpine3.23",
+        "docker.io/jenkins/ssh-agent:alpine-jdk21",
+        "docker.io/jenkins/ssh-agent:latest-alpine-jdk21",
+        "docker.io/jenkins/ssh-agent:alpine3.23-jdk21",
+        "docker.io/jenkins/ssh-agent:latest-alpine3.23-jdk21"
       ],
       "platforms": [
-        "linux/amd64"
-      ],
-      "output": [
-        "type=docker"
+        "linux/amd64",
+        "linux/arm64"
       ]
     },
     [...]

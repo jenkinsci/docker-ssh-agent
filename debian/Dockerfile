@@ -31,7 +31,7 @@ ARG TARGETPLATFORM
 COPY jdk-download-url.sh /usr/bin/local/jdk-download-url.sh
 COPY jdk-download.sh /usr/bin/local/jdk-download.sh
 
-ARG JAVA_VERSION=17.0.18_8
+ARG JAVA_VERSION=21.0.11_10
 # hadolint ignore=DL3008
 RUN set -x; apt-get update \
   && apt-get install --no-install-recommends -y \
@@ -46,7 +46,6 @@ ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
 # for now we include the full module path to maintain compatibility
 # while still saving space (approx 200mb from the full distribution)
 RUN case "$(jlink --version 2>&1)" in \
-    "17."*) set -- "--compress=2" --add-modules ALL-MODULE-PATH ;; \
     "21."*) set -- "--compress=zip-6" --add-modules ALL-MODULE-PATH ;; \
     # JDK 25 switches to a minimal module set for smaller images
     "25"*) set -- "--compress=zip-6" --add-modules "java.base,java.logging,java.xml,java.management,java.net.http,jdk.crypto.ec" ;; \

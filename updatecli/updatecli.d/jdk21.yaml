@@ -59,6 +59,21 @@ targets:
       file: docker-bake.hcl
       path: variable.JAVA21_VERSION.default
     scmid: default
+  setJDK21VersionDockerfiles:
+    name: "Bump JDK21 default ARG version in Dockerfiles"
+    kind: dockerfile
+    transformers:
+      - replacer:
+          from: "+"
+          to: "_"
+    spec:
+      files:
+        - alpine/Dockerfile
+        - debian/Dockerfile
+      instruction:
+        keyword: ARG
+        matcher: JAVA_VERSION
+    scmid: default
 
 actions:
   default:
