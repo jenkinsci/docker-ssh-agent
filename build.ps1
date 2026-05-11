@@ -11,6 +11,8 @@ Param(
     [switch] $OverwriteDockerComposeFile = $false,
     # Print the build and publish command instead of executing them if set
     [switch] $DryRun = $false,
+    # Pester version to install and use for tests
+    [String] $PesterVersion = '5.7.1',
     # Output debug info for tests: 'empty' (no additional test output), 'debug' (test cmd & stderr outputed), 'verbose' (test cmd, stderr, stdout outputed)
     [String] $TestsDebug = ''
 )
@@ -20,7 +22,7 @@ $ProgressPreference = 'SilentlyContinue' # Disable Progress bar for faster downl
 
 $dockerComposeFile = 'build-windows.yaml'
 $baseDockerCmd = 'docker-compose --file={0}' -f $dockerComposeFile
-$baseDockerBuildCmd = '{0} build --parallel --pull' -f $baseDockerCmd
+$baseDockerBuildCmd = '{0} build --pull' -f $baseDockerCmd
 
 $Repository = 'ssh-agent'
 $Organisation = 'jenkins'
@@ -213,17 +215,10 @@ if($target -eq 'test') {
     } else {
         Write-Host '= TEST: Starting test harness'
 
-        $mod = Get-InstalledModule -Name Pester -MinimumVersion 5.3.0 -MaximumVersion 5.3.3 -ErrorAction SilentlyContinue
+        $mod = Get-InstalledModule -Name Pester -MinimumVersion $PesterVersion -MaximumVersion $PesterVersion -ErrorAction SilentlyContinue
         if($null -eq $mod) {
-            Write-Host '= TEST: Pester 5.3.x not found: installing...'
-            $module = 'C:\Program Files\WindowsPowerShell\Modules\Pester'
-            if(Test-Path $module) {
-                takeown /F $module /A /R
-                icacls $module /reset
-                icacls $module /grant Administrators:'F' /inheritance:d /T
-                Remove-Item -Path $module -Recurse -Force -Confirm:$false
-            }
-            Install-Module -Force -Name Pester -MaximumVersion 5.3.3
+            Write-Host "= TEST: Pester $PesterVersion not found: installing..."
+            Install-Module -Force -Name Pester -MaximumVersion $PesterVersion -Scope CurrentUser
         }
 
         Import-Module Pester

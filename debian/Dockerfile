@@ -19,7 +19,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-ARG DEBIAN_RELEASE=trixie-20251117
+ARG DEBIAN_RELEASE=trixie-20260505
 FROM debian:"${DEBIAN_RELEASE}"-slim AS jre-build
 
 SHELL ["/bin/bash", "-e", "-u", "-o", "pipefail", "-c"]
@@ -31,7 +31,7 @@ ARG TARGETPLATFORM
 COPY jdk-download-url.sh /usr/bin/local/jdk-download-url.sh
 COPY jdk-download.sh /usr/bin/local/jdk-download.sh
 
-ARG JAVA_VERSION=17.0.17_10
+ARG JAVA_VERSION=17.0.19_10
 # hadolint ignore=DL3008
 RUN set -x; apt-get update \
   && apt-get install --no-install-recommends -y \
