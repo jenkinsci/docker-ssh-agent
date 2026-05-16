@@ -177,12 +177,13 @@ if ((Test-Path $dockerComposeFile) -and -not $OverwriteDockerComposeFile) {
     Initialize-DockerComposeFile
 }
 
+$cmd = '{0} {1}' -f $baseDockerBakeCmd, $ImageTarget
 Write-Host '= PREPARE: List of images and tags to be processed:'
-Invoke-Expression "$baseDockerBakeCmd --print"
+Invoke-Expression "$cmd --print"
+Write-Host "= PREPARE: debug cmd: $cmd"
 
 if ($target -eq 'build') {
     Write-Host '= BUILD: Building all images...'
-    $cmd = '{0} {1}' -f $baseDockerBakeCmd, $ImageTarget
     switch ($DryRun) {
         $true { Write-Host "(dry-run) $cmd" }
         $false { Invoke-Expression $cmd }
