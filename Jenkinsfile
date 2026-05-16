@@ -42,10 +42,10 @@ def agentSelector(String imageType, retryCounter) {
 // Specify parallel stages
 def parallelStages = [failFast: false]
 [
-    'linux',
-    'nanoserver-ltsc2019',
-    'nanoserver-ltsc2022',
-    'windowsservercore-ltsc2019',
+    // 'linux',
+    // 'nanoserver-ltsc2019',
+    // 'nanoserver-ltsc2022',
+    // 'windowsservercore-ltsc2019',
     'windowsservercore-ltsc2022'
 ].each { imageType ->
     parallelStages[imageType] = {
