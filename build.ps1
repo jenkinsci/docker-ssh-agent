@@ -7,6 +7,8 @@ Param(
     [String] $VersionTag = '0.0.1',
     # Windows flavor and windows version to build
     [String] $ImageType = 'nanoserver-ltsc2019',
+    # Windows bake target to build
+    [String] $ImageTarget = 'windowsservercore-ltsc2022_jdk25',
     # Generate a docker compose file even if it already exists
     [switch] $OverwriteDockerComposeFile = $false,
     # Print the build and publish command instead of executing them if set
@@ -23,6 +25,7 @@ $ProgressPreference = 'SilentlyContinue' # Disable Progress bar for faster downl
 $dockerComposeFile = 'build-windows.yaml'
 $baseDockerCmd = 'docker-compose --file={0}' -f $dockerComposeFile
 $baseDockerBuildCmd = '{0} build --pull' -f $baseDockerCmd
+$baseDockerBakeCmd = 'docker buildx bake --file docker-bake.hcl'
 
 $Repository = 'ssh-agent'
 $Organisation = 'jenkins'
@@ -44,9 +47,16 @@ if(![String]::IsNullOrWhiteSpace($env:VERSION)) {
     $VersionTag = $env:VERSION
 }
 
-if(![String]::IsNullOrWhiteSpace($env:IMAGE_TYPE)) {
-    $ImageType = $env:IMAGE_TYPE
+# if(![String]::IsNullOrWhiteSpace($env:IMAGE_TYPE)) {
+#     $ImageType = $env:IMAGE_TYPE
+# }
+
+if(![String]::IsNullOrWhiteSpace($env:IMAGE_TARGET)) {
+    $ImageTarget = $env:IMAGE_TARGET
 }
+
+# TODO: remove
+$ImageType = $ImageTarget.Split('_')[0]
 
 # Ensure constant env vars used in the docker compose file are defined
 $env:DOCKERHUB_ORGANISATION = "$Organisation"
@@ -168,13 +178,14 @@ if ((Test-Path $dockerComposeFile) -and -not $OverwriteDockerComposeFile) {
 }
 
 Write-Host '= PREPARE: List of images and tags to be processed:'
-Invoke-Expression "$baseDockerCmd config"
+Invoke-Expression "$baseDockerBakeCmd --print"
 
 if ($target -eq 'build') {
     Write-Host '= BUILD: Building all images...'
+    $cmd = '{0} {1}' -f $baseDockerBakeCmd, $ImageTarget
     switch ($DryRun) {
-        $true { Write-Host "(dry-run) $baseDockerBuildCmd" }
-        $false { Invoke-Expression $baseDockerBuildCmd }
+        $true { Write-Host "(dry-run) $cmd" }
+        $false { Invoke-Expression $cmd }
     }
     Write-Host '= BUILD: Finished building all images.'
 
