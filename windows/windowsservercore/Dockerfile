@@ -22,14 +22,14 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-ARG WINDOWS_VERSION_TAG
-ARG TOOLS_WINDOWS_VERSION
+ARG WINDOWS_VERSION_TAG=ltsc2022
+ARG TOOLS_WINDOWS_VERSION=ltsc2022
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}" AS jdk-core
 
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG JAVA_VERSION
+ARG JAVA_VERSION=25.0.3+9
 RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
     $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
     $msiUrl = 'https://api.adoptium.net/v3/installer/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION ; `
@@ -40,7 +40,7 @@ RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
 
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}"
 
-ARG JAVA_HOME
+ARG JAVA_HOME=C:/openjdk-25
 ENV JAVA_HOME=${JAVA_HOME}
 
 COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
