@@ -188,11 +188,11 @@ if ($target -eq 'build') {
         $true { Write-Host "(dry-run) $cmd" }
         $false { Invoke-Expression $cmd }
     }
-    Write-Host '= BUILD: Finished building all images.'
 
     if($lastExitCode -ne 0) {
         exit $lastExitCode
     }
+    Write-Host '= BUILD: Finished building all images.'
 }
 
 if($target -eq 'test') {
