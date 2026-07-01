@@ -2,7 +2,7 @@ final String cronExpr = env.BRANCH_IS_PRIMARY ? '@daily' : ''
 
 properties([
     buildDiscarder(logRotator(numToKeepStr: '10')),
-    disableConcurrentBuilds(abortPrevious: true),
+    // disableConcurrentBuilds(abortPrevious: true),
     pipelineTriggers([cron(cronExpr)]),
 ])
 
@@ -14,12 +14,7 @@ def agentSelector(String imageType, retryCounter) {
             platform = 'windows-2019'
             break
 
-        // nanoserver-ltsc2022 and windowservercore-ltsc2022
-        case ~/.*2022/:
-            platform = 'windows-2022'
-            break
-
-        // All other Windows images
+        // Windows Server Core 2025 can build both 2022 and 2025 images
         case ~/(nanoserver|windowsservercore).*/:
             platform = 'windows-2025'
             break
@@ -42,11 +37,13 @@ def agentSelector(String imageType, retryCounter) {
 // Specify parallel stages
 def parallelStages = [failFast: false]
 [
-    'linux',
+    // 'linux',
     'nanoserver-ltsc2019',
     'nanoserver-ltsc2022',
-    'windowsservercore-ltsc2019',
-    'windowsservercore-ltsc2022'
+    'nanoserver-ltsc2025',
+    // 'windowsservercore-ltsc2019',
+    // 'windowsservercore-ltsc2022',
+    // 'windowsservercore-ltsc2025'
 ].each { imageType ->
     parallelStages[imageType] = {
         withEnv([
@@ -61,9 +58,12 @@ def parallelStages = [failFast: false]
                 node(resolvedAgentLabel) {
                     timeout(time: 60, unit: 'MINUTES') {
                         checkout scm
-                        if (imageType == "linux") {
-                            stage('Prepare Docker') {
+                        stage('Prepare Docker') {
+                            if (isUnix()) {
                                 sh 'make docker-init'
+                            } else {
+                                // Check CPU name
+                                powershell 'Get-CimInstance -ClassName Win32_Processor | Out-String'
                             }
                         }
                         // This function is defined in the jenkins-infra/pipeline-library
@@ -91,7 +91,11 @@ def parallelStages = [failFast: false]
                                 if (isUnix()) {
                                     sh 'make build'
                                 } else {
+                                    // Free space before building images
+                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                     powershell '& ./build.ps1 build'
+                                    // Free space remaining after building images
+                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                     archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
                                 }
                             }
@@ -99,7 +103,11 @@ def parallelStages = [failFast: false]
                                 if (isUnix()) {
                                     sh 'make test'
                                 } else {
-                                    powershell '& ./build.ps1 test'
+                                    // Free space before testing images
+                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
+                                    powershell '& ./build.ps1 test -TestsDebug verbose'
+                                    // Free space remaining after testing images
+                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                 }
                                 junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
                             }
