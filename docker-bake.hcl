@@ -25,7 +25,7 @@ variable "VERSION" {
 }
 
 variable "ALPINE_FULL_TAG" {
-  default = "3.23.4"
+  default = "3.24.1"
 }
 
 variable "ALPINE_SHORT_TAG" {
@@ -45,7 +45,7 @@ variable "JAVA25_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "trixie-20260505"
+  default = "trixie-20260623"
 }
 
 # Set this value to a specific Windows version to override Windows versions to build returned by windowsversions function
