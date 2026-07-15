@@ -192,7 +192,7 @@ if($target -eq 'test') {
         $mod = Get-InstalledModule -Name Pester -MinimumVersion $PesterVersion -MaximumVersion $PesterVersion -ErrorAction SilentlyContinue
         if($null -eq $mod) {
             Write-Host "= TEST: Pester $PesterVersion not found: installing..."
-            Install-Module -Force -Name Pester -MaximumVersion $PesterVersion -Scope CurrentUser
+            Install-Module -Force -Name Pester -MaximumVersion $PesterVersion -Scope CurrentUser -SkipPublisherCheck
         }
 
         Import-Module Pester
@@ -201,6 +201,7 @@ if($target -eq 'test') {
         $configuration.Run.PassThru = $true
         $configuration.Run.Path = '.\tests'
         $configuration.Run.Exit = $true
+        $configuration.Run.Parallel = $true
         $configuration.TestResult.Enabled = $true
         $configuration.TestResult.OutputFormat = 'JUnitXml'
         $configuration.Output.Verbosity = 'Diagnostic'
