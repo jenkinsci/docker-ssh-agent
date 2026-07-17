@@ -44,7 +44,7 @@ variable "JAVA25_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "trixie-20260623"
+  default = "trixie-20260713"
 }
 
 # Set this value to a specific Windows version to override Windows versions to build returned by windowsversions function
