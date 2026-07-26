@@ -254,7 +254,7 @@ Note: you can generate this docker compose file from docker-bake.hcl yourself wi
 # - Convert with yq to the format expected by docker compose
 # - Store the result in the docker compose file
 
-$ docker buildx bake --progress=plain --file=docker-bake.hcl windows --print `
+$ docker buildx bake --progress=plain --file=docker-bake.hcl --file docker-bake.override.json windows --print `
     | yq --prettyPrint '.target[] | del(.output) | {(. | key): {\"image\": .tags[0], \"build\": .}}' | yq '{\"services\": .}' `
     | Out-File -FilePath build-windows.yaml
 ```
