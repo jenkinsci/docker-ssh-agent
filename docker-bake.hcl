@@ -118,7 +118,7 @@ target "nanoserver" {
   context    = "."
   args = {
     JAVA_HOME             = "C:/openjdk-${jdk}"
-    JAVA_VERSION          = "${replace(javaversion(jdk), "_", "+")}"
+    JAVA_ZIP_URL          = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
     TOOLS_WINDOWS_VERSION = "${toolsversion(windows_version)}"
     WINDOWS_VERSION_TAG   = windows_version
   }
@@ -143,7 +143,7 @@ target "windowsservercore" {
   context    = "."
   args = {
     JAVA_HOME             = "C:/openjdk-${jdk}"
-    JAVA_VERSION          = "${replace(javaversion(jdk), "_", "+")}"
+    JAVA_ZIP_URL          = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
     TOOLS_WINDOWS_VERSION = "${toolsversion(windows_version)}"
     WINDOWS_VERSION_TAG   = windows_version
   }
