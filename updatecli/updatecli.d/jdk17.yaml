@@ -14,18 +14,28 @@ scms:
       branch: "{{ .github.branch }}"
 
 sources:
-  jdk17LastVersion:
+  lastVersion:
     kind: temurin
     name: Get the latest Adoptium JDK17 version
     spec:
       featureversion: 17
     transformers:
       - trimprefix: "jdk-"
+  windows_x64_installer_url:
+    name: Retrieve the latest Installer URL (ZIP) for Windows x64
+    kind: temurin
+    spec:
+      architecture: x64
+      featureversion: 17
+      operatingsystem: windows
+      releasetype: ga
+      result: installer_url
 
 conditions:
   checkTemurinAllReleases:
     name: Check if the "<lastVersion>" is available for all platforms
     kind: temurin
+    sourceid: lastVersion
     spec:
       featureversion: 17
       platforms:
@@ -41,6 +51,7 @@ targets:
   setJDK17VersionDockerBake:
     name: "Bump JDK17 version for Linux images in the docker-bake.hcl file"
     kind: hcl
+    sourceid: lastVersion
     transformers:
       - replacer:
           from: "+"
@@ -52,6 +63,7 @@ targets:
   setJDK17VersionAlpine:
     name: "Bump JDK17 default ARG version on Alpine Dockerfile"
     kind: dockerfile
+    sourceid: lastVersion
     transformers:
       - replacer:
           from: "+"
@@ -65,6 +77,7 @@ targets:
   setJDK17VersionDebian:
     name: "Bump JDK17 default ARG version on Debian Dockerfile"
     kind: dockerfile
+    sourceid: lastVersion
     transformers:
       - replacer:
           from: "+"
@@ -75,12 +88,21 @@ targets:
         keyword: ARG
         matcher: JAVA_VERSION
     scmid: default
+  setJDK17WindowsInstallerUrl:
+    name: Bump JDK Installer URL for Windows x64
+    kind: json
+    sourceid: windows_x64_installer_url
+    spec:
+      file: docker-bake.override.json
+      engine: dasel/v2
+      key: variable.jdk_installer_urls.default.windows.amd64.17
+    scmid: default
 
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK17 version to {{ source "jdk17LastVersion" }}
+    title: Bump JDK17 version to {{ source "lastVersion" }}
     spec:
       labels:
         - dependencies
