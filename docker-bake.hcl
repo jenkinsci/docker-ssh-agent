@@ -73,7 +73,7 @@ target "alpine" {
     "${REGISTRY}/${JENKINS_REPO}:alpine${ALPINE_SHORT_TAG}-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-alpine${ALPINE_SHORT_TAG}-jdk${jdk}",
   ]
-  platforms = ["linux/amd64", "linux/arm64"])
+  platforms = ["linux/amd64", "linux/arm64"]
 }
 
 target "debian" {
