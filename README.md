@@ -67,7 +67,7 @@ You should be all set.
 Should you need to extend the image, you could use something along those lines:
 
 ```Dockerfile
-FROM jenkins/ssh-agent:debian-jdk17 as ssh-agent
+FROM jenkins/ssh-agent:debian-jdk25 as ssh-agent
 # [...]
 COPY --chown=jenkins mykey "${JENKINS_AGENT_HOME}"/.ssh/mykey
 # [...]
@@ -133,10 +133,6 @@ If you want to see the target images that will be built, you can issue the follo
 
 ```bash
 make list
-alpine_jdk11
-alpine_jdk17
-debian_jdk11
-debian_jdk17
 ```
 
 #### Building a specific image
@@ -147,10 +143,10 @@ If you want to build a specific image, you can issue the following command:
 make build-<OS>_<JDK_VERSION>
 ```
 
-That would give for JDK 17 on Alpine Linux:
+That would give for JDK 25 on Alpine Linux:
 
 ```bash
-make build-alpine_jdk17
+make build-alpine_jdk25
 ```
 
 #### Building images supported by your current architecture
@@ -176,10 +172,10 @@ If you want to test a specific image, you can run:
 make test-<OS>_<JDK_VERSION>
 ```
 
-That would give for JDK 17 on Alpine Linux:
+That would give for JDK 25 on Alpine Linux:
 
 ```bash
-make test-alpine_jdk17
+make test-alpine_jdk25
 ```
 
 #### Building all images
@@ -200,10 +196,10 @@ make show
   "group": {
     "default": {
       "targets": [
-        "alpine_jdk17",
-        "alpine_jdk11",
-        "debian_jdk11",
-        "debian_jdk17",
+        "alpine_jdk21",
+        "alpine_jdk25",
+        "debian_jdk21",
+        "debian_jdk25",
       ]
     }
   },
