@@ -101,12 +101,11 @@ def parallelStages = [failFast: false]
                                 } else {
                                     powershell '& ./build.ps1 test'
                                 }
-                                junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
+                                junit 'target/**/junit-results*.xml'
                             }
                             // If the tests are passing for Linux AMD64, then we can build all the CPU architectures
                             if (isUnix()) {
                                 stage('Multi-Arch Build') {
-
                                     sh 'make every-build'
                                 }
                             }
