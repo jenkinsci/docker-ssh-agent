@@ -89,8 +89,8 @@ ifneq (true,$(DISABLE_PARALLEL_TESTS))
 # If the GNU 'parallel' command line is absent, then disable parallel execution
 parallel_cli := $(shell command -v parallel 2>/dev/null)
 ifneq (,$(parallel_cli))
-# If parallel execution is enabled, then set 2 tests per core available for the Docker Engine
-test-%: PARALLEL_JOBS ?= $(shell echo $$(( $(shell docker run --rm alpine grep -c processor /proc/cpuinfo) * 2)))
+# If parallel execution is enabled, we should use all vCPUs available for the Docker Engine minus one (to avoid throttling system while using parallel tests)
+test-%: PARALLEL_JOBS ?= $(shell echo $$(( $(shell docker run --rm alpine grep -c processor /proc/cpuinfo) - 1)))
 test-%: bats_flags += --jobs $(PARALLEL_JOBS)
 endif
 endif
