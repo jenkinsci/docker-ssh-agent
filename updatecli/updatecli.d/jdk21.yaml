@@ -69,7 +69,7 @@ targets:
       file: docker-bake.hcl
       path: variable.JAVA21_VERSION.default
     scmid: default
-  setJDK17WindowsInstallerUrl:
+  setJDKWindowsInstallerUrl:
     name: Bump JDK Installer URL for Windows x64
     kind: json
     sourceid: windows_x64_installer_url

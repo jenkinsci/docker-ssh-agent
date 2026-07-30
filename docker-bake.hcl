@@ -1,6 +1,6 @@
 ## Variables
 variable "jdks_to_build" {
-  default = [17, 21, 25]
+  default = [21, 25]
 }
 
 variable "default_jdk" {
@@ -29,10 +29,6 @@ variable "ALPINE_FULL_TAG" {
 
 variable "ALPINE_SHORT_TAG" {
   default = regex_replace(ALPINE_FULL_TAG, "\\.\\d+$", "")
-}
-
-variable "JAVA17_VERSION" {
-  default = "17.0.19_10"
 }
 
 variable "JAVA21_VERSION" {
@@ -77,7 +73,7 @@ target "alpine" {
     "${REGISTRY}/${JENKINS_REPO}:alpine${ALPINE_SHORT_TAG}-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-alpine${ALPINE_SHORT_TAG}-jdk${jdk}",
   ]
-  platforms = alpine_platforms(jdk)
+  platforms = ["linux/amd64", "linux/arm64"]
 }
 
 target "debian" {
@@ -105,7 +101,7 @@ target "debian" {
     "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk${jdk}",
   ]
-  platforms = debian_platforms(jdk)
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/riscv64"]
 }
 
 target "nanoserver" {
@@ -202,30 +198,12 @@ function "is_default_jdk" {
 # Return the complete Java version corresponding to the jdk passed as parameter
 function "javaversion" {
   params = [jdk]
-  result = (equal(17, jdk)
-    ? "${JAVA17_VERSION}"
-    : equal(21, jdk)
+  result = (equal(21, jdk)
     ? "${JAVA21_VERSION}"
   : "${JAVA25_VERSION}")
 }
 
 ## Specific functions
-# Return an array of Alpine platforms to use depending on the jdk passed as parameter
-function "alpine_platforms" {
-  params = [jdk]
-  result = (equal(17, jdk)
-    ? ["linux/amd64"]
-  : ["linux/amd64", "linux/arm64"])
-}
-
-# Return an array of Debian platforms to use depending on the jdk passed as parameter
-function "debian_platforms" {
-  params = [jdk]
-  result = (equal(17, jdk)
-    ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
-  : ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/riscv64"])
-}
-
 # Return array of Windows version(s) to build
 # Can be overriden by setting WINDOWS_VERSION_OVERRIDE to a specific Windows version
 # Ex: WINDOWS_VERSION_OVERRIDE=ltsc2025 docker buildx bake windows
