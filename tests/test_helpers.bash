@@ -114,6 +114,7 @@ function run_through_ssh {
 
 function clean_test_container {
   local agent_container=$1
+  docker logs "${agent_container}" | tail -n 50 || :
   docker kill "${agent_container}" &>/dev/null ||:
   docker rm --force --volumes "${agent_container}" &>/dev/null ||:
 }
