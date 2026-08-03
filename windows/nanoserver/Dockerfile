@@ -60,6 +60,7 @@ RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
 
 # ENV PSHOME="C:\Program Files\PowerShell"
 
+# TODO: install from zip like in packer-images
 FROM mcr.microsoft.com/powershell:nanoserver-"${TOOLS_WINDOWS_VERSION}" AS pwsh-source
 
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
@@ -74,6 +75,9 @@ COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
 COPY --from=pwsh-source $PSHOME $PSHOME
 # While nanoserver-ltsc2025 includes netapi32.dll, older versions don't
 COPY --from=jdk-core /windows/system32/netapi32.dll C:/Windows/System32/netapi32.dll
+
+SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+USER ContainerAdministrator
 
 # Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
 RUN $javaMajorVersion = $env:JAVA_HOME.Substring($env:JAVA_HOME.Length - 2); `
