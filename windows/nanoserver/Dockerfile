@@ -77,14 +77,18 @@ COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
 COPY --from=pwsh-source $PSHOME $PSHOME
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
-
-# While nanoserver-ltsc2025 includes netapi32.dll, older versions don't
-COPY --from=jdk-core /windows/system32/netapi32.dll C:/Windows/System32/netapi32.dll
-
-SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
 
+COPY --from=jdk-core /windows/system32/netapi32.dll C:/netapi32.dll
+# While nanoserver-ltsc2025 includes netapi32.dll, older versions don't
+RUN if (!(Test-Path 'C:\Windows\System32\netapi32.dll')) { `
+        Move-Item 'C:\netapi32.dll' 'C:\Windows\System32\netapi32.dll' `
+    } else { `
+        Remove-Item 'C:\netapi32.dll' `
+    }
+
 # Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
+# hadolint ignore=DL3059
 RUN $javaMajorVersion = $env:JAVA_HOME.Substring($env:JAVA_HOME.Length - 2); `
     New-Item -Path "C:\jdk-${javaMajorVersion}" -ItemType SymbolicLink -Value "${env:JAVA_HOME}"
 
