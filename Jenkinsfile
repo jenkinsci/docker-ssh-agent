@@ -61,15 +61,9 @@ def parallelStages = [failFast: false]
                 node(resolvedAgentLabel) {
                     timeout(time: 60, unit: 'MINUTES') {
                         checkout scm
-                        stage("Prepare Docker on ${resolvedAgentLabel}") {
-                            if (isUnix()) {
+                        if (isUnix()) {
+                            stage("Prepare Docker on ${resolvedAgentLabel}") {
                                 sh 'make docker-init'
-                            } else {
-                                try {
-                                    // Check CPU name
-                                    powershell 'Get-CimInstance -ClassName Win32_Processor | Out-String'
-                                }
-                                catch(error e) {}
                             }
                         }
                         // This function is defined in the jenkins-infra/pipeline-library
