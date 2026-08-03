@@ -50,10 +50,10 @@ ENV PSHOME="C:\Program Files\PowerShell\7"
 ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${PATH}"
 RUN curl.exe --location `
     https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip `
-    --output "C:\pwsh.zip" && `
-    mkdir %PSHOME% && `
-    tar.exe -xf "C:\pwsh.zip" -C %PSHOME% && `
-    del "C:\pwsh.zip" && `
+    --output "%TEMP%\pwsh.zip" && `
+    mkdir "%PSHOME%" && `
+    tar.exe -xf "%TEMP%\pwsh.zip" -C %PSHOME% && `
+    del "%TEMP%\pwsh.zip" && `
     pwsh.exe -NoLogo -NoProfile -Command "$PSVersionTable"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
