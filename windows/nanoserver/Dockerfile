@@ -46,19 +46,20 @@ SHELL ["cmd.exe", "/c"]
 
 # Install PowerShell 7
 ARG POWERSHELL_VERSION=7.5.4
-RUN curl.exe --location https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip --output C:\pwsh.zip ; `
-    mkdir "C:\Program Files\PowerShell\7" ; `
-    tar.exe -xf C:\pwsh.zip -C "C:\Program Files\PowerShell\7" ; `
-    del C:\pwsh.zip
-
-RUN "C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -NoProfile -Command "$PSVersionTable"
+ENV PSHOME="C:\Program Files\PowerShell\7"
+ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${PATH}"
+RUN curl.exe --location `
+    https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip `
+    --output "C:\pwsh.zip" && `
+    mkdir %PSHOME% && `
+    tar.exe -xf "C:\pwsh.zip" -C %PSHOME% && `
+    del "C:\pwsh.zip" && `
+    pwsh.exe -NoLogo -NoProfile -Command "$PSVersionTable"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
 
 ARG JAVA_HOME
-ENV PSHOME="C:\Program Files\PowerShell\7"
-ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${PATH}"
 
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
 COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
@@ -90,9 +91,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Remove-Item mingit.zip -Force
 
 # Add java & git to PATH
-ENV ProgramFiles="C:\Program Files"
-ENV WindowsPATH="C:\Windows\system32;C:\Windows"
-ENV PATH="${WindowsPATH};${ProgramFiles}\PowerShell;${JAVA_HOME}\bin;C:\mingit\cmd"
+ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${JAVA_HOME}\bin;C:\mingit\cmd;${PATH}"
 
 # Install git-lfs
 ARG GIT_LFS_VERSION=3.7.1
