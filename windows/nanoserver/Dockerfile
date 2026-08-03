@@ -40,21 +40,25 @@ RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Move-Item -Path $expandedDir.FullName -Destination $env:JAVA_HOME -Force ; `
     Remove-Item -Path $env:jdkTemp -Recurse | Out-Null
 
-FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
-
-SHELL ["cmd.exe", "/c"]
-
-# Install PowerShell 7
 ARG POWERSHELL_VERSION=7.5.4
-ENV PSHOME="C:\Program Files\PowerShell\7"
+ENV PSTMP="C:\pwsh"
 ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${PATH}"
 RUN curl.exe --location `
     https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip `
     --output "%TEMP%\pwsh.zip" && `
-    mkdir "%PSHOME%" && `
-    tar.exe -xf "%TEMP%\pwsh.zip" -C %PSHOME% && `
-    del "%TEMP%\pwsh.zip" && `
-    pwsh.exe -NoLogo -NoProfile -Command "$PSVersionTable"
+    mkdir "%PSTMP%" && `
+    tar.exe -xf "%TEMP%\pwsh.zip" -C "%PSTMP%" && `
+    del "%TEMP%\pwsh.zip"
+
+FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
+
+SHELL ["cmd.exe", "/c"]
+
+# Ensure PowerShell 7 is available
+ENV PSHOME="C:\Program Files\PowerShell\7"
+ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${PATH}"
+COPY --from=jdk-core pwsh $PSHOME
+RUN pwsh.exe -NoLogo -NoProfile -Command "$PSVersionTable"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
