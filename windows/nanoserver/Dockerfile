@@ -154,6 +154,9 @@ RUN Import-Module -Force C:/CreateProfile.psm1 ; `
     New-UserWithProfile -UserName $env:JENKINS_AGENT_USER -Description 'Jenkins Agent User' ; `
     Remove-Item -Force C:/CreateProfile.psm1
 
+RUN pwsh -Command "$PSVersionTable"
+RUN pwsh -Command "Get-Service sshd"
+
 VOLUME "${JENKINS_AGENT_WORK}" "C:/Users/${user}/AppData/Local/Temp"
 WORKDIR "${JENKINS_AGENT_WORK}"
 
