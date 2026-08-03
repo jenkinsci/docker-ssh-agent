@@ -40,32 +40,23 @@ RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Move-Item -Path $expandedDir.FullName -Destination $env:JAVA_HOME -Force ; `
     Remove-Item -Path $env:jdkTemp -Recurse | Out-Null
 
-# FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
-
-# SHELL ["cmd.exe", "/c"]
-
-# ARG JAVA_HOME
-
-# # Download and install PowerShell 7
-# ARG POWERSHELL_VERSION=7.5.4
-# ENV POWERSHELL_VERSION=${POWERSHELL_VERSION}
-# ENV PATH="C:\Windows\system32;C:\Windows;C:\Program Files\Powershell;"
-# RUN curl.exe --silent --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output C:/windows/TEMP/pwsh.zip `
-# && mkdir "C:\Program Files\Powershell" `
-# && tar.exe -xf C:\windows\TEMP\pwsh.zip -C "C:\Program Files\Powershell" `
-# && if exist "C:\windows\TEMP\pwsh.zip" del "C:\windows\TEMP\pwsh.zip"
-
-# SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
-# USER ContainerAdministrator
-
-# ENV PSHOME="C:\Program Files\PowerShell"
-
-# TODO: install from zip like in packer-images
-FROM mcr.microsoft.com/powershell:nanoserver-"${TOOLS_WINDOWS_VERSION}" AS pwsh-source
-
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
 SHELL ["cmd.exe", "/c"]
+
+ARG JAVA_HOME
+
+# Download and install PowerShell 7
+ARG POWERSHELL_VERSION=7.5.4
+ENV POWERSHELL_VERSION=${POWERSHELL_VERSION}
+ENV PATH="C:\Windows\system32;C:\Windows;C:\Program Files\Powershell;"
+RUN curl.exe --silent --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output C:/windows/TEMP/pwsh.zip `
+&& mkdir "C:\Program Files\Powershell" `
+&& tar.exe -xf C:\windows\TEMP\pwsh.zip -C "C:\Program Files\Powershell" `
+&& if exist "C:\windows\TEMP\pwsh.zip" del "C:\windows\TEMP\pwsh.zip"
+
+SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+USER ContainerAdministrator
 
 ARG JAVA_HOME
 ENV PSHOME="C:\Program Files\PowerShell"
@@ -74,13 +65,9 @@ ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
 COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
 COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
-COPY --from=pwsh-source $PSHOME $PSHOME
 
-SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
-USER ContainerAdministrator
-
-COPY --from=jdk-core /windows/system32/netapi32.dll C:/netapi32.dll
 # While nanoserver-ltsc2025 includes netapi32.dll, older versions don't
+COPY --from=jdk-core /windows/system32/netapi32.dll C:/netapi32.dll
 RUN if (!(Test-Path 'C:\Windows\System32\netapi32.dll')) { `
         Move-Item 'C:\netapi32.dll' 'C:\Windows\System32\netapi32.dll' `
     } else { `
