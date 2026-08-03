@@ -44,23 +44,21 @@ FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
 SHELL ["cmd.exe", "/c"]
 
-ARG JAVA_HOME
-
-# Download and install PowerShell 7
+# Install PowerShell 7
 ARG POWERSHELL_VERSION=7.5.4
-ENV POWERSHELL_VERSION=${POWERSHELL_VERSION}
-ENV PATH="C:\Windows\system32;C:\Windows;C:\Program Files\Powershell;"
-RUN curl.exe --silent --location "https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip" --output C:/windows/TEMP/pwsh.zip `
-&& mkdir "C:\Program Files\Powershell" `
-&& tar.exe -xf C:\windows\TEMP\pwsh.zip -C "C:\Program Files\Powershell" `
-&& if exist "C:\windows\TEMP\pwsh.zip" del "C:\windows\TEMP\pwsh.zip"
+RUN curl.exe --location https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip --output C:\pwsh.zip ; `
+    mkdir "C:\Program Files\PowerShell\7" ; `
+    tar.exe -xf C:\pwsh.zip -C "C:\Program Files\PowerShell\7" ; `
+    del C:\pwsh.zip
+
+RUN "C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -NoProfile -Command "$PSVersionTable"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
 
 ARG JAVA_HOME
-ENV PSHOME="C:\Program Files\PowerShell"
-ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
+ENV PSHOME="C:\Program Files\PowerShell\7"
+ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${PATH}"
 
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
 COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
@@ -144,7 +142,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('Match User {0}' -f $env:JENKINS_AGENT_USER) ; `
     Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('       AuthorizedKeysFile C:/Users/{0}/.ssh/authorized_keys' -f $env:JENKINS_AGENT_USER) ; `
     New-Item -Path HKLM:\SOFTWARE -Name OpenSSH -Force | Out-Null ; `
-    New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\Program Files\Powershell\pwsh.exe' -PropertyType string -Force | Out-Null ; `
+    New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\Program Files\Powershell\7\pwsh.exe' -PropertyType string -Force | Out-Null ; `
     Remove-Item -Path "C:\ProgramData\ssh\ssh_host*_key*"
 
 COPY CreateProfile.psm1 C:/
@@ -154,8 +152,10 @@ RUN Import-Module -Force C:/CreateProfile.psm1 ; `
     New-UserWithProfile -UserName $env:JENKINS_AGENT_USER -Description 'Jenkins Agent User' ; `
     Remove-Item -Force C:/CreateProfile.psm1
 
-RUN pwsh -Command "$PSVersionTable"
-RUN pwsh -Command "Get-Service sshd"
+RUN pwsh -Command `
+    "Write-Host 'PSHOME:' $PSHOME; `
+     Write-Host 'pwsh:' (Get-Command pwsh).Source; `
+     Get-Service sshd"
 
 VOLUME "${JENKINS_AGENT_WORK}" "C:/Users/${user}/AppData/Local/Temp"
 WORKDIR "${JENKINS_AGENT_WORK}"
