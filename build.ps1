@@ -12,7 +12,7 @@ Param(
     # Print the build and publish command instead of executing them if set
     [switch] $DryRun = $false,
     # Pester version to install and use for tests
-    [String] $PesterVersion = '5.8.0',
+    [String] $PesterVersion = '6.0.1',
     # Output debug info for tests: 'empty' (no additional test output), 'debug' (test cmd & stderr outputed), 'verbose' (test cmd, stderr, stdout outputed)
     [String] $TestsDebug = ''
 )
@@ -83,20 +83,16 @@ Function Test-CommandExists {
 
 function Test-Image {
     param (
-        $ImageNameAndJavaVersion
+        $ImageName
     )
 
-    # Ex: docker.io/jenkins/ssh-agent:windowsservercore-ltsc2019-jdk21|21.0.3_9
-    $items = $ImageNameAndJavaVersion.Split('|')
-    $imageName = $items[0] -replace 'docker.io/', ''
-    $javaVersion = $items[1]
+    $imageName = $ImageName -replace 'docker.io/', ''
     $imageNameItems = $imageName.Split(':')
     $imageTag = $imageNameItems[1]
 
     Write-Host "= TEST: Testing ${ImageName} image"
 
     $env:IMAGE_NAME = $ImageName
-    $env:JAVA_VERSION = "$javaVersion"
 
     $targetPath = '.\target\{0}' -f $imageTag
     if (Test-Path $targetPath) {
@@ -113,7 +109,6 @@ function Test-Image {
         Write-Host "There were $($TestResults.PassedCount) passed tests in ${ImageName}"
     }
     Remove-Item env:\IMAGE_NAME
-    Remove-Item env:\JAVA_VERSION
 
     return $failed
 }
@@ -141,7 +136,7 @@ function Initialize-Docker() {
 }
 
 function Initialize-DockerComposeFile {
-    $baseDockerBakeCmd = 'docker buildx bake --progress=plain --file=docker-bake.hcl'
+    $baseDockerBakeCmd = 'docker buildx bake --progress=plain --file=docker-bake.hcl --file docker-bake.override.json'
 
     $items = $ImageType.Split('-')
     $windowsFlavor = $items[0]
@@ -237,7 +232,7 @@ if($target -eq 'test') {
         $testFailed = $false
         $imageDefinitions = Invoke-Expression "$baseDockerCmd config" | yq --unwrapScalar --output-format json '.services' | ConvertFrom-Json
         foreach ($imageDefinition in $imageDefinitions.PSObject.Properties) {
-            $testFailed = $testFailed -or (Test-Image ('{0}|{1}' -f $imageDefinition.Value.image, $imageDefinition.Value.build.args.JAVA_VERSION))
+            $testFailed = $testFailed -or (Test-Image $imageDefinition.Value.image)
         }
 
         # Fail if any test failures

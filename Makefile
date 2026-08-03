@@ -22,7 +22,7 @@ check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' require
 ## Check if a given image exists in the current manifest docker-bake.hcl
 check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the platform 'linux/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
 ## Base "docker buildx base" command to be reused everywhere
-bake_base_cli := docker buildx bake --file docker-bake.hcl
+bake_base_cli := docker buildx bake --file docker-bake.hcl --file docker-bake.override.json
 bake_cli := $(bake_base_cli) --load
 
 .PHONY: build
@@ -73,7 +73,7 @@ list: check-reqs
 	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
 
 bats:
-	git clone --branch v1.13.0 https://github.com/bats-core/bats-core bats
+	git clone --branch v1.14.0 https://github.com/bats-core/bats-core bats
 
 prepare-test: bats check-reqs
 	git submodule update --init --recursive
@@ -90,8 +90,8 @@ ifneq (true,$(DISABLE_PARALLEL_TESTS))
 # If the GNU 'parallel' command line is absent, then disable parallel execution
 parallel_cli := $(shell command -v parallel 2>/dev/null)
 ifneq (,$(parallel_cli))
-# If parallel execution is enabled, then set 2 tests per core available for the Docker Engine
-test-%: PARALLEL_JOBS ?= $(shell echo $$(( $(shell docker run --rm alpine grep -c processor /proc/cpuinfo) * 2)))
+# If parallel execution is enabled, we should use all vCPUs available for the Docker Engine minus one (to avoid throttling system while using parallel tests)
+test-%: PARALLEL_JOBS ?= $(shell echo $$(( $(shell docker run --rm alpine grep -c processor /proc/cpuinfo) - 1)))
 test-%: bats_flags += --jobs $(PARALLEL_JOBS)
 endif
 endif

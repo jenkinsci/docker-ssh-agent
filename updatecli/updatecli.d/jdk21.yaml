@@ -23,18 +23,28 @@ scms:
       branch: "main"
 
 sources:
-  jdk21LastVersion:
+  lastVersion:
     kind: temurin
     name: Get the latest Adoptium JDK21 version
     spec:
       featureversion: 21
     transformers:
       - trimprefix: "jdk-"
+  windows_x64_installer_url:
+    name: Retrieve the latest Installer URL (ZIP) for Windows x64
+    kind: temurin
+    spec:
+      architecture: x64
+      featureversion: 21
+      operatingsystem: windows
+      releasetype: ga
+      result: installer_url
 
 conditions:
   checkTemurinAllReleases:
     name: Check if the "<lastTemurin21Version>" is available for all platforms
     kind: temurin
+    sourceid: lastVersion
     spec:
       featureversion: 21
       platforms:
@@ -50,7 +60,7 @@ targets:
   setJDK21VersionDockerBake:
     name: "Bump JDK21 version for Linux images in the docker-bake.hcl file"
     kind: hcl
-    sourceid: jdk21LastVersion
+    sourceid: lastVersion
     transformers:
       - replacer:
           from: "+"
@@ -59,12 +69,21 @@ targets:
       file: docker-bake.hcl
       path: variable.JAVA21_VERSION.default
     scmid: default
+  setJDKWindowsInstallerUrl:
+    name: Bump JDK Installer URL for Windows x64
+    kind: json
+    sourceid: windows_x64_installer_url
+    spec:
+      file: docker-bake.override.json
+      engine: dasel/v2
+      key: variable.
+    scmid: default
 
 actions:
   default:
     kind: github/pullrequest
     scmid: default
-    title: Bump JDK21 version to {{ source "jdk21LastVersion" }}
+    title: Bump JDK21 version to {{ source "lastVersion" }}
     spec:
       labels:
         - dependencies

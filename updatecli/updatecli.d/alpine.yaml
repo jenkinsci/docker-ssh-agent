@@ -27,6 +27,17 @@ sources:
         pattern: "~3"
     transformers:
       - trimprefix: "v"
+  latestVersionNoPatch:
+    kind: shell
+    name: Latest Alpijne Version without the patch part
+    dependson:
+      - latestVersion
+    spec:
+      command: echo {{ source "latestVersion" }}
+    transformers:
+      - findsubmatch:
+          pattern: '(\d*).(\d*).\d*'
+          capturepattern: '\1.\2'
 
 conditions:
   testDockerfileArg:
@@ -51,6 +62,7 @@ targets:
   updateDockerfile:
     name: "Update the value of the base image (ARG ALPINE_TAG) in the Dockerfile"
     kind: dockerfile
+    sourceid: latestVersion
     spec:
       file: alpine/Dockerfile
       instruction:
@@ -60,9 +72,19 @@ targets:
   updateDockerBake:
     name: "Update the value of the base image (ARG ALPINE_TAG) in the docker-bake.hcl"
     kind: hcl
+    sourceid: latestVersion
     spec:
       file: docker-bake.hcl
       path: variable.ALPINE_FULL_TAG.default
+    scmid: default
+  updateGoldenTags:
+    name: Update Alpine image tags in the golden tags system
+    kind: file
+    sourceid: latestVersionNoPatch
+    spec:
+      file: tests/golden/expected_tags.txt
+      matchpattern: '(.*)alpine(\d.).(\d*)(.*)'
+      replacepattern: '${1}alpine{{ source "latestVersionNoPatch" }}${4}'
     scmid: default
 actions:
   default:
