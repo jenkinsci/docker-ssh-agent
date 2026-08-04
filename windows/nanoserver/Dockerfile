@@ -56,7 +56,7 @@ SHELL ["cmd.exe", "/c"]
 ENV PSHOME="C:\Program Files\PowerShell\7"
 ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${PATH}"
 COPY --from=jdk-pwsh pwsh $PSHOME
-RUN RUN reg add "HKLM\SOFTWARE\OpenSSH" /v DefaultShell /t REG_SZ /d "%PSHOME%\pwsh.exe" /f ; `
+RUN reg add "HKLM\SOFTWARE\OpenSSH" /v DefaultShell /t REG_SZ /d "%PSHOME%\pwsh.exe" /f ; `
     pwsh.exe -NoLogo -NoProfile -Command "$PSVersionTable"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
