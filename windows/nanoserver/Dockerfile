@@ -39,33 +39,27 @@ RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Move-Item -Path $expandedDir.FullName -Destination $env:JAVA_HOME -Force ; `
     Remove-Item -Path $env:jdkTemp -Recurse | Out-Null
 
-ARG POWERSHELL_VERSION=7.5.4
+ARG PWSH_VERSION=7.3.9
 ENV PSTMP="C:\pwsh"
-RUN Invoke-WebRequest `
-      -Uri "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.zip" `
-      -OutFile "$env:TEMP\pwsh.zip" ; `
-    New-Item -ItemType Directory -Path "$env:PSTMP" -Force | Out-Null ; `
-    Expand-Archive "$env:TEMP\pwsh.zip" "$env:PSTMP" ; `
-    Remove-Item "$env:TEMP\pwsh.zip"
+RUN $url = 'https://github.com/PowerShell/PowerShell/releases/download/v{0}/PowerShell-{0}-win-x64.zip' -f $env:PWSH_VERSION ; `
+    Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\pwsh.zip" ; `
+    New-Item -ItemType Directory -Path $env:PSTMP -Force | Out-Null ; `
+    Expand-Archive -Path "$env:TEMP\pwsh.zip" -DestinationPath $env:PSTMP ; `
+    Remove-Item -Path "$env:TEMP\pwsh.zip"
 
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
 SHELL ["cmd.exe", "/c"]
 
-# Ensure PowerShell 7 is available
-ENV PSHOME="C:\Program Files\PowerShell\7"
-ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${PATH}"
+# The nanoserver image is nice and small, but we need a couple of things to get SSH working
+COPY --from=jdk-pwsh /windows/system32/whoami.exe /windows/system32/whoami.exe
+COPY --from=jdk-pwsh $JAVA_HOME $JAVA_HOME
 COPY --from=jdk-pwsh pwsh $PSHOME
-RUN pwsh.exe -NoLogo -NoProfile -Command "$PSVersionTable"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
 
 ARG JAVA_HOME
-
-# The nanoserver image is nice and small, but we need a couple of things to get SSH working
-COPY --from=jdk-pwsh /windows/system32/whoami.exe /windows/system32/whoami.exe
-COPY --from=jdk-pwsh $JAVA_HOME $JAVA_HOME
 
 # While nanoserver-ltsc2025 includes netapi32.dll, older versions don't
 COPY --from=jdk-pwsh /windows/system32/netapi32.dll C:/netapi32.dll

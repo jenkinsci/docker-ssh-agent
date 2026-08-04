@@ -54,6 +54,7 @@ TUwLP4n7pK4J2sCIs6fRD5kEYms4BnddXeRuI2fGZHGH70Ci/Q==
 "@
 
 $global:GITLFSVERSION = '3.7.1'
+$global:PWSHVERSION = '7.3.9'
 
 Cleanup($global:CONTAINERNAME)
 
@@ -107,31 +108,33 @@ Describe "[$global:IMAGE_TAG] checking image metadata" {
     }
 }
 
-Describe "[$global:IMAGE_TAG] image has correct version of java and git-lfs installed and in the PATH" {
+Describe "[$global:IMAGE_TAG] image has expected tools versions installed and in the PATH" {
     BeforeAll {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all `"$global:IMAGE_NAME`" `"$global:PUBLIC_SSH_KEY`""
         $exitCode | Should -Be 0
         Is-ContainerRunning $global:CONTAINERNAME
     }
 
-    It 'has java installed and in the path' {
+    It 'has expected java installed and in the path' {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"if(`$null -eq (Get-Command java.exe -ErrorAction SilentlyContinue)) { exit -1 } else { exit 0 }`""
         $exitCode | Should -Be 0
 
         $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`$version = java -version 2>&1 ; Write-Host `$version`""
-        $r = [regex] "^openjdk version `"(?<major>\d+)"
-        $m = $r.Match($stdout)
-        $m | Should -Not -Be $null
-        $m.Groups['major'].ToString() | Should -Be "$global:JAVAMAJORVERSION"
+        $stdout.Trim() | Should -Match "^openjdk version `"$global:JAVAMAJORVERSION"
     }
 
-    It 'has git-lfs (and thus git) installed and in the path' {
+    It 'has expected git-lfs (and thus git) installed and in the path' {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`& git lfs env`""
         $exitCode | Should -Be 0
-        $r = [regex] "^git-lfs/(?<version>\d+\.\d+\.\d+)"
-        $m = $r.Match($stdout)
-        $m | Should -Not -Be $null
-        $m.Groups['version'].ToString() | Should -Be "$global:GITLFSVERSION"
+        $stdout.Trim() | Should -Match "^git-lfs/$([regex]::Escape($global:GITLFSVERSION))"
+    }
+
+    if ($global:WINDOWSFLAVOR -eq 'nanoserver') {
+        It 'has the expected pwsh version and in the path' {
+            $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`$PSVersionTable.PSVersion.ToString()`""
+            $exitCode | Should -Be 0
+            $stdout.Trim() | Should -Match "^$([regex]::Escape($global:POWERSHELLVERSION))"
+        }
     }
 
     AfterAll {
@@ -146,7 +149,7 @@ Describe "[$global:IMAGE_TAG] create agent container with pubkey as argument" {
         Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
     }
 
-    It 'runs commands via ssh' {
+    It 'runs commands via ssh, container with pubkey as argument' {
         $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should -Be 0
         $stdout | Should -Match 'f00'
@@ -164,7 +167,7 @@ Describe "[$global:IMAGE_TAG] create agent container with pubkey as envvar" {
         Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
     }
 
-    It 'runs commands via ssh' {
+    It 'runs commands via ssh, container with pubkey as envvar' {
         $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should -Be 0
         $stdout | Should -Match 'f00'
@@ -185,7 +188,7 @@ Describe "[$global:IMAGE_TAG] create agent container like docker-plugin with '$g
         Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
     }
 
-    It 'runs commands via ssh (agent container like docker-plugin)' {
+    It 'runs commands via ssh, container like docker-plugin' {
         $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should -Be 0
         $stdout | Should -Match 'f00'
