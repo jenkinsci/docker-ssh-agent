@@ -14,7 +14,12 @@ def agentSelector(String imageType, retryCounter) {
             platform = 'windows-2019'
             break
 
-        // Windows Server Core 2025 can build both 2022 and 2025 images
+        // nanoserver-ltsc2022 and windowservercore-ltsc2022
+        case ~/.*2022/:
+            platform = 'windows-2022'
+            break
+
+        // All other Windows images
         case ~/(nanoserver|windowsservercore).*/:
             platform = 'windows-2025'
             break
