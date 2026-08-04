@@ -6,7 +6,7 @@ Param(
     # Image version
     [String] $VersionTag = '0.0.1',
     # Windows flavor and windows version to build
-    [String] $ImageType = 'nanoserver-ltsc2019',
+    [String] $ImageType = 'nanoserver-ltsc2022',
     # Generate a docker compose file even if it already exists
     [switch] $OverwriteDockerComposeFile = $false,
     # Print the build and publish command instead of executing them if set

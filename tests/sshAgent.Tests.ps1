@@ -1,6 +1,6 @@
 Import-Module -DisableNameChecking -Force $PSScriptRoot/test_helpers.psm1
 
-$global:IMAGE_NAME = Get-EnvOrDefault 'IMAGE_NAME' '' # Ex: jenkins4eval/ssh-agent:nanoserver-ltsc2019-jdk25
+$global:IMAGE_NAME = Get-EnvOrDefault 'IMAGE_NAME' '' # Ex: jenkins4eval/ssh-agent:nanoserver-ltsc2022-jdk25
 $global:JAVA_ZIP_URL = 'https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.3%2B9/OpenJDK25U-jdk_x64_windows_hotspot_25.0.3_9.zip'
 
 Write-Host "= TESTS: Preparing $global:IMAGE_NAME"
@@ -14,10 +14,6 @@ $global:JAVAMAJORVERSION = $items[2].Remove(0,3)
 $global:WINDOWSFLAVOR = $items[0]
 $global:WINDOWSVERSIONTAG = $items[1]
 $global:TOOLSWINDOWSVERSION = $items[1]
-# There are no eclipse-temurin:*-ltsc2019 or mcr.microsoft.com/powershell:*-ltsc2019 docker images unfortunately, only "1809" ones
-if ($items[1] -eq 'ltsc2019') {
-    $global:TOOLSWINDOWSVERSION = '1809'
-}
 
 # TODO: make this name unique for concurency
 $global:CONTAINERNAME = 'pester-jenkins-ssh-agent-{0}' -f $global:IMAGE_TAG
