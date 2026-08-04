@@ -41,7 +41,7 @@ def parallelStages = [failFast: false]
     // 'alpine_25',
     // 'debian_21',
     // 'debian_25',
-    'nanoserver-ltsc2019',
+    // 'nanoserver-ltsc2019',
     'nanoserver-ltsc2022',
     'nanoserver-ltsc2025',
     // 'windowsservercore-ltsc2019',
