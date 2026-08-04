@@ -23,8 +23,7 @@
 #  THE SOFTWARE.
 
 ARG WINDOWS_VERSION_TAG
-ARG TOOLS_WINDOWS_VERSION
-FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}" AS jdk-core
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}" AS jdk-pwsh
 
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
@@ -56,7 +55,7 @@ SHELL ["cmd.exe", "/c"]
 # Ensure PowerShell 7 is available
 ENV PSHOME="C:\Program Files\PowerShell\7"
 ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${PATH}"
-COPY --from=jdk-core pwsh $PSHOME
+COPY --from=jdk-pwsh pwsh $PSHOME
 RUN pwsh.exe -NoLogo -NoProfile -Command "$PSVersionTable"
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
@@ -65,11 +64,11 @@ USER ContainerAdministrator
 ARG JAVA_HOME
 
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
-COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
-COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
+COPY --from=jdk-pwsh /windows/system32/whoami.exe /windows/system32/whoami.exe
+COPY --from=jdk-pwsh $JAVA_HOME $JAVA_HOME
 
 # While nanoserver-ltsc2025 includes netapi32.dll, older versions don't
-COPY --from=jdk-core /windows/system32/netapi32.dll C:/netapi32.dll
+COPY --from=jdk-pwsh /windows/system32/netapi32.dll C:/netapi32.dll
 RUN if (!(Test-Path 'C:\Windows\System32\netapi32.dll')) { `
         Move-Item 'C:\netapi32.dll' 'C:\Windows\System32\netapi32.dll' `
     } else { `
