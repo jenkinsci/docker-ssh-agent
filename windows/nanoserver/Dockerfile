@@ -127,7 +127,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     icacls 'C:\ProgramData\ssh' /remove 'CREATOR OWNER' ; `
     & 'C:/Program Files/OpenSSH-Win64/Install-SSHd.ps1' ; `
     Copy-Item 'C:\Program Files\OpenSSH-Win64\sshd_config_default' 'C:\ProgramData\ssh\sshd_config' ; `
-    $configPath = 'C:\ProgramData\ssh\sshd_config' : `
+    $configPath = 'C:\ProgramData\ssh\sshd_config' ; `
     $content = Get-Content -Path $configPath ; `
     $content | ForEach-Object { $_ -replace '#PermitRootLogin.*','PermitRootLogin no' `
                         -replace '#PasswordAuthentication.*','PasswordAuthentication no' `
