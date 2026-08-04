@@ -210,5 +210,5 @@ function "windowsversions" {
   params = [flavor]
   result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
     ? [WINDOWS_VERSION_OVERRIDE]
-  : ["ltsc2019", "ltsc2022"])
+  : ["ltsc2019", "ltsc2022", "ltsc2025"])
 }
