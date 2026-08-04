@@ -14,7 +14,7 @@ Param(
     # Pester version to install and use for tests
     [String] $PesterVersion = '6.0.1',
     # Output debug info for tests: 'empty' (no additional test output), 'debug' (test cmd & stderr outputed), 'verbose' (test cmd, stderr, stdout outputed)
-    [String] $TestsDebug = ''
+    [String] $TestsDebug = 'verbose'
 )
 
 $ErrorActionPreference = 'Stop'
