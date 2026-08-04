@@ -185,7 +185,7 @@ Describe "[$global:IMAGE_TAG] create agent container like docker-plugin with '$g
         Is-ContainerRunning $global:CONTAINERNAME | Should -BeTrue
     }
 
-    It 'runs commands via ssh' {
+    It 'runs commands via ssh (agent container like docker-plugin)' {
         $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should -Be 0
         $stdout | Should -Match 'f00'
