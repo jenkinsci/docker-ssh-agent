@@ -44,8 +44,8 @@ ENV PSTMP="C:\pwsh"
 RUN Invoke-WebRequest `
       -Uri "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.zip" `
       -OutFile "$env:TEMP\pwsh.zip" ; `
-    New-Item -ItemType Directory -Path "$env.PSTMP" -Force | Out-Null ; `
-    Expand-Archive "$env:TEMP\pwsh.zip" "$env.PSTMP" ; `
+    New-Item -ItemType Directory -Path "$env:PSTMP" -Force | Out-Null ; `
+    Expand-Archive "$env:TEMP\pwsh.zip" "$env:PSTMP" ; `
     Remove-Item "$env:TEMP\pwsh.zip"
 
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
