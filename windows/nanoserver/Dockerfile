@@ -147,7 +147,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     # Force PowerShell 7 for all SSH sessions
     Add-Content -Path $configPath -Value '' ; `
     Add-Content -Path $configPath -Value '# Force PowerShell 7 as default shell' ; `
-    Add-Content -Path $configPath -Value ('ForceCommand {0}\pwsh.exe -NoLogo -NoProfile' -f $env:PSHOME) ; `
+    Add-Content -Path $configPath -Value ('ForceCommand "{0}\pwsh.exe" -NoLogo -NoProfile' -f $env:PSHOME) ; `
 
     New-Item -Path HKLM:\SOFTWARE -Name OpenSSH -Force | Out-Null ; `
     Remove-Item -Path "C:\ProgramData\ssh\ssh_host*_key*"
