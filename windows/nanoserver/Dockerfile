@@ -42,13 +42,12 @@ RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
 
 ARG POWERSHELL_VERSION=7.5.4
 ENV PSTMP="C:\pwsh"
-ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${PATH}"
-RUN curl.exe --location `
-    https://github.com/PowerShell/PowerShell/releases/download/v%POWERSHELL_VERSION%/PowerShell-%POWERSHELL_VERSION%-win-x64.zip `
-    --output "%TEMP%\pwsh.zip" && `
-    mkdir "%PSTMP%" && `
-    tar.exe -xf "%TEMP%\pwsh.zip" -C "%PSTMP%" && `
-    del "%TEMP%\pwsh.zip"
+RUN Invoke-WebRequest `
+      -Uri "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.zip" `
+      -OutFile "$env:TEMP\pwsh.zip" ; `
+    New-Item -ItemType Directory -Path "$env.PSTMP" -Force | Out-Null ; `
+    Expand-Archive "$env:TEMP\pwsh.zip" "$env.PSTMP" ; `
+    Remove-Item "$env:TEMP\pwsh.zip"
 
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
