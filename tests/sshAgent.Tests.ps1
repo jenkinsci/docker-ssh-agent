@@ -13,15 +13,6 @@ $items = $global:IMAGE_TAG.Split('-')
 $global:JAVAMAJORVERSION = $items[2].Remove(0,3)
 $global:WINDOWSFLAVOR = $items[0]
 $global:WINDOWSVERSIONTAG = $items[1]
-$global:TOOLSWINDOWSVERSION = $items[1]
-# There are no eclipse-temurin:*-ltsc2019 or mcr.microsoft.com/powershell:*-ltsc2019 docker images unfortunately, only "1809" ones
-if ($items[1] -eq 'ltsc2019') {
-    $global:TOOLSWINDOWSVERSION = '1809'
-}
-# There is no mcr.microsoft.com/powershell:*-ltsc2025 docker images unfortunately, using a ltsc2022 instead
-if ($items[1] -eq 'ltsc2025') {
-    $global:TOOLSWINDOWSVERSION = 'ltsc2022'
-}
 
 # TODO: make this name unique for concurency
 $global:CONTAINERNAME = 'pester-jenkins-ssh-agent-{0}' -f $global:IMAGE_TAG
@@ -207,7 +198,7 @@ Describe "[$global:IMAGE_TAG] create agent container like docker-plugin with '$g
 
 Describe "[$global:IMAGE_TAG] image can be built" {
     It 'builds image' {
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"TOOLS_WINDOWS_VERSION=${global:TOOLSWINDOWSVERSION}`" --build-arg `"JAVA_ZIP_URL=${global:JAVA_ZIP_URL}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --tag=${global:IMAGE_TAG} --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"JAVA_ZIP_URL=${global:JAVA_ZIP_URL}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --tag=${global:IMAGE_TAG} --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
         $exitCode | Should -Be 0
     }
 }
@@ -222,7 +213,7 @@ Describe "[$global:IMAGE_TAG] image can be built with custom build args" {
         $TEST_JAW = 'C:/hamster'
         $CUSTOM_IMAGE_NAME = "custom-${IMAGE_NAME}"
 
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"TOOLS_WINDOWS_VERSION=${global:TOOLSWINDOWSVERSION}`" --build-arg `"JAVA_ZIP_URL=${global:JAVA_ZIP_URL}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --build-arg `"user=$TEST_USER`" --build-arg `"JENKINS_AGENT_WORK=$TEST_JAW`" --tag=$CUSTOM_IMAGE_NAME --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"JAVA_ZIP_URL=${global:JAVA_ZIP_URL}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --build-arg `"user=$TEST_USER`" --build-arg `"JENKINS_AGENT_WORK=$TEST_JAW`" --tag=$CUSTOM_IMAGE_NAME --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
         $exitCode | Should -Be 0
 
         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=$global:CONTAINERNAME --publish-all $CUSTOM_IMAGE_NAME $global:CONTAINERSHELL"
