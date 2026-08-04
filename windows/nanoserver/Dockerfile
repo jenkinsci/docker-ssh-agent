@@ -164,6 +164,9 @@ WORKDIR "${JENKINS_AGENT_WORK}"
 
 COPY setup-sshd.ps1 C:/ProgramData/Jenkins/setup-sshd.ps1
 
+# Debug
+RUN Get-ChildItem env: | ForEach-Object { "$($_.Name)=$($_.Value)" }
+
 EXPOSE 22
 
 LABEL `
