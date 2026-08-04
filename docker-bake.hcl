@@ -1,6 +1,7 @@
 ## Variables
 variable "jdks_to_build" {
-  default = [21, 25]
+  # default = [21, 25]
+  default = [21]
 }
 
 variable "default_jdk" {

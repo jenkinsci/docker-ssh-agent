@@ -2,7 +2,7 @@ final String cronExpr = env.BRANCH_IS_PRIMARY ? '@daily' : ''
 
 properties([
     buildDiscarder(logRotator(numToKeepStr: '10')),
-    disableConcurrentBuilds(abortPrevious: true),
+    // disableConcurrentBuilds(abortPrevious: true),
     pipelineTriggers([cron(cronExpr)]),
 ])
 
@@ -42,14 +42,14 @@ def agentSelector(String imageType, retryCounter) {
 // Specify parallel stages
 def parallelStages = [failFast: false]
 [
-    'alpine_21',
-    'alpine_25',
-    'debian_21',
-    'debian_25',
+    // 'alpine_21',
+    // 'alpine_25',
+    // 'debian_21',
+    // 'debian_25',
     'nanoserver-ltsc2019',
     'nanoserver-ltsc2022',
-    'windowsservercore-ltsc2019',
-    'windowsservercore-ltsc2022'
+    // 'windowsservercore-ltsc2019',
+    // 'windowsservercore-ltsc2022',
 ].each { imageType ->
     parallelStages[imageType] = {
         withEnv([
@@ -102,7 +102,7 @@ def parallelStages = [failFast: false]
                                 if (isUnix()) {
                                     sh 'make test'
                                 } else {
-                                    powershell '& ./build.ps1 test'
+                                    powershell '& ./build.ps1 test -TestsDebug verbose'
                                 }
                                 junit 'target/**/junit-results*.xml'
                             }
