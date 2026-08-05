@@ -39,7 +39,7 @@ RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Move-Item -Path $expandedDir.FullName -Destination $env:JAVA_HOME -Force ; `
     Remove-Item -Path $env:jdkTemp -Recurse | Out-Null
 
-ARG PWSH_VERSION=7.3.9
+ARG PWSH_VERSION=7.4.18
 RUN $zip = Join-Path $env:TEMP "pwsh.zip" ; `
     $dest = 'C:\pwsh' ; `
     $url = 'https://github.com/PowerShell/PowerShell/releases/download/v{0}/PowerShell-{0}-win-x64.zip' -f $env:PWSH_VERSION ; `
