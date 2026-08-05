@@ -137,12 +137,10 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Add-Content -Path $configPath -Value 'HostKeyAgent \\.\pipe\openssh-ssh-agent' ; `
     Add-Content -Path $configPath -Value ('Match User {0}' -f $env:JENKINS_AGENT_USER) ; `
     Add-Content -Path $configPath -Value ('       AuthorizedKeysFile C:/Users/{0}/.ssh/authorized_keys' -f $env:JENKINS_AGENT_USER) ; `
-
     # Force PowerShell 7 for all SSH sessions
     Add-Content -Path $configPath -Value '' ; `
     Add-Content -Path $configPath -Value '# Force PowerShell 7 as default shell' ; `
     Add-Content -Path $configPath -Value ('ForceCommand "{0}\pwsh.exe" -NoLogo -NoProfile' -f $env:PSHOME) ; `
-
     New-Item -Path HKLM:\SOFTWARE -Name OpenSSH -Force | Out-Null ; `
     Remove-Item -Path "C:\ProgramData\ssh\ssh_host*_key*"
 
