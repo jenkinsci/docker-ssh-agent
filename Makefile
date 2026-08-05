@@ -72,6 +72,8 @@ else
 	docker buildx create --use --bootstrap --driver docker-container
 endif
 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+	docker info
+	docker buildx inspect --bootstrap
 
 # Build all targets with the current OS and architecture
 build: check-reqs
