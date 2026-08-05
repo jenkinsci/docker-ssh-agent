@@ -55,6 +55,8 @@ SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPrefer
 USER ContainerAdministrator
 
 ARG JAVA_HOME
+ENV PSHOME="C:\Program Files\PowerShell"
+ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
 
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
 COPY --from=jdk-pwsh /windows/system32/whoami.exe /windows/system32/whoami.exe
