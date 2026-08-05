@@ -125,11 +125,11 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
 RUN echo "PATH=${PATH}" >> /etc/environment
-COPY setup-sshd /usr/local/bin/setup-sshd
+COPY --chmod=755 setup-sshd /usr/local/bin/setup-sshd
 
 EXPOSE 22
 
-ENTRYPOINT ["setup-sshd"]
+ENTRYPOINT ["/bin/bash", "setup-sshd"]
 
 LABEL \
     org.opencontainers.image.vendor="Jenkins project" \
