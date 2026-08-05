@@ -40,7 +40,7 @@ variable "JAVA25_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "trixie-20260713"
+  default = "trixie-20260803"
 }
 
 # Set this value to a specific Windows version to override Windows versions to build returned by windowsversions function
@@ -113,9 +113,9 @@ target "nanoserver" {
   dockerfile = "windows/nanoserver/Dockerfile"
   context    = "."
   args = {
-    JAVA_HOME             = "C:/openjdk-${jdk}"
-    JAVA_ZIP_URL          = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
-    WINDOWS_VERSION_TAG   = windows_version
+    JAVA_HOME           = "C:/openjdk-${jdk}"
+    JAVA_ZIP_URL        = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
+    WINDOWS_VERSION_TAG = windows_version
   }
   tags = [
     # If there is a tag, add versioned tag suffixed by the jdk
@@ -137,9 +137,9 @@ target "windowsservercore" {
   dockerfile = "windows/windowsservercore/Dockerfile"
   context    = "."
   args = {
-    JAVA_HOME             = "C:/openjdk-${jdk}"
-    JAVA_ZIP_URL          = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
-    WINDOWS_VERSION_TAG   = windows_version
+    JAVA_HOME           = "C:/openjdk-${jdk}"
+    JAVA_ZIP_URL        = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
+    WINDOWS_VERSION_TAG = windows_version
   }
   tags = [
     # If there is a tag, add versioned tag suffixed by the jdk
