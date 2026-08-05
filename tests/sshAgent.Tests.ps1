@@ -133,7 +133,7 @@ Describe "[$global:IMAGE_TAG] image has expected tools versions installed and in
         It 'has expected pwsh installed and in the path' {
             $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`$PSVersionTable.PSVersion.ToString()`""
             $exitCode | Should -Be 0
-            $stdout.Trim() | Should -Match "^$([regex]::Escape($global:POWERSHELLVERSION))"
+            $stdout.Trim() | Should -Match "^$([regex]::Escape($global:PWSHVERSION))"
         }
     }
 
