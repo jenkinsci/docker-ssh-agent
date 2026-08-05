@@ -71,28 +71,28 @@ endif
 
 # Build all targets with the current OS and architecture
 build: check-reqs
-	@set -x; $(bake_cli) $(shell make --silent list) --set '*.platform=linux/$(ARCH)'
+	@$(bake_cli) $(shell make --silent list) --set '*.platform=linux/$(ARCH)'
 
 # Build a specific target with the current OS and architecture
 build-%:
 	@$(call check_image,$*)
-	@set -x; $(bake_cli) '$*' --set '*.platform=linux/$(ARCH)'
+	@$(bake_cli) '$*' --set '*.platform=linux/$(ARCH)'
 
 # Build default bake group corresponding to the current OS but independently of the architecture
 multiarchbuild: check-reqs show-$(OS)
-	@set -x; $(bake_base_cli) $(OS)
+	@$(bake_base_cli) $(OS)
 
 # Build a specific bake group or target independently of the architecture or the OS
 multiarchbuild-%: check-reqs show-%
-	@set -x; $(bake_base_cli) $*
+	@$(bake_base_cli) $*
 
 # Show all default targets
 show:
-	@set -x; $(MAKE) --silent show-$(bake_default_target)
+	@$(MAKE) --silent show-$(bake_default_target)
 
 # Show a specific target
 show-%:
-	@set -x; $(bake_base_cli) --progress=quiet --print $* | jq
+	@$(bake_base_cli) --progress=quiet --print $* | jq
 
 # List tags of all default targets
 tags:
@@ -100,7 +100,7 @@ tags:
 
 # Return the list of targets depending on the current OS and architecture
 list: check-reqs
-	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
+	@make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
 
 # Ensure bats exists in the current folder
 bats:
@@ -113,7 +113,7 @@ prepare-test: bats check-reqs
 
 # Publish all linux targets
 publish:
-	@set -x; $(bake_base_cli) linux --push
+	@$(bake_base_cli) linux --push
 
 ## Define bats options based on environment
 # common flags for all tests
