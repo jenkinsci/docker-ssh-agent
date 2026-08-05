@@ -96,11 +96,7 @@ def parallelStages = [failFast: false]
                                 if (isUnix()) {
                                     sh 'make build'
                                 } else {
-                                    // Free space before building images
-                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                     powershell '& ./build.ps1 build'
-                                    // Free space remaining after building images
-                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                     archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
                                 }
                             }
@@ -108,11 +104,7 @@ def parallelStages = [failFast: false]
                                 if (isUnix()) {
                                     sh 'make test'
                                 } else {
-                                    // Free space before testing images
-                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                     powershell '& ./build.ps1 test -TestsDebug verbose'
-                                    // Free space remaining after testing images
-                                    powershell 'Invoke-Command -ScriptBlock { ((Get-PSDrive -Name C).Free / 1GB) }'
                                 }
                                 junit 'target/**/junit-results*.xml'
                             }

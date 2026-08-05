@@ -51,7 +51,6 @@ else
 	docker buildx create --use --bootstrap --driver docker-container
 endif
 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-	docker info
 
 build: check-reqs
 	@set -x; $(bake_cli) $(shell make --silent list) --set '*.platform=linux/$(ARCH)'

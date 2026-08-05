@@ -23,6 +23,7 @@
 #  THE SOFTWARE.
 
 ARG WINDOWS_VERSION_TAG
+ARG TOOLS_WINDOWS_VERSION
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}" AS jdk-core
 
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
@@ -125,9 +126,6 @@ VOLUME "${JENKINS_AGENT_WORK}" "C:/Users/${user}/AppData/Local/Temp"
 WORKDIR "${JENKINS_AGENT_WORK}"
 
 COPY setup-sshd.ps1 C:/ProgramData/Jenkins/setup-sshd.ps1
-
-# Debug
-RUN Get-ChildItem env: | Sort-Object Name | Format-Table -AutoSize -Property Key, Value
 
 EXPOSE 22
 
