@@ -115,7 +115,6 @@ target "nanoserver" {
   args = {
     JAVA_HOME             = "C:/openjdk-${jdk}"
     JAVA_ZIP_URL          = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
-    TOOLS_WINDOWS_VERSION = windows_version
     WINDOWS_VERSION_TAG   = windows_version
   }
   tags = [
@@ -140,7 +139,6 @@ target "windowsservercore" {
   args = {
     JAVA_HOME             = "C:/openjdk-${jdk}"
     JAVA_ZIP_URL          = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
-    TOOLS_WINDOWS_VERSION = windows_version
     WINDOWS_VERSION_TAG   = windows_version
   }
   tags = [

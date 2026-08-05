@@ -23,7 +23,6 @@
 #  THE SOFTWARE.
 
 ARG WINDOWS_VERSION_TAG
-ARG TOOLS_WINDOWS_VERSION
 FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}" AS jdk-core
 
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
@@ -137,4 +136,4 @@ LABEL `
     org.opencontainers.image.source="https://github.com/jenkinsci/docker-ssh-agent" `
     org.opencontainers.image.licenses="MIT"
 
-ENTRYPOINT ["powershell.exe", "-NoExit", "-Command", "& C:/ProgramData/Jenkins/setup-sshd.ps1"]
+ENTRYPOINT ["powershell.exe", "-NoExit", "-File", "C:/ProgramData/Jenkins/setup-sshd.ps1"]
