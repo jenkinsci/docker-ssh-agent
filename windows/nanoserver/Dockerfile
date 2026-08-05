@@ -40,13 +40,13 @@ RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Remove-Item -Path $env:jdkTemp -Recurse | Out-Null
 
 ARG PWSH_VERSION=7.3.9
-ARG TMPZIP="$env:TEMP\pwsh.zip"
-ARG PSDIR="C:\pwsh"
-RUN $url = 'https://github.com/PowerShell/PowerShell/releases/download/v{0}/PowerShell-{0}-win-x64.zip' -f $env:PWSH_VERSION ; `
-    Invoke-WebRequest -Uri $url -OutFile $env:TMPZIP ; `
-    New-Item -ItemType Directory -Path $env:PSDIR -Force | Out-Null ; `
-    Expand-Archive -Path $env:TMPZIP -DestinationPath $env:PSDIR ; `
-    Remove-Item -Path $env:TMPZIP
+RUN $tmpZip = Join-Path $env:TEMP "pwsh.zip" ; `
+    $psFolder = 'C:\pwsh' ; `
+    $url = 'https://github.com/PowerShell/PowerShell/releases/download/v{0}/PowerShell-{0}-win-x64.zip' -f $env:PWSH_VERSION ; `
+    Invoke-WebRequest -Uri $url -OutFile $tmpZip ; `
+    New-Item -ItemType Directory -Path $psFolder -Force | Out-Null ; `
+    Expand-Archive -Path $tmpZip -DestinationPath $psFolder ; `
+    Remove-Item -Path $tmpZip
 
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
