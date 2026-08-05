@@ -7,8 +7,25 @@ export DOCKER_CLI_EXPERIMENTAL=enabled
 ## Required to have docker build output always printed on stdout
 export BUILDKIT_PROGRESS=plain
 
+current_os := $(shell uname -s)
 current_arch := $(shell uname -m)
-export ARCH ?= $(shell case $(current_arch) in (x86_64) echo "amd64" ;; (i386) echo "386";; (aarch64|arm64) echo "arm64" ;; (armv6*) echo "arm/v6";; (armv7*) echo "arm/v7";; (s390*|riscv*|ppc64le) echo $(current_arch);; (*) echo "UNKNOWN-CPU";; esac)
+
+export OS ?= $(shell \
+	case "$(current_os)" in \
+		(Linux) echo linux ;; \
+		(Darwin) echo linux ;; \
+		(MINGW*|MSYS*|CYGWIN*) echo windows ;; \
+		(*) echo unknown ;; \
+	esac)
+
+export ARCH ?= $(shell \
+	case $(current_arch) in \
+		(x86_64) echo "amd64" ;; \
+		(aarch64|arm64) echo "arm64" ;; \
+		(armv7*) echo "arm/v7";; \
+		(s390*|riscv*|ppc64le) echo $(current_arch);; \
+		(*) echo "UNKNOWN-CPU";; \
+	esac)
 
 IMAGE_NAME:=jenkins4eval/ssh-agent
 
@@ -71,7 +88,11 @@ multiarchbuild-%: check-reqs show-%
 
 # Show all default targets
 show:
-	@$(bake_base_cli) --progress=quiet linux --print | jq
+	@set -x; $(MAKE) --silent show-$(bake_default_target)
+
+# Show a specific target
+show-%:
+	@set -x; $(bake_base_cli) --progress=quiet --print $* | jq
 
 # List tags of all default targets
 tags:
