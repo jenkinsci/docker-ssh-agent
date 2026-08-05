@@ -141,30 +141,6 @@ function Run-ThruSSH($container, $privateKeyVal, $cmd) {
         $exitCode, $stdout, $stderr = Run-Program 'ssh.exe' "-v -i `"${TMP_PRIV_KEY_FILE}`" -o LogLevel=quiet -o UserKnownHostsFile=NUL -o StrictHostKeyChecking=no -l jenkins localhost -p $SSH_PORT $cmd"
         Remove-Item -Force $TMP_PRIV_KEY_FILE
 
-        if ($exitCode -ne 0) {
-            Get-ContainerDiagnostics($container)
-        }
-
         return $exitCode, $stdout, $stderr
     }
-}
-
-function Get-ContainerDiagnostics($container) {
-    Write-Host "= $container diagnostic:"
-
-    Write-Host "= docker logs (last 50 lines)"
-    # --tail avoids blocking on Get-Content -Wait in setup-sshd.ps1
-    $exitCode, $stdout, $stderr = Run-Program 'docker' "logs --tail 50 $container"
-    Write-Host $stdout
-    Write-Host $stderr
-
-    Write-Host "= sshd service status:"
-    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "exec $container pwsh.exe -NoLogo -C `"Get-Service sshd -ErrorAction SilentlyContinue | Select-Object Name,Status,StartType | ConvertTo-Json`""
-    Write-Host $stdout
-    Write-Host $stderr
-
-    Write-Host "= sshd.log:"
-    $exitCode, $stdout, $stderr = Run-Program 'docker.exe' "exec $container pwsh.exe -NoLogo -C `"Get-Content C:\ProgramData\ssh\logs\sshd.log -ErrorAction SilentlyContinue | Select-Object -Last 30`""
-    Write-Host $stdout
-    Write-Host $stderr
 }
