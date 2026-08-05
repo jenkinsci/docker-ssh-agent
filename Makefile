@@ -36,11 +36,15 @@ TEST_SUITES ?= $(CURDIR)/tests
 ##### Macros
 ## Check the presence of a CLI in the current PATH
 check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' required but not found. Exiting." ; exit 1 ; }
-## Check if a given image exists in the current manifest docker-bake.hcl
-check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the platform 'linux/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
+## Check if a given image or group exists in the current manifest docker-bake.hcl
+check_image = $(MAKE) --silent list listgroup-all | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image or group '$(1)' does not exist in manifest for the current platform '$(OS)/$(ARCH)'. Please check the output of '$(MAKE) list' or '$(MAKE) listgroup-all'. Exiting." ; exit 1 ; }
+# check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the platform 'linux/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
 ## Base "docker buildx base" command to be reused everywhere
 bake_base_cli := docker buildx bake --file docker-bake.hcl --file docker-bake.override.json
+## Command to be used on build (only)
 bake_cli := $(bake_base_cli) --load
+## Default bake target
+bake_default_target := linux
 
 .PHONY: build
 .PHONY: test test-alpine test-debian
@@ -74,9 +78,10 @@ build: check-reqs
 	@$(bake_cli) $(shell make --silent list) --set '*.platform=linux/$(ARCH)'
 
 # Build a specific target with the current OS and architecture
-build-%:
+build-%: check-reqs target show-%
 	@$(call check_image,$*)
-	@$(bake_cli) '$*' --set '*.platform=linux/$(ARCH)'
+	@echo "== building $*"
+	@$(bake_cli) --metadata-file=target/build-result-metadata_$*.json --set '*.platform=$(OS)/$(ARCH)' '$*'
 
 # Build default bake group corresponding to the current OS but independently of the architecture
 multiarchbuild: check-reqs show-$(OS)
@@ -94,13 +99,33 @@ show:
 show-%:
 	@$(bake_base_cli) --progress=quiet --print $* | jq
 
+# Show all targets depending on the architecture
+showarch-%:
+	@$(MAKE) --silent show | jq --arg arch "$(OS)/$*" '.target |= with_entries(select(.value.platforms | index($$arch)))'
+
 # List tags of all default targets
 tags:
-	@make show | jq -r '.target[].tags[]' | LC_ALL=C sort
+	@$(MAKE) --silent tags-$(bake_default_target)
+
+# List tags of a specific target
+tags-%:
+	@$(MAKE) --silent show-$* | jq -r '.target | to_entries[] | .key as $$name | .value.tags[] | "\(.) (\($$name))"' | LC_ALL=C sort -u
 
 # Return the list of targets depending on the current OS and architecture
 list: check-reqs
-	@make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
+	@$(MAKE) --silent listarch-$(ARCH)
+
+# Return the list of targets of a specific "target" (can be a docker bake group)
+list-%: check-reqs
+	@$(MAKE) --silent show-$* | jq -r '.target | keys[]'
+
+# Return the list of targets depending on the current OS and architecture
+listarch-%: check-reqs
+	@$(MAKE) --silent showarch-$* | jq -r '.target | keys[]'
+
+# Return the list of targets of a specific bake group
+listgroup-%: check-reqs
+	@$(MAKE) --silent show-$* | jq -r '.group | keys[]' | grep -v -e $* -e default
 
 # Ensure bats exists in the current folder
 bats:
