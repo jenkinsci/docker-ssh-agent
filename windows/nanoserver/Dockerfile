@@ -39,7 +39,7 @@ RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Move-Item -Path $expandedDir.FullName -Destination $env:JAVA_HOME -Force ; `
     Remove-Item -Path $env:jdkTemp -Recurse | Out-Null
 
-ARG PWSH_VERSION=7.3.9
+ARG PWSH_VERSION=7.5.4
 ENV PSTMP="C:\pwsh"
 RUN $url = 'https://github.com/PowerShell/PowerShell/releases/download/v{0}/PowerShell-{0}-win-x64.zip' -f $env:PWSH_VERSION ; `
     Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\pwsh.zip" ; `
