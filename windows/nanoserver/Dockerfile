@@ -23,8 +23,7 @@
 #  THE SOFTWARE.
 
 ARG WINDOWS_VERSION_TAG
-ARG TOOLS_WINDOWS_VERSION
-FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}" AS jdk-core
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}" AS jdk-pwsh
 
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
@@ -40,7 +39,13 @@ RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
     Move-Item -Path $expandedDir.FullName -Destination $env:JAVA_HOME -Force ; `
     Remove-Item -Path $env:jdkTemp -Recurse | Out-Null
 
-FROM mcr.microsoft.com/powershell:nanoserver-"${TOOLS_WINDOWS_VERSION}" AS pwsh-source
+ARG PWSH_VERSION=7.5.4
+ENV PSTMP="C:\pwsh"
+RUN $url = 'https://github.com/PowerShell/PowerShell/releases/download/v{0}/PowerShell-{0}-win-x64.zip' -f $env:PWSH_VERSION ; `
+    Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\pwsh.zip" ; `
+    New-Item -ItemType Directory -Path $env:PSTMP -Force | Out-Null ; `
+    Expand-Archive -Path "$env:TEMP\pwsh.zip" -DestinationPath $env:PSTMP ; `
+    Remove-Item -Path "$env:TEMP\pwsh.zip"
 
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
@@ -49,15 +54,36 @@ ENV PSHOME="C:\Program Files\PowerShell"
 ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
 
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
-COPY --from=jdk-core /windows/system32/netapi32.dll /windows/system32/netapi32.dll
-COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
-COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
-COPY --from=pwsh-source $PSHOME $PSHOME
+COPY --from=jdk-pwsh /windows/system32/whoami.exe /windows/system32/whoami.exe
+COPY --from=jdk-pwsh $JAVA_HOME $JAVA_HOME
+COPY --from=jdk-pwsh pwsh $PSHOME
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
 
+
+COPY --from=jdk-pwsh /pwsh $PSHOME
+
+SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+USER ContainerAdministrator
+
+# ARG JAVA_HOME
+# ENV PSHOME="C:\Program Files\PowerShell"
+# ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
+
+# # The nanoserver image is nice and small, but we need a couple of things to get SSH working
+# COPY --from=jdk-pwsh /windows/system32/whoami.exe /windows/system32/whoami.exe
+# COPY --from=jdk-pwsh $JAVA_HOME $JAVA_HOME
+# While nanoserver-ltsc2025 includes netapi32.dll, older versions don't
+COPY --from=jdk-pwsh /windows/system32/netapi32.dll C:/netapi32.dll
+RUN if (!(Test-Path 'C:\Windows\System32\netapi32.dll')) { `
+        Move-Item 'C:\netapi32.dll' 'C:\Windows\System32\netapi32.dll' `
+    } else { `
+        Remove-Item 'C:\netapi32.dll' `
+    }
+
 # Backward compatibility with version <= 5.x: create a symlink to the "new" JAVA_HOME
+# hadolint ignore=DL3059
 RUN $javaMajorVersion = $env:JAVA_HOME.Substring($env:JAVA_HOME.Length - 2); `
     New-Item -Path "C:\jdk-${javaMajorVersion}" -ItemType SymbolicLink -Value "${env:JAVA_HOME}"
 
@@ -74,9 +100,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Remove-Item mingit.zip -Force
 
 # Add java & git to PATH
-ENV ProgramFiles="C:\Program Files"
-ENV WindowsPATH="C:\Windows\system32;C:\Windows"
-ENV PATH="${WindowsPATH};${ProgramFiles}\PowerShell;${JAVA_HOME}\bin;C:\mingit\cmd"
+ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};${JAVA_HOME}\bin;C:\mingit\cmd;${PATH}"
 
 # Install git-lfs
 ARG GIT_LFS_VERSION=3.7.1
@@ -110,7 +134,8 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     icacls 'C:\ProgramData\ssh' /remove 'CREATOR OWNER' ; `
     & 'C:/Program Files/OpenSSH-Win64/Install-SSHd.ps1' ; `
     Copy-Item 'C:\Program Files\OpenSSH-Win64\sshd_config_default' 'C:\ProgramData\ssh\sshd_config' ; `
-    $content = Get-Content -Path "C:\ProgramData\ssh\sshd_config" ; `
+    $configPath = 'C:\ProgramData\ssh\sshd_config' ; `
+    $content = Get-Content -Path $configPath ; `
     $content | ForEach-Object { $_ -replace '#PermitRootLogin.*','PermitRootLogin no' `
                         -replace '#PasswordAuthentication.*','PasswordAuthentication no' `
                         -replace '#PermitEmptyPasswords.*','PermitEmptyPasswords no' `
@@ -120,13 +145,16 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
                         -replace 'Match Group administrators','' `
                         -replace '(\s*)AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys','' `
                 } | `
-    Set-Content -Path "C:\ProgramData\ssh\sshd_config" ; `
-    Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value 'ChallengeResponseAuthentication no' ; `
-    Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value 'HostKeyAgent \\.\pipe\openssh-ssh-agent' ; `
-    Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('Match User {0}' -f $env:JENKINS_AGENT_USER) ; `
-    Add-Content -Path "C:\ProgramData\ssh\sshd_config" -Value ('       AuthorizedKeysFile C:/Users/{0}/.ssh/authorized_keys' -f $env:JENKINS_AGENT_USER) ; `
+    Set-Content -Path $configPath ; `
+    Add-Content -Path $configPath -Value 'ChallengeResponseAuthentication no' ; `
+    Add-Content -Path $configPath -Value 'HostKeyAgent \\.\pipe\openssh-ssh-agent' ; `
+    Add-Content -Path $configPath -Value ('Match User {0}' -f $env:JENKINS_AGENT_USER) ; `
+    Add-Content -Path $configPath -Value ('       AuthorizedKeysFile C:/Users/{0}/.ssh/authorized_keys' -f $env:JENKINS_AGENT_USER) ; `
+    # Force PowerShell 7 for all SSH sessions
+    Add-Content -Path $configPath -Value '' ; `
+    Add-Content -Path $configPath -Value '# Force PowerShell 7 as default shell' ; `
+    Add-Content -Path $configPath -Value ('ForceCommand "{0}\pwsh.exe" -NoLogo -NoProfile' -f $env:PSHOME) ; `
     New-Item -Path HKLM:\SOFTWARE -Name OpenSSH -Force | Out-Null ; `
-    New-ItemProperty -Path HKLM:\SOFTWARE\OpenSSH -Name DefaultShell -Value 'C:\Program Files\Powershell\pwsh.exe' -PropertyType string -Force | Out-Null ; `
     Remove-Item -Path "C:\ProgramData\ssh\ssh_host*_key*"
 
 COPY CreateProfile.psm1 C:/
@@ -136,10 +164,19 @@ RUN Import-Module -Force C:/CreateProfile.psm1 ; `
     New-UserWithProfile -UserName $env:JENKINS_AGENT_USER -Description 'Jenkins Agent User' ; `
     Remove-Item -Force C:/CreateProfile.psm1
 
+RUN pwsh -Command `
+    "Write-Host 'PSHOME:' $PSHOME; `
+     Write-Host 'pwsh:' (Get-Command pwsh).Source; `
+     Get-Service sshd"
+
 VOLUME "${JENKINS_AGENT_WORK}" "C:/Users/${user}/AppData/Local/Temp"
 WORKDIR "${JENKINS_AGENT_WORK}"
 
 COPY setup-sshd.ps1 C:/ProgramData/Jenkins/setup-sshd.ps1
+
+# Debug
+RUN dir "${PSHOME}" ; `
+    Test-Path "${PSHOME}\pwsh.exe"
 
 EXPOSE 22
 
@@ -151,4 +188,4 @@ LABEL `
     org.opencontainers.image.source="https://github.com/jenkinsci/docker-ssh-agent" `
     org.opencontainers.image.licenses="MIT"
 
-ENTRYPOINT ["pwsh.exe", "-NoExit", "-Command", "& C:/ProgramData/Jenkins/setup-sshd.ps1"]
+ENTRYPOINT ["pwsh.exe", "-NoExit", "-File", "C:/ProgramData/Jenkins/setup-sshd.ps1"]

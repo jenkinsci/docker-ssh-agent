@@ -1,6 +1,7 @@
 ## Variables
 variable "jdks_to_build" {
-  default = [21, 25]
+  # default = [21, 25]
+  default = [25]
 }
 
 variable "default_jdk" {
@@ -44,6 +45,7 @@ variable "DEBIAN_RELEASE" {
 }
 
 # Set this value to a specific Windows version to override Windows versions to build returned by windowsversions function
+# Accept multiple coma-separated versions, ex: ltsc2022,ltsc2025
 variable "WINDOWS_VERSION_OVERRIDE" {
   default = ""
 }
@@ -211,7 +213,7 @@ function "windowsversions" {
   params = [flavor]
   result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
     ? [WINDOWS_VERSION_OVERRIDE]
-  : ["ltsc2019", "ltsc2022"])
+  : ["ltsc2019", "ltsc2022", "ltsc2025"])
 }
 
 # Return the Windows version to use as base image for the Windows version passed as parameter
