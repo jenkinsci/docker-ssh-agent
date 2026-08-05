@@ -161,6 +161,10 @@ WORKDIR "${JENKINS_AGENT_WORK}"
 
 COPY setup-sshd.ps1 C:/ProgramData/Jenkins/setup-sshd.ps1
 
+# Debug
+RUN dir "${PSHOME}" ; `
+    Test-Path "${PSHOME}\pwsh.exe"
+
 EXPOSE 22
 
 LABEL `
