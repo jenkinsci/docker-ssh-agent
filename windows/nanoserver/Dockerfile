@@ -49,7 +49,7 @@ RUN $url = 'https://github.com/PowerShell/PowerShell/releases/download/v{0}/Powe
 
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
-COPY --from=jdk-pwsh pwsh $PSHOME
+COPY --from=jdk-pwsh /pwsh $PSHOME
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
