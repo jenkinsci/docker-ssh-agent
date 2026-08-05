@@ -52,32 +52,45 @@ else
 endif
 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
+# Build all targets with the current OS and architecture
 build: check-reqs
 	@set -x; $(bake_cli) $(shell make --silent list) --set '*.platform=linux/$(ARCH)'
 
+# Build a specific target with the current OS and architecture
 build-%:
 	@$(call check_image,$*)
 	@set -x; $(bake_cli) '$*' --set '*.platform=linux/$(ARCH)'
 
-every-build: check-reqs
-	@set -x; $(bake_base_cli) linux
+# Build default bake group corresponding to the current OS but independently of the architecture
+multiarchbuild: check-reqs show-$(OS)
+	@set -x; $(bake_base_cli) $(OS)
 
+# Build a specific bake group or target independently of the architecture or the OS
+multiarchbuild-%: check-reqs show-%
+	@set -x; $(bake_base_cli) $*
+
+# Show all default targets
 show:
 	@$(bake_base_cli) --progress=quiet linux --print | jq
 
+# List tags of all default targets
 tags:
 	@make show | jq -r '.target[].tags[]' | LC_ALL=C sort
 
+# Return the list of targets depending on the current OS and architecture
 list: check-reqs
 	@set -x; make --silent show | jq -r '.target | path(.. | select(.platforms[] | contains("linux/$(ARCH)"))?) | add'
 
+# Ensure bats exists in the current folder
 bats:
 	git clone --branch v1.14.0 https://github.com/bats-core/bats-core bats
 
+# Ensure all bats submodules are up to date
 prepare-test: bats check-reqs
 	git submodule update --init --recursive
 	mkdir -p target
 
+# Publish all linux targets
 publish:
 	@set -x; $(bake_base_cli) linux --push
 
