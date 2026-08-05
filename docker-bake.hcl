@@ -117,6 +117,7 @@ target "nanoserver" {
   args = {
     JAVA_HOME             = "C:/openjdk-${jdk}"
     JAVA_ZIP_URL          = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
+    TOOLS_WINDOWS_VERSION = "${toolsversion(windows_version)}"
     WINDOWS_VERSION_TAG   = windows_version
   }
   tags = [
@@ -141,6 +142,7 @@ target "windowsservercore" {
   args = {
     JAVA_HOME             = "C:/openjdk-${jdk}"
     JAVA_ZIP_URL          = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
+    TOOLS_WINDOWS_VERSION = "${toolsversion(windows_version)}"
     WINDOWS_VERSION_TAG   = windows_version
   }
   tags = [
@@ -212,4 +214,13 @@ function "windowsversions" {
   result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
     ? [WINDOWS_VERSION_OVERRIDE]
   : ["ltsc2019", "ltsc2022", "ltsc2025"])
+}
+
+# Return the Windows version to use as base image for the Windows version passed as parameter
+# There is no mcr.microsoft.com/powershell ltsc2019 base image, using a "1809" instead
+function "toolsversion" {
+  params = [version]
+  result = (equal("ltsc2019", version)
+    ? "1809"
+  : version)
 }

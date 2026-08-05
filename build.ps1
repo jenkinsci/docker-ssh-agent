@@ -95,7 +95,7 @@ function Test-Image {
     $env:IMAGE_NAME = $ImageName
 
     $targetPath = '.\target\{0}' -f $imageTag
-    if (Test-Path $targetPath) {
+    if(Test-Path $targetPath) {
         Remove-Item -Recurse -Force $targetPath
     }
     New-Item -Path $targetPath -Type Directory | Out-Null
@@ -143,7 +143,7 @@ function Initialize-DockerComposeFile {
 
     Write-Host "= PREPARE: Docker compose file generation command`n$generateDockerComposeFileCmd"
 
-    Invoke-Expression $generateDockerComposeFileCmd | Out-Null
+    Invoke-Expression $generateDockerComposeFileCmd
 
     # Remove override
     Remove-Item env:\WINDOWS_VERSION_OVERRIDE
