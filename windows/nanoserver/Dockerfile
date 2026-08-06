@@ -23,22 +23,30 @@
 #  THE SOFTWARE.
 
 ARG WINDOWS_VERSION_TAG
-ARG TOOLS_WINDOWS_VERSION
-FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}" AS jdk-core
+FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}" AS jdk-pwsh
 
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG JAVA_VERSION
-RUN New-Item -ItemType Directory -Path C:\temp | Out-Null ; `
-    $javaMajorVersion = $env:JAVA_VERSION.substring(0,2) ; `
-    $msiUrl = 'https://api.adoptium.net/v3/installer/version/jdk-{0}/windows/x64/jdk/hotspot/normal/eclipse?project=jdk' -f $env:JAVA_VERSION ; `
-    Invoke-WebRequest $msiUrl -OutFile 'C:\temp\jdk.msi' ; `
-    $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', 'C:\temp\jdk.msi', '/L*V', 'C:\temp\OpenJDK.log', '/quiet', 'ADDLOCAL=FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome',  "INSTALLDIR=C:\openjdk-${javaMajorVersion}" -Wait -Passthru ; `
-    $proc.WaitForExit() ; `
-    Remove-Item -Path C:\temp -Recurse | Out-Null
+ARG JAVA_HOME
+ARG JAVA_ZIP_URL
+ARG jdkTemp="C:\jdktemp"
+ARG localArchive="${jdkTemp}\jdk.zip"
+RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
+    Invoke-WebRequest $env:JAVA_ZIP_URL -OutFile $env:localArchive ; `
+    Expand-Archive -Path $env:localArchive -DestinationPath $env:jdkTemp ; `
+    $expandedDir = Get-ChildItem -Path $env:jdkTemp -Directory | Where-Object { $_.Name -like 'jdk*' } ; `
+    Move-Item -Path $expandedDir.FullName -Destination $env:JAVA_HOME -Force ; `
+    Remove-Item -Path $env:jdkTemp -Recurse | Out-Null
 
-FROM mcr.microsoft.com/powershell:nanoserver-"${TOOLS_WINDOWS_VERSION}" AS pwsh-source
+ARG PWSH_VERSION=7.6.4
+RUN $zip = Join-Path $env:TEMP "pwsh.zip" ; `
+    $dest = 'C:\pwsh' ; `
+    $url = 'https://github.com/PowerShell/PowerShell/releases/download/v{0}/PowerShell-{0}-win-x64.zip' -f $env:PWSH_VERSION ; `
+    Invoke-WebRequest -Uri $url -OutFile $zip ; `
+    New-Item -ItemType Directory -Path $dest -Force | Out-Null ; `
+    Expand-Archive -Path $zip -DestinationPath $dest ; `
+    Remove-Item -Path $zip
 
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
@@ -47,10 +55,10 @@ ENV PSHOME="C:\Program Files\PowerShell"
 ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
 
 # The nanoserver image is nice and small, but we need a couple of things to get SSH working
-COPY --from=jdk-core /windows/system32/netapi32.dll /windows/system32/netapi32.dll
-COPY --from=jdk-core /windows/system32/whoami.exe /windows/system32/whoami.exe
-COPY --from=jdk-core $JAVA_HOME $JAVA_HOME
-COPY --from=pwsh-source $PSHOME $PSHOME
+COPY --from=jdk-pwsh /windows/system32/netapi32.dll /windows/system32/netapi32.dll
+COPY --from=jdk-pwsh /windows/system32/whoami.exe /windows/system32/whoami.exe
+COPY --from=jdk-pwsh $JAVA_HOME $JAVA_HOME
+COPY --from=jdk-pwsh /pwsh $PSHOME
 
 SHELL ["pwsh.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 USER ContainerAdministrator
@@ -61,7 +69,7 @@ RUN $javaMajorVersion = $env:JAVA_HOME.Substring($env:JAVA_HOME.Length - 2); `
 
 # Install git
 ARG GIT_VERSION=2.55.0
-ARG GIT_PATCH_VERSION=2
+ARG GIT_PATCH_VERSION=3
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
     # The patch "windows.1" always have a different URL than the subsequent patch (ZIP filename is different)
     if($env:GIT_PATCH_VERSION -eq 1) { $url = $('https://github.com/git-for-windows/git/releases/download/v{0}.windows.{1}/MinGit-{0}-64-bit.zip' -f $env:GIT_VERSION, $env:GIT_PATCH_VERSION); } `
@@ -149,4 +157,4 @@ LABEL `
     org.opencontainers.image.source="https://github.com/jenkinsci/docker-ssh-agent" `
     org.opencontainers.image.licenses="MIT"
 
-ENTRYPOINT ["pwsh.exe", "-NoExit", "-Command", "& C:/ProgramData/Jenkins/setup-sshd.ps1"]
+ENTRYPOINT ["pwsh.exe", "-NoExit", "-File", "C:/ProgramData/Jenkins/setup-sshd.ps1"]

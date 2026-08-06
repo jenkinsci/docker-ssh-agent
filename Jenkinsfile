@@ -26,8 +26,8 @@ def agentSelector(String imageType, retryCounter) {
 
         // Linux
         default:
-            // Need Docker and a LOT of memory for faster builds (due to multi archs)
-            platform = 'docker-highmem'
+            // Need Docker in a VM.
+            platform = 'docker && linux && amd64'
             break
     }
 
@@ -42,7 +42,10 @@ def agentSelector(String imageType, retryCounter) {
 // Specify parallel stages
 def parallelStages = [failFast: false]
 [
-    'linux',
+    'alpine_21',
+    'alpine_25',
+    'debian_21',
+    'debian_25',
     'nanoserver-ltsc2019',
     'nanoserver-ltsc2022',
     'windowsservercore-ltsc2019',
@@ -50,8 +53,8 @@ def parallelStages = [failFast: false]
 ].each { imageType ->
     parallelStages[imageType] = {
         withEnv([
-          "IMAGE_TYPE=${imageType}", 
-          "REGISTRY_ORG=${infra.isTrusted() ? 'jenkins' : 'jenkins4eval'}",
+            "IMAGE_TYPE=${imageType}",
+            "REGISTRY_ORG=${infra.isTrusted() ? 'jenkins' : 'jenkins4eval'}",
         ]) {
             int retryCounter = 0
             retry(count: 2, conditions: [agent(), nonresumable()]) {
@@ -61,8 +64,8 @@ def parallelStages = [failFast: false]
                 node(resolvedAgentLabel) {
                     timeout(time: 60, unit: 'MINUTES') {
                         checkout scm
-                        if (imageType == "linux") {
-                            stage('Prepare Docker') {
+                        if (isUnix()) {
+                            stage("Prepare Docker on ${resolvedAgentLabel}") {
                                 sh 'make docker-init'
                             }
                         }
@@ -101,13 +104,12 @@ def parallelStages = [failFast: false]
                                 } else {
                                     powershell '& ./build.ps1 test'
                                 }
-                                junit(allowEmptyResults: true, keepLongStdio: true, testResults: 'target/**/junit-results.xml')
+                                junit 'target/**/junit-results*.xml'
                             }
                             // If the tests are passing for Linux AMD64, then we can build all the CPU architectures
                             if (isUnix()) {
                                 stage('Multi-Arch Build') {
-
-                                    sh 'make every-build'
+                                    sh 'make "multiarchbuild-${IMAGE_TYPE}"'
                                 }
                             }
                         }

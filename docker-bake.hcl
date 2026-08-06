@@ -1,6 +1,6 @@
 ## Variables
 variable "jdks_to_build" {
-  default = [17, 21, 25]
+  default = [21, 25]
 }
 
 variable "default_jdk" {
@@ -31,10 +31,6 @@ variable "ALPINE_SHORT_TAG" {
   default = regex_replace(ALPINE_FULL_TAG, "\\.\\d+$", "")
 }
 
-variable "JAVA17_VERSION" {
-  default = "17.0.19_10"
-}
-
 variable "JAVA21_VERSION" {
   default = "21.0.11_10"
 }
@@ -44,7 +40,7 @@ variable "JAVA25_VERSION" {
 }
 
 variable "DEBIAN_RELEASE" {
-  default = "trixie-20260623"
+  default = "trixie-20260803"
 }
 
 # Set this value to a specific Windows version to override Windows versions to build returned by windowsversions function
@@ -77,7 +73,7 @@ target "alpine" {
     "${REGISTRY}/${JENKINS_REPO}:alpine${ALPINE_SHORT_TAG}-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-alpine${ALPINE_SHORT_TAG}-jdk${jdk}",
   ]
-  platforms = alpine_platforms(jdk)
+  platforms = ["linux/amd64", "linux/arm64"]
 }
 
 target "debian" {
@@ -105,7 +101,7 @@ target "debian" {
     "${REGISTRY}/${JENKINS_REPO}:latest-debian-jdk${jdk}",
     "${REGISTRY}/${JENKINS_REPO}:latest-jdk${jdk}",
   ]
-  platforms = debian_platforms(jdk)
+  platforms = ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/riscv64"]
 }
 
 target "nanoserver" {
@@ -117,10 +113,9 @@ target "nanoserver" {
   dockerfile = "windows/nanoserver/Dockerfile"
   context    = "."
   args = {
-    JAVA_HOME             = "C:/openjdk-${jdk}"
-    JAVA_VERSION          = "${replace(javaversion(jdk), "_", "+")}"
-    TOOLS_WINDOWS_VERSION = "${toolsversion(windows_version)}"
-    WINDOWS_VERSION_TAG   = windows_version
+    JAVA_HOME           = "C:/openjdk-${jdk}"
+    JAVA_ZIP_URL        = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
+    WINDOWS_VERSION_TAG = windows_version
   }
   tags = [
     # If there is a tag, add versioned tag suffixed by the jdk
@@ -142,10 +137,9 @@ target "windowsservercore" {
   dockerfile = "windows/windowsservercore/Dockerfile"
   context    = "."
   args = {
-    JAVA_HOME             = "C:/openjdk-${jdk}"
-    JAVA_VERSION          = "${replace(javaversion(jdk), "_", "+")}"
-    TOOLS_WINDOWS_VERSION = "${toolsversion(windows_version)}"
-    WINDOWS_VERSION_TAG   = windows_version
+    JAVA_HOME           = "C:/openjdk-${jdk}"
+    JAVA_ZIP_URL        = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
+    WINDOWS_VERSION_TAG = windows_version
   }
   tags = [
     # If there is a tag, add versioned tag suffixed by the jdk
@@ -202,30 +196,12 @@ function "is_default_jdk" {
 # Return the complete Java version corresponding to the jdk passed as parameter
 function "javaversion" {
   params = [jdk]
-  result = (equal(17, jdk)
-    ? "${JAVA17_VERSION}"
-    : equal(21, jdk)
+  result = (equal(21, jdk)
     ? "${JAVA21_VERSION}"
   : "${JAVA25_VERSION}")
 }
 
 ## Specific functions
-# Return an array of Alpine platforms to use depending on the jdk passed as parameter
-function "alpine_platforms" {
-  params = [jdk]
-  result = (equal(17, jdk)
-    ? ["linux/amd64"]
-  : ["linux/amd64", "linux/arm64"])
-}
-
-# Return an array of Debian platforms to use depending on the jdk passed as parameter
-function "debian_platforms" {
-  params = [jdk]
-  result = (equal(17, jdk)
-    ? ["linux/amd64", "linux/arm64", "linux/ppc64le"]
-  : ["linux/amd64", "linux/arm64", "linux/ppc64le", "linux/s390x", "linux/riscv64"])
-}
-
 # Return array of Windows version(s) to build
 # Can be overriden by setting WINDOWS_VERSION_OVERRIDE to a specific Windows version
 # Ex: WINDOWS_VERSION_OVERRIDE=ltsc2025 docker buildx bake windows
@@ -234,13 +210,4 @@ function "windowsversions" {
   result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
     ? [WINDOWS_VERSION_OVERRIDE]
   : ["ltsc2019", "ltsc2022"])
-}
-
-# Return the Windows version to use as base image for the Windows version passed as parameter
-# There is no mcr.microsoft.com/powershell ltsc2019 base image, using a "1809" instead
-function "toolsversion" {
-  params = [version]
-  result = (equal("ltsc2019", version)
-    ? "1809"
-  : version)
 }

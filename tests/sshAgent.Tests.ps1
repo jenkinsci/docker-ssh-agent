@@ -1,9 +1,9 @@
 Import-Module -DisableNameChecking -Force $PSScriptRoot/test_helpers.psm1
 
-$global:IMAGE_NAME = Get-EnvOrDefault 'IMAGE_NAME' '' # Ex: jenkins4eval/ssh-agent:nanoserver-ltsc2019-jdk17
-$global:JAVA_VERSION = Get-EnvOrDefault 'JAVA_VERSION' ''
+$global:IMAGE_NAME = Get-EnvOrDefault 'IMAGE_NAME' '' # Ex: jenkins4eval/ssh-agent:nanoserver-ltsc2019-jdk25
+$global:JAVA_ZIP_URL = 'https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.3%2B9/OpenJDK25U-jdk_x64_windows_hotspot_25.0.3_9.zip'
 
-Write-Host "= TESTS: Preparing $global:IMAGE_NAME with Java $global:JAVA_VERSION"
+Write-Host "= TESTS: Preparing $global:IMAGE_NAME"
 
 $imageItems = $global:IMAGE_NAME.Split(':')
 $global:IMAGE_TAG = $imageItems[1]
@@ -13,11 +13,6 @@ $items = $global:IMAGE_TAG.Split('-')
 $global:JAVAMAJORVERSION = $items[2].Remove(0,3)
 $global:WINDOWSFLAVOR = $items[0]
 $global:WINDOWSVERSIONTAG = $items[1]
-$global:TOOLSWINDOWSVERSION = $items[1]
-# There are no eclipse-temurin:*-ltsc2019 or mcr.microsoft.com/powershell:*-ltsc2019 docker images unfortunately, only "1809" ones
-if ($items[1] -eq 'ltsc2019') {
-    $global:TOOLSWINDOWSVERSION = '1809'
-}
 
 # TODO: make this name unique for concurency
 $global:CONTAINERNAME = 'pester-jenkins-ssh-agent-{0}' -f $global:IMAGE_TAG
@@ -59,6 +54,7 @@ TUwLP4n7pK4J2sCIs6fRD5kEYms4BnddXeRuI2fGZHGH70Ci/Q==
 "@
 
 $global:GITLFSVERSION = '3.7.1'
+$global:PWSHVERSION = '7.6.4'
 
 Cleanup($global:CONTAINERNAME)
 
@@ -112,14 +108,14 @@ Describe "[$global:IMAGE_TAG] checking image metadata" {
     }
 }
 
-Describe "[$global:IMAGE_TAG] image has correct version of java and git-lfs installed and in the PATH" {
+Describe "[$global:IMAGE_TAG] image has expected tools versions installed and in the PATH" {
     BeforeAll {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=`"$global:CONTAINERNAME`" --publish-all `"$global:IMAGE_NAME`" `"$global:PUBLIC_SSH_KEY`""
         $exitCode | Should-Be 0
         Is-ContainerRunning $global:CONTAINERNAME | Should-BeTrue
     }
 
-    It 'has java installed and in the path' {
+    It 'has expected java installed and in the path' {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"if(`$null -eq (Get-Command java.exe -ErrorAction SilentlyContinue)) { exit -1 } else { exit 0 }`""
         $exitCode | Should-Be 0
 
@@ -130,13 +126,21 @@ Describe "[$global:IMAGE_TAG] image has correct version of java and git-lfs inst
         $m.Groups['major'].ToString() | Should-Be "$global:JAVAMAJORVERSION"
     }
 
-    It 'has git-lfs (and thus git) installed and in the path' {
+    It 'has expected git-lfs (and thus git) installed and in the path' {
         $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`& git lfs env`""
         $exitCode | Should-Be 0
         $r = [regex] "^git-lfs/(?<version>\d+\.\d+\.\d+)"
         $m = $r.Match($stdout)
         $m | Should-NotBeNull
         $m.Groups['version'].ToString() | Should-Be "$global:GITLFSVERSION"
+    }
+
+    if ($global:WINDOWSFLAVOR -eq 'nanoserver') {
+        It 'has expected pwsh installed and in the path' {
+            $exitCode, $stdout, $stderr = Run-Program 'docker' "exec $global:CONTAINERNAME $global:CONTAINERSHELL -C `"`$PSVersionTable.PSVersion.ToString()`""
+            $exitCode | Should-Be 0
+            $stdout.Trim() | Should-MatchString "^$([regex]::Escape($global:PWSHVERSION))"
+        }
     }
 
     AfterAll {
@@ -151,7 +155,7 @@ Describe "[$global:IMAGE_TAG] create agent container with pubkey as argument" {
         Is-ContainerRunning $global:CONTAINERNAME | Should-BeTrue
     }
 
-    It 'runs commands via ssh' {
+    It 'runs commands via ssh, container with pubkey as argument' {
         $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should-Be 0
         $stdout | Should-MatchString 'f00'
@@ -169,7 +173,7 @@ Describe "[$global:IMAGE_TAG] create agent container with pubkey as envvar" {
         Is-ContainerRunning $global:CONTAINERNAME | Should-BeTrue
     }
 
-    It 'runs commands via ssh' {
+    It 'runs commands via ssh, container with pubkey as envvar' {
         $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should-Be 0
         $stdout | Should-MatchString 'f00'
@@ -190,7 +194,7 @@ Describe "[$global:IMAGE_TAG] create agent container like docker-plugin with '$g
         Is-ContainerRunning $global:CONTAINERNAME | Should-BeTrue
     }
 
-    It 'runs commands via ssh' {
+    It 'runs commands via ssh, container like docker-plugin' {
         $exitCode, $stdout, $stderr = Run-ThruSSH $global:CONTAINERNAME "$global:PRIVATE_SSH_KEY" "$global:CONTAINERSHELL -NoLogo -C `"Write-Host 'f00'`""
         $exitCode | Should-Be 0
         $stdout | Should-MatchString 'f00'
@@ -203,7 +207,7 @@ Describe "[$global:IMAGE_TAG] create agent container like docker-plugin with '$g
 
 Describe "[$global:IMAGE_TAG] image can be built" {
     It 'builds image' {
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"TOOLS_WINDOWS_VERSION=${global:TOOLSWINDOWSVERSION}`" --build-arg `"JAVA_VERSION=${global:JAVA_VERSION}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --tag=${global:IMAGE_TAG} --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"JAVA_ZIP_URL=${global:JAVA_ZIP_URL}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --tag=${global:IMAGE_TAG} --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
         $exitCode | Should-Be 0
     }
 }
@@ -218,7 +222,7 @@ Describe "[$global:IMAGE_TAG] image can be built with custom build args" {
         $TEST_JAW = 'C:/hamster'
         $CUSTOM_IMAGE_NAME = "custom-${IMAGE_NAME}"
 
-        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"TOOLS_WINDOWS_VERSION=${global:TOOLSWINDOWSVERSION}`" --build-arg `"JAVA_VERSION=${global:JAVA_VERSION}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --build-arg `"user=$TEST_USER`" --build-arg `"JENKINS_AGENT_WORK=$TEST_JAW`" --tag=$CUSTOM_IMAGE_NAME --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
+        $exitCode, $stdout, $stderr = Run-Program 'docker' "build --build-arg `"WINDOWS_VERSION_TAG=${global:WINDOWSVERSIONTAG}`" --build-arg `"JAVA_ZIP_URL=${global:JAVA_ZIP_URL}`" --build-arg `"JAVA_HOME=C:\openjdk-${global:JAVAMAJORVERSION}`" --build-arg `"user=$TEST_USER`" --build-arg `"JENKINS_AGENT_WORK=$TEST_JAW`" --tag=$CUSTOM_IMAGE_NAME --file ./windows/${global:WINDOWSFLAVOR}/Dockerfile ."
         $exitCode | Should-Be 0
 
         $exitCode, $stdout, $stderr = Run-Program 'docker' "run --detach --tty --name=$global:CONTAINERNAME --publish-all $CUSTOM_IMAGE_NAME $global:CONTAINERSHELL"
