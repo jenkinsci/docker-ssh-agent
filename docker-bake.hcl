@@ -31,14 +31,6 @@ variable "ALPINE_SHORT_TAG" {
   default = regex_replace(ALPINE_FULL_TAG, "\\.\\d+$", "")
 }
 
-variable "JAVA21_VERSION" {
-  default = "21.0.11_10"
-}
-
-variable "JAVA25_VERSION" {
-  default = "25.0.3_9"
-}
-
 variable "DEBIAN_RELEASE" {
   default = "trixie-20260803"
 }
@@ -58,7 +50,7 @@ target "alpine" {
   context    = "."
   args = {
     ALPINE_TAG   = ALPINE_FULL_TAG
-    JAVA_VERSION = "${javaversion(jdk)}"
+    JAVA_RELEASE = jdk
   }
   tags = [
     # If there is a tag, add versioned tags suffixed by the jdk
@@ -85,7 +77,7 @@ target "debian" {
   context    = "."
   args = {
     DEBIAN_RELEASE = DEBIAN_RELEASE
-    JAVA_VERSION   = "${javaversion(jdk)}"
+    JAVA_RELEASE   = jdk
   }
   tags = [
     # If there is a tag, add versioned tag suffixed by the jdk
@@ -113,8 +105,7 @@ target "nanoserver" {
   dockerfile = "windows/nanoserver/Dockerfile"
   context    = "."
   args = {
-    JAVA_HOME           = "C:/openjdk-${jdk}"
-    JAVA_ZIP_URL        = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
+    JAVA_RELEASE        = jdk
     WINDOWS_VERSION_TAG = windows_version
   }
   tags = [
@@ -137,8 +128,7 @@ target "windowsservercore" {
   dockerfile = "windows/windowsservercore/Dockerfile"
   context    = "."
   args = {
-    JAVA_HOME           = "C:/openjdk-${jdk}"
-    JAVA_ZIP_URL        = lookup(jdk_installer_urls["windows"]["amd64"], jdk, "Installer URL not found")
+    JAVA_RELEASE        = jdk
     WINDOWS_VERSION_TAG = windows_version
   }
   tags = [
@@ -191,14 +181,6 @@ group "linux-ppc64le" {
 function "is_default_jdk" {
   params = [jdk]
   result = equal(default_jdk, jdk) ? "true" : "false"
-}
-
-# Return the complete Java version corresponding to the jdk passed as parameter
-function "javaversion" {
-  params = [jdk]
-  result = (equal(21, jdk)
-    ? "${JAVA21_VERSION}"
-  : "${JAVA25_VERSION}")
 }
 
 ## Specific functions
