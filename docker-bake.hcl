@@ -1,6 +1,7 @@
 ## Variables
 variable "jdks_to_build" {
-  default = [21, 25]
+  # default = [21, 25]
+  default = [21]
 }
 
 variable "default_jdk" {
@@ -209,5 +210,5 @@ function "windowsversions" {
   params = [flavor]
   result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
     ? [WINDOWS_VERSION_OVERRIDE]
-  : ["ltsc2019", "ltsc2022"])
+  : ["ltsc2019", "ltsc2022", "ltsc2025"])
 }
