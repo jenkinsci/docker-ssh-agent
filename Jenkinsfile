@@ -102,7 +102,7 @@ def parallelStages = [failFast: false]
                             // If the tests are passing for Linux AMD64, then we can build all the CPU architectures
                             if (isUnix()) {
                                 stage('Multi-Arch Build') {
-                                    sh 'make every-build'
+                                    sh 'make "multiarchbuild-${IMAGE_TYPE}"'
                                 }
                             }
                         }
