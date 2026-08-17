@@ -163,12 +163,19 @@ test-%: prepare-test
 ifeq ($(CI),true)
 # Execute the test harness and write result to a TAP file
 	bash -o pipefail -c '\
-		IMAGE=$* bats/bin/bats $(bats_flags) --formatter junit --gather-test-outputs-in target/bats-outputs \
+		IMAGE=$* bats/bin/bats $(bats_flags) \
+			--formatter junit \
+			--gather-test-outputs-in target/bats-outputs \
 			| tee target/junit-results-$*.xml; \
 		status=$$?; \
 		if [ $$status -ne 0 ]; then \
-			echo "Bats test failure, collected outputs:"; \
-			find target/bats-outputs -type f -exec sh -c '\''echo "===== $$1 ====="; cat "$$1"'\'' _ {} \; \
+			echo "Bats test failure(s), collected outputs:"; \
+			for file in target/bats-outputs/*; do \
+				if [ -f "$$file" ]; then \
+					echo "===== $$file ====="; \
+					cat "$$file"; \
+				fi; \
+			done; \
 		fi; \
 		exit $$status'
 else
