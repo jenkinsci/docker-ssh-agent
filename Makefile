@@ -136,7 +136,7 @@ bats:
 # Ensure all bats submodules are up to date
 prepare-test: bats check-reqs
 	git submodule update --init --recursive
-	mkdir -p target
+	mkdir -p target/bats-outputs
 
 # Publish all linux targets
 publish:
@@ -162,7 +162,14 @@ test-%: prepare-test
 	@make --silent build-$*
 ifeq ($(CI), true)
 # Execute the test harness and write result to a TAP file
-	IMAGE=$* bats/bin/bats $(bats_flags) --formatter junit | tee target/junit-results-$*.xml
+	bash -o pipefail -c 'IMAGE=$* bats/bin/bats $(bats_flags) --formatter junit --gather-test-outputs-in target/bats-outputs | tee target/junit-results-$*.xml'
+	status=$$?; \
+	if [ $$status -ne 0 ]; then \
+		echo 'Bats test failure(), collected outputs:'; \
+		find target/bats-outputs -type f -print; \
+		find target/bats-outputs -type f -exec sh -c 'echo "===== $$1 ====="; cat "$$1"' _ {} \; \
+	fi; \
+	exit $$status
 else
 # Execute the test harness
 	IMAGE=$* bats/bin/bats $(bats_flags)
