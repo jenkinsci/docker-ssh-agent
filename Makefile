@@ -160,16 +160,17 @@ test-%: prepare-test
 	@$(call check_image,$*)
 # Ensure that the image is built
 	@make --silent build-$*
-ifeq ($(CI), true)
+ifeq ($(CI),true)
 # Execute the test harness and write result to a TAP file
-	bash -o pipefail -c 'IMAGE=$* bats/bin/bats $(bats_flags) --formatter junit --gather-test-outputs-in target/bats-outputs | tee target/junit-results-$*.xml'
-	status=$$?; \
-	if [ $$status -ne 0 ]; then \
-		echo 'Bats test failure(), collected outputs:'; \
-		find target/bats-outputs -type f -print; \
-		find target/bats-outputs -type f -exec sh -c 'echo "===== $$1 ====="; cat "$$1"' _ {} \; \
-	fi; \
-	exit $$status
+	bash -o pipefail -c '\
+		IMAGE=$* bats/bin/bats $(bats_flags) --formatter junit --gather-test-outputs-in target/bats-outputs \
+			| tee target/junit-results-$*.xml; \
+		status=$$?; \
+		if [ $$status -ne 0 ]; then \
+			echo "Bats test failure, collected outputs:"; \
+			find target/bats-outputs -type f -exec sh -c '\''echo "===== $$1 ====="; cat "$$1"'\'' _ {} \; \
+		fi; \
+		exit $$status'
 else
 # Execute the test harness
 	IMAGE=$* bats/bin/bats $(bats_flags)
