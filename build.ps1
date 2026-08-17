@@ -114,7 +114,7 @@ function Test-Image {
 }
 
 function Initialize-DockerComposeFile {
-    $baseDockerBakeCmd = 'docker buildx bake --progress=plain --file=docker-bake.hcl --file docker-bake.override.json'
+    $baseDockerBakeCmd = 'docker buildx bake --progress=plain --file=docker-bake.hcl'
 
     $items = $ImageType.Split('-')
     $windowsFlavor = $items[0]

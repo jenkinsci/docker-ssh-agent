@@ -69,15 +69,6 @@ targets:
       file: docker-bake.hcl
       path: variable.JAVA21_VERSION.default
     scmid: default
-  setJDKWindowsInstallerUrl:
-    name: Bump JDK Installer URL for Windows x64
-    kind: json
-    sourceid: windows_x64_installer_url
-    spec:
-      file: docker-bake.override.json
-      engine: dasel/v2
-      key: variable.
-    scmid: default
 
 actions:
   default:
