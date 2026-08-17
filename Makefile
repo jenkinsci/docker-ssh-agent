@@ -136,7 +136,7 @@ bats:
 # Ensure all bats submodules are up to date
 prepare-test: bats check-reqs
 	git submodule update --init --recursive
-	mkdir -p target/bats-outputs
+	mkdir -p target
 
 # Publish all linux targets
 publish:
