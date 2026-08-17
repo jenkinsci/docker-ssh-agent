@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Install Updatecli in the runner
-        uses: updatecli/updatecli-action@v3.5.0
+        uses: updatecli/updatecli-action@v3.6.0
 
       - name: Run Updatecli in Dry Run mode
         if: github.ref != 'refs/heads/master'
