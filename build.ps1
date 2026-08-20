@@ -8,7 +8,7 @@ Param(
     # Windows flavor and windows version to build
     [String] $ImageType = 'nanoserver-ltsc2019',
     # Generate a docker compose file even if it already exists
-    [switch] $OverwriteDockerComposeFile = $true,
+    [switch] $OverwriteDockerComposeFile = $false,
     # Print the build and publish command instead of executing them if set
     [switch] $DryRun = $false,
     # Pester version to install and use for tests
