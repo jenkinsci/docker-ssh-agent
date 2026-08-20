@@ -82,8 +82,18 @@ def parallelStages = [failFast: false]
                                         if (isUnix()) {
                                             sh 'make publish'
                                         } else {
-                                            powershell '& ./build.ps1 build'
-                                            powershell '& ./build.ps1 publish'
+                                            // JDK21 only
+                                            powershell '''
+                                            (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                            & ./build.ps1 build
+                                            & ./build.ps1 publish
+                                            '''
+                                            // JDK25 only
+                                            powershell '''
+                                            (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                            & ./build.ps1 build
+                                            & ./build.ps1 publish
+                                            '''
                                         }
                                     }
                                 }
@@ -94,15 +104,32 @@ def parallelStages = [failFast: false]
                                 if (isUnix()) {
                                     sh 'make build'
                                 } else {
-                                    powershell '& ./build.ps1 build'
-                                    archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
+                                    // JDK21 only
+                                    powershell '''
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                    & ./build.ps1 build
+                                    '''
+                                    // JDK25 only
+                                    powershell '''
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                    & ./build.ps1 build
+                                    '''
+                                    archiveArtifacts artifacts: 'build-windows*.yaml', allowEmptyArchive: true
                                 }
                             }
                             stage('Test') {
                                 if (isUnix()) {
                                     sh 'make test'
                                 } else {
-                                    powershell '& ./build.ps1 test'
+                                    powershell '''
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
+                                    & ./build.ps1 test
+                                    '''
+                                    // JDK25 only
+                                    powershell '''
+                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
+                                    & ./build.ps1 test
+                                    '''
                                 }
                                 junit 'target/**/junit-results*.xml'
                             }
