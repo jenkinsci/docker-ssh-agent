@@ -40,15 +40,10 @@ variable "WINDOWS_VERSION_OVERRIDE" {
   default = ""
 }
 
-# Set this value to a specific version to override java release to build
-variable "JAVA_RELEASE_OVERRIDE" {
-  default = ""
-}
-
 ## Targets
 target "alpine" {
   matrix = {
-    java_release = java_releases(JAVA_RELEASE_OVERRIDE)
+    java_release = java_releases_to_build
   }
   name       = "alpine_jdk${java_release}"
   dockerfile = "alpine/Dockerfile"
@@ -75,7 +70,7 @@ target "alpine" {
 
 target "debian" {
   matrix = {
-    java_release = java_releases(JAVA_RELEASE_OVERRIDE)
+    java_release = java_releases_to_build
   }
   name       = "debian_jdk${java_release}"
   dockerfile = "debian/Dockerfile"
@@ -103,7 +98,7 @@ target "debian" {
 
 target "nanoserver" {
   matrix = {
-    java_release    = java_releases(JAVA_RELEASE_OVERRIDE)
+    java_release             = java_releases_to_build
     windows_version = windowsversions("nanoserver")
   }
   name       = "nanoserver-${windows_version}_jdk${java_release}"
@@ -126,7 +121,7 @@ target "nanoserver" {
 
 target "windowsservercore" {
   matrix = {
-    java_release    = java_releases(JAVA_RELEASE_OVERRIDE)
+    java_release             = java_releases_to_build
     windows_version = windowsversions("windowsservercore")
   }
   name       = "windowsservercore-${windows_version}_jdk${java_release}"
@@ -186,15 +181,6 @@ group "linux-ppc64le" {
 function "is_default_java_release" {
   params = [java_release]
   result = equal(default_java_release, java_release) ? "true" : "false"
-}
-
-# Return array of java releases to build
-# Can be overriden to a specific version
-function "java_releases" {
-  params = [override]
-  result = (notequal(override, "")
-    ? [override]
-  : java_releases_to_build)
 }
 
 ## Specific functions
