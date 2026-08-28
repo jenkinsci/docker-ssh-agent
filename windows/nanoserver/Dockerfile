@@ -28,16 +28,17 @@ FROM mcr.microsoft.com/windows/servercore:"${WINDOWS_VERSION_TAG}" AS jdk-pwsh
 # $ProgressPreference: https://github.com/PowerShell/PowerShell/issues/2138#issuecomment-251261324
 SHELL ["powershell.exe", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ARG JAVA_HOME
-ARG JAVA_ZIP_URL
-ARG jdkTemp="C:\jdktemp"
-ARG localArchive="${jdkTemp}\jdk.zip"
-RUN New-Item -ItemType Directory -Path $env:jdkTemp | Out-Null ; `
-    Invoke-WebRequest $env:JAVA_ZIP_URL -OutFile $env:localArchive ; `
-    Expand-Archive -Path $env:localArchive -DestinationPath $env:jdkTemp ; `
-    $expandedDir = Get-ChildItem -Path $env:jdkTemp -Directory | Where-Object { $_.Name -like 'jdk*' } ; `
-    Move-Item -Path $expandedDir.FullName -Destination $env:JAVA_HOME -Force ; `
-    Remove-Item -Path $env:jdkTemp -Recurse | Out-Null
+ARG JAVA_RELEASE
+ENV JAVA_HOME="C:/openjdk-${JAVA_RELEASE}"
+COPY ./adoptium/jdk_installers.txt "C:\jdk_installers.txt"
+RUN $jdkTemp = 'C:\jdktemp' ; `
+    $zip = Join-Path $jdkTemp 'jdk.zip' ; `
+    New-Item -ItemType Directory -Path $jdkTemp | Out-Null ; `
+    $url = (Get-Content .\jdk_installers.txt | Where-Object { $_ -match ('jdk{0}/windows/amd64' -f $env:JAVA_RELEASE) } | Select-Object -First 1).Split(' ')[1] ;  `
+    Invoke-WebRequest $url -OutFile $zip ; `
+    Expand-Archive -Path $zip -DestinationPath $jdkTemp ; `
+    $expandedDir = Get-ChildItem -Path $jdkTemp -Directory | Where-Object { $_.Name -like 'jdk*' } ; `
+    Move-Item -Path $expandedDir.FullName -Destination $env:JAVA_HOME -Force
 
 ARG PWSH_VERSION=7.6.4
 RUN $zip = Join-Path $env:TEMP "pwsh.zip" ; `
@@ -50,7 +51,8 @@ RUN $zip = Join-Path $env:TEMP "pwsh.zip" ; `
 
 FROM mcr.microsoft.com/windows/nanoserver:"${WINDOWS_VERSION_TAG}"
 
-ARG JAVA_HOME
+ARG JAVA_RELEASE
+ENV JAVA_HOME="C:/openjdk-${JAVA_RELEASE}"
 ENV PSHOME="C:\Program Files\PowerShell"
 ENV PATH="C:\Windows\system32;C:\Windows;${PSHOME};"
 

@@ -20,7 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-ARG JAVA_VERSION
 ARG ALPINE_TAG=3.24.1
 FROM alpine:"${ALPINE_TAG}" AS jre-build
 
@@ -30,18 +29,23 @@ SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 # Ref. https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 ARG TARGETPLATFORM
 
-COPY jdk-download-url.sh /usr/bin/local/jdk-download-url.sh
-COPY jdk-download.sh /usr/bin/local/jdk-download.sh
-
-ARG JAVA_VERSION
+ARG JAVA_RELEASE
+COPY ./adoptium/jdk_installers.txt /tmp/jdk_installers.txt
+ARG TEMP_JAVA_HOME=/opt/jdk
+ENV PATH="${TEMP_JAVA_HOME}/bin:${PATH}"
 # hadolint ignore=DL3018
 RUN apk add --no-cache \
     ca-certificates \
-    jq \
     curl \
-  && /usr/bin/local/jdk-download.sh alpine
-
-ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
+    tar \
+  && java_zip_url="$(grep "jdk${JAVA_RELEASE}/${TARGETPLATFORM}/musl" /tmp/jdk_installers.txt | cut -d' ' -f2)" \
+  && mkdir -p "${TEMP_JAVA_HOME}" \
+  && jdk_archive="/opt/jdk.zip" \
+  && curl --silent --show-error --location --output "${jdk_archive}" "${java_zip_url}" \
+  # TODO: Verify download with GPG
+  && tar xzf "${jdk_archive}" --strip-components=1 -C "${TEMP_JAVA_HOME}" \
+  && java --version \
+  && jlink --version
 
 RUN case "$(jlink --version 2>&1)" in \
     "21."*) set -- "--compress=zip-6" --add-modules ALL-MODULE-PATH ;; \

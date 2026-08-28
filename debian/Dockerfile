@@ -28,19 +28,24 @@ SHELL ["/bin/bash", "-e", "-u", "-o", "pipefail", "-c"]
 # Ref. https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 ARG TARGETPLATFORM
 
-COPY jdk-download-url.sh /usr/bin/local/jdk-download-url.sh
-COPY jdk-download.sh /usr/bin/local/jdk-download.sh
-
-ARG JAVA_VERSION
+ARG JAVA_RELEASE
+COPY ./adoptium/jdk_installers.txt /tmp/jdk_installers.txt
+ARG TEMP_JAVA_HOME=/opt/jdk
+ENV PATH="${TEMP_JAVA_HOME}/bin:${PATH}"
 # hadolint ignore=DL3008
-RUN set -x; apt-get update \
+RUN apt-get update \
   && apt-get install --no-install-recommends -y \
     ca-certificates \
-    jq \
     curl \
-  && /usr/bin/local/jdk-download.sh
-
-ENV PATH="/opt/jdk-${JAVA_VERSION}/bin:${PATH}"
+    tar \
+  && java_zip_url="$(grep "jdk${JAVA_RELEASE}/${TARGETPLATFORM}/glibc" /tmp/jdk_installers.txt | cut -d' ' -f2)" \
+  && mkdir -p "${TEMP_JAVA_HOME}" \
+  && jdk_archive="/opt/jdk.zip" \
+  && curl --silent --show-error --location --output "${jdk_archive}" "${java_zip_url}" \
+  # TODO: Verify download with GPG
+  && tar xzf "${jdk_archive}" --strip-components=1 -C "${TEMP_JAVA_HOME}" \
+  && java --version \
+  && jlink --version
 
 # Generate smaller java runtime without unneeded files
 # for now we include the full module path to maintain compatibility

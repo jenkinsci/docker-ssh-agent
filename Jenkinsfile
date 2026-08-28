@@ -42,10 +42,10 @@ def agentSelector(String imageType, retryCounter) {
 // Specify parallel stages
 def parallelStages = [failFast: false]
 [
-    'alpine_21',
-    'alpine_25',
-    'debian_21',
-    'debian_25',
+    'alpine_jdk21',
+    'alpine_jdk25',
+    'debian_jdk21',
+    'debian_jdk25',
     'nanoserver-ltsc2019',
     'nanoserver-ltsc2022',
     'windowsservercore-ltsc2019',
