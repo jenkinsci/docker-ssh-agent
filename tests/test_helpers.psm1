@@ -112,10 +112,10 @@ function Run-Program($cmd, $params) {
     $stdout = $proc.StandardOutput.ReadToEnd()
     $stderr = $proc.StandardError.ReadToEnd()
     $proc.WaitForExit()
-    if(($env:TESTS_DEBUG -eq 'debug') -or ($env:TESTS_DEBUG -eq 'verbose')) {
+    if(($env:TESTS_DEBUG -eq 'debug') -or ($env:TESTS_DEBUG -eq 'verbose') -or ($proc.ExitCode -ne 0)) {
         Write-Host -ForegroundColor DarkBlue "[cmd] $cmd $params"
-        if ($env:TESTS_DEBUG -eq 'verbose') { Write-Host -ForegroundColor DarkGray "[stdout] $stdout" }
-        if($proc.ExitCode -ne 0){
+        if ($env:TESTS_DEBUG -ne 'debug') { Write-Host -ForegroundColor DarkGray "[stdout] $stdout" }
+        if ($proc.ExitCode -ne 0) {
             Write-Host -ForegroundColor DarkRed "[stderr] $stderr"
         }
     }
