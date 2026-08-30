@@ -274,9 +274,9 @@ Add the `-DryRun` parameter to print out any build, publish or tests commands in
 
 #### Building and testing a specific image
 
-You can build (and test) only one image type by setting `-ImageType` to a combination of Windows flavors ("nanoserver" & "windowsservercore") and Windows versions ("ltsc2019", "ltsc2022").
+You can build (and test) only one image type by setting `-ImageType` to a combination of Windows flavors ("nanoserver" & "windowsservercore") and Windows versions ("ltsc2022").
 
-Ex: `.\build.ps1 -ImageType 'nanoserver-ltsc2019'`
+Ex: `.\build.ps1 -ImageType 'nanoserver-ltsc2022'`
 
 ## Changelog
 
