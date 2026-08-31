@@ -6,13 +6,13 @@ Param(
     # Image version
     [String] $VersionTag = '0.0.1',
     # Windows flavor and windows version to build
-    [String] $ImageType = 'nanoserver-ltsc2019',
+    [String] $ImageType = 'nanoserver-ltsc2022',
     # Generate a docker compose file even if it already exists
     [switch] $OverwriteDockerComposeFile = $false,
     # Print the build and publish command instead of executing them if set
     [switch] $DryRun = $false,
     # Pester version to install and use for tests
-    [String] $PesterVersion = '6.0.1',
+    [String] $PesterVersion = '6.1.0',
     # Output debug info for tests: 'empty' (no additional test output), 'debug' (test cmd & stderr outputed), 'verbose' (test cmd, stderr, stdout outputed)
     [String] $TestsDebug = ''
 )
@@ -114,7 +114,7 @@ function Test-Image {
 }
 
 function Initialize-DockerComposeFile {
-    $baseDockerBakeCmd = 'docker buildx bake --progress=plain --file=docker-bake.hcl --file docker-bake.override.json'
+    $baseDockerBakeCmd = 'docker buildx bake --progress=plain --file=docker-bake.hcl'
 
     $items = $ImageType.Split('-')
     $windowsFlavor = $items[0]

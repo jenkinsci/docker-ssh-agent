@@ -9,11 +9,6 @@ properties([
 def agentSelector(String imageType, retryCounter) {
     def platform
     switch (imageType) {
-        // nanoserver-ltsc2019 and windowservercore-ltsc2019
-        case ~/.*2019/:
-            platform = 'windows-2019'
-            break
-
         // nanoserver-ltsc2022 and windowservercore-ltsc2022
         case ~/.*2022/:
             platform = 'windows-2022'
@@ -42,13 +37,11 @@ def agentSelector(String imageType, retryCounter) {
 // Specify parallel stages
 def parallelStages = [failFast: false]
 [
-    'alpine_21',
-    'alpine_25',
-    'debian_21',
-    'debian_25',
-    'nanoserver-ltsc2019',
+    'alpine_jdk21',
+    'alpine_jdk25',
+    'debian_jdk21',
+    'debian_jdk25',
     'nanoserver-ltsc2022',
-    'windowsservercore-ltsc2019',
     'windowsservercore-ltsc2022'
 ].each { imageType ->
     parallelStages[imageType] = {
