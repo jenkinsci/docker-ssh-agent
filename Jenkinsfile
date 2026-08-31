@@ -2,7 +2,7 @@ final String cronExpr = env.BRANCH_IS_PRIMARY ? '@daily' : ''
 
 properties([
     buildDiscarder(logRotator(numToKeepStr: '10')),
-    disableConcurrentBuilds(abortPrevious: true),
+    // disableConcurrentBuilds(abortPrevious: true),
     pipelineTriggers([cron(cronExpr)]),
 ])
 
@@ -40,12 +40,14 @@ def windowsJavaReleases = [21, 25]
 // Specify parallel stages
 def parallelStages = [failFast: false]
 [
-    'alpine_jdk21',
-    'alpine_jdk25',
-    'debian_jdk21',
-    'debian_jdk25',
+    // 'alpine_21',
+    // 'alpine_25',
+    // 'debian_21',
+    // 'debian_25',
     'nanoserver-ltsc2022',
-    'windowsservercore-ltsc2022'
+    'nanoserver-ltsc2025',
+    // 'windowsservercore-ltsc2022',
+    // 'windowsservercore-ltsc2025',
 ].each { imageType ->
     parallelStages[imageType] = {
         withEnv([

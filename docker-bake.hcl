@@ -1,6 +1,7 @@
 ## Variables
 variable "java_releases_to_build" {
-  default = [21, 25]
+  # default = [21, 25]
+  default = [21]
 }
 
 variable "default_java_release" {
@@ -205,5 +206,5 @@ function "windowsversions" {
   params = [flavor]
   result = (notequal(WINDOWS_VERSION_OVERRIDE, "")
     ? [WINDOWS_VERSION_OVERRIDE]
-  : ["ltsc2022"])
+  : ["ltsc2022", "ltsc2025"])
 }
