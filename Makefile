@@ -38,7 +38,6 @@ TEST_SUITES ?= $(CURDIR)/tests
 check_cli = type "$(1)" >/dev/null 2>&1 || { echo "Error: command '$(1)' required but not found. Exiting." ; exit 1 ; }
 ## Check if a given image or group exists in the current manifest docker-bake.hcl
 check_image = $(MAKE) --silent list listgroup-linux | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image or group '$(1)' does not exist in manifest for the current platform '$(OS)/$(ARCH)'. Please check the output of '$(MAKE) list' or '$(MAKE) listgroup-linux'. Exiting." ; exit 1 ; }
-# check_image = make --silent list | grep -w '$(1)' >/dev/null 2>&1 || { echo "Error: the image '$(1)' does not exist in manifest for the platform 'linux/$(ARCH)'. Please check the output of 'make list'. Exiting." ; exit 1 ; }
 ## Base "docker buildx base" command to be reused everywhere
 bake_base_cli := docker buildx bake --file docker-bake.hcl
 ## Command to be used on build (only)
@@ -77,7 +76,7 @@ endif
 
 # Build all targets with the current OS and architecture
 build: check-reqs
-	$(bake_cli) $(shell make --silent list) --set '*.platform=linux/$(ARCH)'
+	$(bake_cli) $(shell $(MAKE) --silent list) --set '*.platform=linux/$(ARCH)'
 
 # Build a specific target with the current OS and architecture
 build-%: check-reqs target show-%
@@ -95,7 +94,7 @@ multiarchbuild-%: check-reqs show-%
 
 # Show all default targets
 show:
-	$(MAKE) --silent show-$(bake_default_target)
+	$(MAKE) show-$(bake_default_target)
 
 # Show a specific target
 show-%:
@@ -107,7 +106,7 @@ showarch-%:
 
 # List tags of all default targets
 tags:
-	$(MAKE) --silent tags-$(bake_default_target)
+	$(MAKE) tags-$(bake_default_target)
 
 # List tags of a specific target
 tags-%:
@@ -115,7 +114,7 @@ tags-%:
 
 # Return the list of targets depending on the current OS and architecture
 list: check-reqs
-	$(MAKE) --silent listarch-$(ARCH)
+	$(MAKE) listarch-$(ARCH)
 
 # Return the list of targets of a specific "target" (can be a docker bake group)
 list-%: check-reqs
@@ -159,7 +158,7 @@ test-%: prepare-test
 # Check that the image exists in the manifest
 	$(call check_image,$*)
 # Ensure that the image is built
-	$(MAKE) --silent build-$*
+	$(MAKE) build-$*
 ifeq ($(CI), true)
 # Execute the test harness and write result to a TAP file
 	IMAGE=$* bats/bin/bats $(bats_flags) --formatter junit | tee target/junit-results-$*.xml
@@ -169,4 +168,4 @@ else
 endif
 
 test: prepare-test
-	$(MAKE) --silent list | while read image; do $(MAKE) --silent "test-$${image}"; done
+	$(MAKE) --silent list | while read image; do $(MAKE) "test-$${image}"; done
