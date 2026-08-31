@@ -38,7 +38,7 @@ docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhos
 }
 
 @test "[${SUT_IMAGE}] image has bash and java installed and in the PATH" {
-  local test_container_name=${AGENT_CONTAINER}-bash-java
+  local test_container_name=${AGENT_CONTAINER}-${BASHPID}-bash-java
   clean_test_container "${test_container_name}"
   docker run --name="${test_container_name}" --name="${test_container_name}" "${docker_run_opts[@]}" "${PUBLIC_SSH_KEY}"
 
@@ -56,7 +56,7 @@ docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhos
 }
 
 @test "[${SUT_IMAGE}] image has no pre-existing SSH host keys" {
-  local test_container_name=${AGENT_CONTAINER}-ssh-hostkeys
+  local test_container_name=${AGENT_CONTAINER}-${BASHPID}-ssh-hostkeys
   clean_test_container "${test_container_name}"
   docker run --name="${test_container_name}" --name="${test_container_name}" "${docker_run_opts[@]}" "${PUBLIC_SSH_KEY}"
 
@@ -67,7 +67,7 @@ docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhos
 }
 
 @test "[${SUT_IMAGE}] create agent container with pubkey as argument" {
-  local test_container_name=${AGENT_CONTAINER}-pubkey-arg
+  local test_container_name=${AGENT_CONTAINER}-${BASHPID}-pubkey-arg
   clean_test_container "${test_container_name}"
   docker run --name="${test_container_name}" "${docker_run_opts[@]}" "${PUBLIC_SSH_KEY}"
 
@@ -81,7 +81,7 @@ docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhos
 }
 
 @test "[${SUT_IMAGE}] create agent container with pubkey as environment variable (legacy environment variable)" {
-  local test_container_name=${AGENT_CONTAINER}-pubkey-legacy-env
+  local test_container_name=${AGENT_CONTAINER}-${BASHPID}-pubkey-legacy-env
   clean_test_container "${test_container_name}"
   docker run --env="JENKINS_SLAVE_SSH_PUBKEY=${PUBLIC_SSH_KEY}" --name="${test_container_name}" "${docker_run_opts[@]}"
 
@@ -95,7 +95,7 @@ docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhos
 }
 
 @test "[${SUT_IMAGE}] create agent container with pubkey as environment variable (JENKINS_AGENT_SSH_PUBKEY)" {
-  local test_container_name=${AGENT_CONTAINER}-pubkey-env
+  local test_container_name=${AGENT_CONTAINER}-${BASHPID}-pubkey-env
   clean_test_container "${test_container_name}"
   docker run --env="JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" --name="${test_container_name}" "${docker_run_opts[@]}"
 
@@ -109,7 +109,7 @@ docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhos
 }
 
 @test "[${SUT_IMAGE}] Run Java in a SSH connection" {
-  local test_container_name=${AGENT_CONTAINER}-java-in-ssh
+  local test_container_name=${AGENT_CONTAINER}-${BASHPID}-java-in-ssh
   clean_test_container "${test_container_name}"
   docker run --env="JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" --name="${test_container_name}" "${docker_run_opts[@]}"
 
@@ -126,7 +126,7 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 @test "[${SUT_IMAGE}] create agent container like docker-plugin with '${DOCKER_PLUGIN_DEFAULT_ARG}' (unquoted) as argument" {
   [ -n "$DOCKER_PLUGIN_DEFAULT_ARG" ]
 
-  local test_container_name=${AGENT_CONTAINER}-docker-plugin
+  local test_container_name=${AGENT_CONTAINER}-${BASHPID}-docker-plugin
   clean_test_container "${test_container_name}"
   docker run --env="JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" --name="${test_container_name}" "${docker_run_opts[@]}" ${DOCKER_PLUGIN_DEFAULT_ARG}
 
@@ -142,7 +142,7 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 @test "[${SUT_IMAGE}] create agent container with '${DOCKER_PLUGIN_DEFAULT_ARG}' (quoted) as argument" {
   [ -n "$DOCKER_PLUGIN_DEFAULT_ARG" ]
 
-  local test_container_name=${AGENT_CONTAINER}-docker-plugin-quoted
+  local test_container_name=${AGENT_CONTAINER}-${BASHPID}-docker-plugin-quoted
   clean_test_container "${test_container_name}"
   docker run --env="JENKINS_AGENT_SSH_PUBKEY=${PUBLIC_SSH_KEY}" --name="${test_container_name}" "${docker_run_opts[@]}" "${DOCKER_PLUGIN_DEFAULT_ARG}"
 
@@ -179,7 +179,7 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
       --load `# Image should be loaded on the Docker engine`\
       "${IMAGE}"
 
-  local test_container_name=${AGENT_CONTAINER}-build-args
+  local test_container_name=${AGENT_CONTAINER}-${BASHPID}-build-args
   clean_test_container "${test_container_name}"
   docker run --detach --name="${test_container_name}" --publish-all "${sut_image}" "${PUBLIC_SSH_KEY}"
 
@@ -208,7 +208,7 @@ DOCKER_PLUGIN_DEFAULT_ARG="/usr/sbin/sshd -D -p 22"
 }
 
 @test "[${SUT_IMAGE}] image has required tools installed and present in the PATH, can clone a repo and list large files" {
-  local test_container_name=${AGENT_CONTAINER}-bash-java
+  local test_container_name=${AGENT_CONTAINER}-${BASHPID}-bash-java
   clean_test_container "${test_container_name}"
   docker run --name="${test_container_name}" --name="${test_container_name}" "${docker_run_opts[@]}" "${PUBLIC_SSH_KEY}"
 
