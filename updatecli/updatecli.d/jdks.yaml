@@ -57,7 +57,7 @@ targets:
     spec:
       file: adoptium/jdk_installers.txt
       matchpattern: '{{ $prefix }} (.*)'
-    #scmid: default
+    scmid: default
     {{- end }}
 
 actions:
