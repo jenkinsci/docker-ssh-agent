@@ -185,7 +185,7 @@ group "linux-ppc64le" {
 # Return "true" if the java_release passed as parameter is the same as the default java_release, "false" otherwise
 function "is_default_java_release" {
   params = [java_release]
-  result = equal(default_java_release, java_release) ? "true" : "false"
+  result = equal(default_java_release, java_release)
 }
 
 # Return array of java releases to build
