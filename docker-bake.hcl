@@ -193,7 +193,7 @@ function "is_default_java_release" {
 function "java_releases" {
   params = [override]
   result = (notequal(override, "")
-    ? [convert(override, number)]
+    ? [parseint(override, 10)]
   : java_releases_to_build)
 }
 
