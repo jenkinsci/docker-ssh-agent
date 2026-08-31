@@ -34,6 +34,9 @@ def agentSelector(String imageType, retryCounter) {
     ])
 }
 
+// Specify java release(s) to build for Windows images
+def windowsJavaReleases = [21, 25]
+
 // Specify parallel stages
 def parallelStages = [failFast: false]
 [
@@ -75,18 +78,12 @@ def parallelStages = [failFast: false]
                                         if (isUnix()) {
                                             sh 'make publish'
                                         } else {
-                                            // JDK21 only
-                                            powershell '''
-                                            (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
-                                            & ./build.ps1 build
-                                            & ./build.ps1 publish
-                                            '''
-                                            // JDK25 only
-                                            powershell '''
-                                            (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
-                                            & ./build.ps1 build
-                                            & ./build.ps1 publish
-                                            '''
+                                            windowsJavaReleases.each { javaRelease ->
+                                                withEnv(["JAVA_RELEASE_OVERRIDE=${javaRelease}"]) {
+                                                    powershell './build.ps1 build'
+                                                    powershell './build.ps1 publish'
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -97,32 +94,23 @@ def parallelStages = [failFast: false]
                                 if (isUnix()) {
                                     sh 'make build'
                                 } else {
-                                    // JDK21 only
-                                    powershell '''
-                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
-                                    & ./build.ps1 build
-                                    '''
-                                    // JDK25 only
-                                    powershell '''
-                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
-                                    & ./build.ps1 build
-                                    '''
-                                    archiveArtifacts artifacts: 'build-windows*.yaml', allowEmptyArchive: true
+                                    windowsJavaReleases.each { javaRelease ->
+                                        withEnv(["JAVA_RELEASE_OVERRIDE=${javaRelease}"]) {
+                                            powershell './build.ps1 build'
+                                        }
+                                        archiveArtifacts artifacts: 'build-windows*.yaml', allowEmptyArchive: true
+                                    }
                                 }
                             }
                             stage('Test') {
                                 if (isUnix()) {
                                     sh 'make test'
                                 } else {
-                                    powershell '''
-                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[21]' | Set-Content docker-bake.hcl
-                                    & ./build.ps1 test
-                                    '''
-                                    // JDK25 only
-                                    powershell '''
-                                    (Get-Content docker-bake.hcl -Raw) -replace '(variable\\s+"jdks_to_build"\\s*{\\s*default\\s*=\\s*)\\[[^\\]]*\\]', '$1[25]' | Set-Content docker-bake.hcl
-                                    & ./build.ps1 test
-                                    '''
+                                    windowsJavaReleases.each { javaRelease ->
+                                        withEnv(["JAVA_RELEASE_OVERRIDE=${javaRelease}"]) {
+                                            powershell './build.ps1 test'
+                                        }
+                                    }
                                 }
                                 junit 'target/**/junit-results*.xml'
                             }
