@@ -7,8 +7,6 @@ Param(
     [String] $VersionTag = '0.0.1',
     # Windows flavor and windows version to build
     [String] $ImageType = 'nanoserver-ltsc2022',
-    # Generate a docker compose file even if it already exists
-    [switch] $OverwriteDockerComposeFile = $false,
     # Print the build and publish command instead of executing them if set
     [switch] $DryRun = $false,
     # Pester version to install and use for tests
@@ -154,13 +152,9 @@ Test-CommandExists 'docker-compose'
 Test-CommandExists 'docker buildx'
 Test-CommandExists 'yq'
 
-# Generate the docker compose file if it doesn't exists or if the parameter OverwriteDockerComposeFile is set
-if ((Test-Path $dockerComposeFile) -and -not $OverwriteDockerComposeFile) {
-    Write-Host "= PREPARE: The docker compose file '$dockerComposeFile' containing the image definitions already exists."
-} else {
-    Write-Host "= PREPARE: Initialize the docker compose file '$dockerComposeFile' containing the image definitions."
-    Initialize-DockerComposeFile
-}
+# Generate the docker compose file (warning: will overwrite existing file)
+Write-Host "= PREPARE: Initialize the docker compose file '$dockerComposeFile' containing the image definitions."
+Initialize-DockerComposeFile
 
 Write-Host '= PREPARE: List of images and tags to be processed:'
 Invoke-Expression "$baseDockerCmd config"
