@@ -9,11 +9,6 @@ properties([
 def agentSelector(String imageType, retryCounter) {
     def platform
     switch (imageType) {
-        // nanoserver-ltsc2019 and windowservercore-ltsc2019
-        case ~/.*2019/:
-            platform = 'windows-2019'
-            break
-
         // nanoserver-ltsc2022 and windowservercore-ltsc2022
         case ~/.*2022/:
             platform = 'windows-2022'
@@ -39,6 +34,9 @@ def agentSelector(String imageType, retryCounter) {
     ])
 }
 
+// Specify java release(s) to build for Windows images
+def windowsJavaReleases = [21, 25]
+
 // Specify parallel stages
 def parallelStages = [failFast: false]
 [
@@ -46,10 +44,8 @@ def parallelStages = [failFast: false]
     // 'alpine_25',
     // 'debian_21',
     // 'debian_25',
-    // 'nanoserver-ltsc2019',
     'nanoserver-ltsc2022',
     'nanoserver-ltsc2025',
-    // 'windowsservercore-ltsc2019',
     // 'windowsservercore-ltsc2022',
     // 'windowsservercore-ltsc2025',
 ].each { imageType ->
@@ -84,8 +80,12 @@ def parallelStages = [failFast: false]
                                         if (isUnix()) {
                                             sh 'make publish'
                                         } else {
-                                            powershell '& ./build.ps1 build'
-                                            powershell '& ./build.ps1 publish'
+                                            windowsJavaReleases.each { javaRelease ->
+                                                withEnv(["JAVA_RELEASE_OVERRIDE=${javaRelease}"]) {
+                                                    powershell './build.ps1 build'
+                                                    powershell './build.ps1 publish'
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -96,22 +96,30 @@ def parallelStages = [failFast: false]
                                 if (isUnix()) {
                                     sh 'make build'
                                 } else {
-                                    powershell '& ./build.ps1 build'
-                                    archiveArtifacts artifacts: 'build-windows.yaml', allowEmptyArchive: true
+                                    windowsJavaReleases.each { javaRelease ->
+                                        withEnv(["JAVA_RELEASE_OVERRIDE=${javaRelease}"]) {
+                                            powershell './build.ps1 build'
+                                        }
+                                        archiveArtifacts artifacts: 'build-windows*.yaml', allowEmptyArchive: true
+                                    }
                                 }
                             }
                             stage('Test') {
                                 if (isUnix()) {
                                     sh 'make test'
                                 } else {
-                                    powershell '& ./build.ps1 test -TestsDebug verbose'
+                                    windowsJavaReleases.each { javaRelease ->
+                                        withEnv(["JAVA_RELEASE_OVERRIDE=${javaRelease}"]) {
+                                            powershell './build.ps1 test'
+                                        }
+                                    }
                                 }
                                 junit 'target/**/junit-results*.xml'
                             }
                             // If the tests are passing for Linux AMD64, then we can build all the CPU architectures
                             if (isUnix()) {
                                 stage('Multi-Arch Build') {
-                                    sh 'make every-build'
+                                    sh 'make "multiarchbuild-${IMAGE_TYPE}"'
                                 }
                             }
                         }

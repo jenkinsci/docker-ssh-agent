@@ -250,7 +250,7 @@ Note: you can generate this docker compose file from docker-bake.hcl yourself wi
 # - Convert with yq to the format expected by docker compose
 # - Store the result in the docker compose file
 
-$ docker buildx bake --progress=plain --file=docker-bake.hcl --file docker-bake.override.json windows --print `
+$ docker buildx bake --progress=plain --file=docker-bake.hcl windows --print `
     | yq --prettyPrint '.target[] | del(.output) | {(. | key): {\"image\": .tags[0], \"build\": .}}' | yq '{\"services\": .}' `
     | Out-File -FilePath build-windows.yaml
 ```
@@ -274,9 +274,9 @@ Add the `-DryRun` parameter to print out any build, publish or tests commands in
 
 #### Building and testing a specific image
 
-You can build (and test) only one image type by setting `-ImageType` to a combination of Windows flavors ("nanoserver" & "windowsservercore") and Windows versions ("ltsc2019", "ltsc2022").
+You can build (and test) only one image type by setting `-ImageType` to a combination of Windows flavors ("nanoserver" & "windowsservercore") and Windows versions ("ltsc2022").
 
-Ex: `.\build.ps1 -ImageType 'nanoserver-ltsc2019'`
+Ex: `.\build.ps1 -ImageType 'nanoserver-ltsc2022'`
 
 ## Changelog
 
