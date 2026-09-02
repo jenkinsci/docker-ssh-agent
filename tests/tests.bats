@@ -56,7 +56,7 @@ docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhos
 }
 
 @test "[${SUT_IMAGE}] image has no pre-existing SSH host keys" {
-  # Not running the entrypoint which creates host keys
+  # Bypassing entrypoint which creates host keys
   run docker run --rm --entrypoint=/bin/sh "${SUT_IMAGE}" -c 'find /etc/ssh -type f -name "ssh_host*_key*" -print'
   assert_success
   assert_output ''
