@@ -6,6 +6,10 @@ on:
     - cron: '0 1 * * *' # Once a day at 01:00am UTC
   push:
   pull_request:
+
+# Only allow 1 updatecli build at a time to avoid orphaned updatecli branches
+concurrency: "updatecli"
+
 jobs:
   updatecli:
     runs-on: ubuntu-latest
