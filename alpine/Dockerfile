@@ -129,7 +129,7 @@ WORKDIR "${JENKINS_AGENT_HOME}"
 # The file path has been created earlier in the file by `mkdir -p` and we also have configured sshd so that it will
 # allow environment variables to be sourced (see `sed` command related to `PermitUserEnvironment`)
 RUN echo "PATH=${PATH}" >> ${JENKINS_AGENT_HOME}/.ssh/environment
-COPY setup-sshd /usr/local/bin/setup-sshd
+COPY --chmod=755 setup-sshd /usr/local/bin/setup-sshd
 
 EXPOSE 22
 
