@@ -55,6 +55,14 @@ docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhos
   clean_test_container "${test_container_name}"
 }
 
+@test "[${SUT_IMAGE}] java runtime provides the modules required by Jenkins agents" {
+  run docker run --rm --entrypoint=java "${SUT_IMAGE}" --list-modules
+  assert_success
+  for module in java.base java.desktop java.logging java.management java.naming java.net.http java.sql java.xml jdk.crypto.ec jdk.net jdk.unsupported; do
+    assert_output --partial "${module}@"
+  done
+}
+
 @test "[${SUT_IMAGE}] image has no pre-existing SSH host keys" {
   # Bypassing entrypoint which creates host keys
   run docker run --rm --entrypoint=/bin/sh "${SUT_IMAGE}" -c 'find /etc/ssh -type f -name "ssh_host*_key*" -print'
