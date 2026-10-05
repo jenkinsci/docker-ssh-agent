@@ -49,8 +49,14 @@ RUN apk add --no-cache \
 
 RUN case "$(jlink --version 2>&1)" in \
     "21."*) set -- "--compress=zip-6" --add-modules ALL-MODULE-PATH ;; \
-    # JDK 25 switches to a minimal module set for smaller images
-    "25"*) set -- "--compress=zip-6" --add-modules "java.base,java.logging,java.xml,java.management,java.net.http,jdk.crypto.ec" ;; \
+    # JDK 25 switches to a minimal module set for smaller images.
+    # Modules on top of the base set, required by code that Jenkins core and plugins run on the agent:
+    # - java.sql: hudson.util.Secret (credentials masking, e.g. withCredentials) via Stapler and commons-beanutils
+    # - java.desktop: java.beans, used by commons-beanutils/commons-digester (e.g. warnings-ng XML report parsers)
+    # - jdk.net: Apache HttpClient 5 (e.g. http_request plugin)
+    # - java.naming: logback, used by tools started with the agent JVM (e.g. SonarScanner CLI)
+    # - jdk.unsupported: sun.misc.Unsafe (e.g. Groovy in the agent script console)
+    "25"*) set -- "--compress=zip-6" --add-modules "java.base,java.logging,java.xml,java.management,java.net.http,jdk.crypto.ec,java.sql,java.desktop,jdk.net,java.naming,jdk.unsupported" ;; \
     *) echo "ERROR: unmanaged jlink version pattern" && exit 1 ;; \
   esac; \
   jlink \
