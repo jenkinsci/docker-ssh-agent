@@ -46,7 +46,7 @@ def parallelStages = [failFast: false]
     parallelStages[imageType] = {
         withEnv([
             "IMAGE_TYPE=${imageType}",
-            "REGISTRY_ORG=${infra.isTrusted() ? 'jenkins' : 'jenkins4eval'}",
+            "REGISTRY_ORG=${infra.isTrustedCiController() ? 'jenkins' : 'jenkins4eval'}",
         ]) {
             int retryCounter = 0
             retry(count: 2, conditions: [agent(), nonresumable()]) {
@@ -62,7 +62,7 @@ def parallelStages = [failFast: false]
                             }
                         }
                         // This function is defined in the jenkins-infra/pipeline-library
-                        if (infra.isTrusted()) {
+                        if (infra.isTrustedCiController()) {
                             // trusted.ci.jenkins.io builds (e.g. publication to DockerHub)
                             stage('Deploy to DockerHub') {
                                 withEnv([
