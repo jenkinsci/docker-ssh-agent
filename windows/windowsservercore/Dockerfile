@@ -57,7 +57,7 @@ ENV JENKINS_AGENT_WORK=${JENKINS_AGENT_WORK}
 USER ContainerAdministrator
 
 # Install git
-ARG GIT_VERSION=2.55.0
+ARG GIT_VERSION=2.56.0
 ARG GIT_PATCH_VERSION=5
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
     # The patch "windows.1" always have a different URL than the subsequent patch (ZIP filename is different)
