@@ -126,7 +126,7 @@ RUN sed -i /etc/ssh/sshd_config \
         -e '/pam_motd/s/^/#/'
 
 # VOLUME directive must happen after setting up permissions and content
-VOLUME "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}"/.jenkins "/tmp" "/run" "/var/run"
+VOLUME "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
 
 ENV LANG='C.UTF-8' LC_ALL='C.UTF-8'

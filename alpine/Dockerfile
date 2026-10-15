@@ -128,7 +128,7 @@ COPY --from=jre-build /javaruntime "$JAVA_HOME"
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # VOLUME directive must happen after setting up permissions and content
-VOLUME "${AGENT_WORKDIR}" "${JENKINS_AGENT_HOME}"/.jenkins "/tmp" "/run" "/var/run"
+VOLUME "/tmp" "/run" "/var/run"
 WORKDIR "${JENKINS_AGENT_HOME}"
 
 # Alpine's ssh doesn't use $PATH defined in /etc/environment, so we define `$PATH` in `~/.ssh/environment`

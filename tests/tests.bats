@@ -32,7 +32,6 @@ docker_run_opts=('--detach' '--publish-all' '--health-cmd=echo | nc -w1 localhos
   VOLUMES_MAP="$(docker inspect -f '{{.Config.Volumes}}' "${SUT_IMAGE}")"
 
   echo "${VOLUMES_MAP}" | grep '/tmp'
-  echo "${VOLUMES_MAP}" | grep '/home/jenkins'
   echo "${VOLUMES_MAP}" | grep '/run'
   echo "${VOLUMES_MAP}" | grep '/var/run'
 }
