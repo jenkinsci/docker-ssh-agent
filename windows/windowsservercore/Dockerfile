@@ -85,7 +85,7 @@ RUN $CurrentPath = (Get-Itemproperty -path 'hklm:\system\currentcontrolset\contr
     & C:\mingit\cmd\git.exe lfs install
 
 # Setup SSH server
-ARG OPENSSH_VERSION=10.0.0.0p2-Preview
+ARG OPENSSH_VERSION=10.4.0.0p1-Preview
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ; `
     $url = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/{0}/OpenSSH-Win64.zip' -f $env:OPENSSH_VERSION ; `
     Write-Host "Retrieving $url..." ; `
