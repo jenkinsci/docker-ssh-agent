@@ -53,7 +53,7 @@ TUwLP4n7pK4J2sCIs6fRD5kEYms4BnddXeRuI2fGZHGH70Ci/Q==
 "@
 
 $global:GITLFSVERSION = '3.8.1'
-$global:PWSHVERSION = '7.6.8'
+$global:PWSHVERSION = '7.6.9'
 
 Cleanup($global:CONTAINERNAME)
 
