@@ -1,4 +1,4 @@
-{{ $platforms := list "windows/x64" "alpine-linux/x64" "alpine-linux/aarch64" "linux/x64" "linux/aarch64" "linux/ppc64le" "linux/s390x" }}
+{{ $platforms := list "windows/x64" "alpine-linux/x64" "alpine-linux/aarch64" "linux/x64" "linux/aarch64" "linux/ppc64le" "linux/s390x" "linux/riscv64" }}
 {{ range $jdkRelease := list 21 25 }}
 ---
 name: Bump JDK{{ $jdkRelease }} version for all Linux images
