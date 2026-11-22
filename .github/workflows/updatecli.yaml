@@ -10,6 +10,10 @@ on:
 # Only allow 1 updatecli build at a time to avoid orphaned updatecli branches
 concurrency: "updatecli"
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   updatecli:
     runs-on: ubuntu-latest
@@ -31,3 +35,9 @@ jobs:
         run: updatecli pipeline apply --config ./updatecli/updatecli.d --values ./updatecli/values.github-action.yaml --values ./updatecli/values.temurin.yaml
         env:
           UPDATECLI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update JDK bump PR titles
+        if: github.ref == 'refs/heads/master' && github.event.pull_request.head.repo.fork == false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .github/scripts/update-jdk-pr-titles.sh
