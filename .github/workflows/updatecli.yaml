@@ -42,5 +42,5 @@ jobs:
 
       - name: Update JDK bump PR titles
         env:
-          GH_TOKEN: ${{ secrets.UPDATECLI_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash .github/scripts/update-pr-titles.sh
