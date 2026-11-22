@@ -38,6 +38,5 @@ while read -r pr_number; do
 
   repo_with_owner="$(jq -r '.headRepository.nameWithOwner' <<< "${pr_data}")"
 
-  # gh pr edit "${pr_number}" --title "${title}" --body "${updated_body}"
-  gh api --method PATCH "/repos/${repo_with_owner}/pulls/${pr_number}" -f title="${title}" -f body="${updated_body}"
+  gh pr edit "${pr_number}" --title "${title}" --body "${updated_body}"
 done <<< "${pr_numbers}"
