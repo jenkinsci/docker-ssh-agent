@@ -10,6 +10,10 @@ on:
 # Only allow 1 updatecli build at a time to avoid orphaned updatecli branches
 concurrency: "updatecli"
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   updatecli:
     runs-on: ubuntu-latest
