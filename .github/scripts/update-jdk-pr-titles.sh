@@ -16,7 +16,7 @@ if [[ -z "${pr_numbers}" ]]; then
 fi
 
 while read -r pr_number; do
-  pr_data=$(gh pr view "${pr_number}" --json title,body)
+  pr_data=$(gh pr view "${pr_number}" --json title,body,headRepository)
 
   body="$(jq -r '.body' <<< "${pr_data}")"
   architectures="$(grep '<summary>' <<< "${body}" | grep 'Bump' | sed -E 's|.*Installer URL for (.*)</summary>|\1|' | tr -d '\r')"
@@ -36,5 +36,8 @@ while read -r pr_number; do
   title="${original_title} (${architecture_list})"
   updated_body="${body}<!-- pr-title-updated -->"
 
-  gh pr edit "${pr_number}" --title "${title}" --body "${updated_body}"
+  repo_with_owner="$(jq -r '.headRepository.nameWithOwner' <<< "${pr_data}")"
+
+  # gh pr edit "${pr_number}" --title "${title}" --body "${updated_body}"
+  gh api --method PATCH "/repos/${repo_with_owner}/pulls/${pr_number}" -f title="${title}" -f body="${updated_body}"
 done <<< "${pr_numbers}"
