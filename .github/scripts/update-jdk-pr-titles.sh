@@ -19,7 +19,7 @@ while read -r pr_number; do
   pr_data=$(gh pr view "${pr_number}" --json title,body,headRepository)
 
   body="$(jq -r '.body' <<< "${pr_data}")"
-  architectures="$(grep '<summary>' <<< "${body}" | grep 'Bump' | sed -E 's|.*Installer URL for (.*)</summary>|\1|' | tr -d '\r')"
+  architectures="$(grep '<summary>' <<< "${body}" | grep 'Bump' | sed -E 's|.*Installer URL for (.*)</summary>|\1|' | tr -d '\r' | sort)"
 
   if [[ -z "${architectures}" ]]; then
     echo "No architectures found in PR #${pr_number}, skipping"
