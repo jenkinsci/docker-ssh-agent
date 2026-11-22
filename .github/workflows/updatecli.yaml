@@ -32,6 +32,14 @@ jobs:
         env:
           UPDATECLI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Debug script location
+        run: |
+          pwd
+          git rev-parse HEAD
+          ls -la .github/
+          ls -la .github/scripts/ || true
+          git ls-files .github/
+
       - name: Update JDK bump PR titles
         env:
           GH_TOKEN: ${{ secrets.UPDATECLI_GITHUB_TOKEN }}
