@@ -45,3 +45,4 @@ actions:
       labels:
         - chore # Because bats is only used for testing
         - bats
+        - variant-linux

@@ -30,3 +30,4 @@ updates:
     - github-action
     - dependencies
     - skip-changelog
+    - variant-github-action

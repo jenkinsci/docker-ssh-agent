@@ -67,3 +67,4 @@ actions:
     spec:
       labels:
         - dependencies
+        - variant-debian

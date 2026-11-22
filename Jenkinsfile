@@ -29,20 +29,50 @@ def agentSelector(String imageType, retryCounter) {
     ])
 }
 
+def allImagesTypeAndTheirVariants = [
+    'alpine_jdk21':               ['linux', 'alpine', 'jdk21'],
+    'alpine_jdk25':               ['linux', 'alpine', 'jdk25'],
+    'debian_jdk21':               ['linux', 'debian', 'jdk21'],
+    'debian_jdk25':               ['linux', 'debian', 'jdk25'],
+    'nanoserver-ltsc2022':        ['windows', 'nanoserver', 'jdk21', 'jdk25'],
+    'windowsservercore-ltsc2022': ['windows', 'windowsservercore', 'jdk21', 'jdk25'],
+    'windowsservercore-ltsc2025': ['windows', 'windowsservercore', 'jdk21', 'jdk25'],
+]
+
 // Specify java release(s) to build for Windows images
-def windowsJavaReleases = [21, 25]
+def allWindowsJavaReleases = [21, 25]
+
+def imageTypesToBuild = allImagesTypeAndTheirVariants.keySet().toList()
+def windowsJavaReleases = allWindowsJavaReleases.collect()
+if (env.CHANGE_ID) {
+    def requestedVariants = []
+    pullRequest.labels.each { label -> 
+        if (label.startsWith('variant-')) {
+            requestedVariants << label.replace('variant-', '')
+        }
+    }
+    if (requestedVariants) {
+        echo "Building only selected variant(s): ${requestedVariants}"
+
+        imageTypesToBuild = allImagesTypeAndTheirVariants.findAll { image, variants ->
+            variants.any { it in requestedVariants }
+        }.keySet().toList()
+
+        // Special case for JDK variants and Windows Java releases
+        if (requestedVariants.any { it ==~ /jdk\d+/ }) {
+            windowsJavaReleases = []
+            requestedVariants.findAll { it.contains('jdk') }.each {
+                windowsJavaReleases += it.replace('jdk', '')
+            }
+            echo "Building only Windows Java release(s): ${windowsJavaReleases}"
+        }
+        echo "Images to build: ${imageTypesToBuild}"
+    }
+}
 
 // Specify parallel stages
 def parallelStages = [failFast: false]
-[
-    'alpine_jdk21',
-    'alpine_jdk25',
-    'debian_jdk21',
-    'debian_jdk25',
-    'nanoserver-ltsc2022',
-    'windowsservercore-ltsc2022',
-    'windowsservercore-ltsc2025',
-].each { imageType ->
+imageTypesToBuild.each { imageType ->
     parallelStages[imageType] = {
         withEnv([
             "IMAGE_TYPE=${imageType}",

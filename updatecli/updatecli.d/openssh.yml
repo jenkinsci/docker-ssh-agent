@@ -52,3 +52,4 @@ actions:
         - enhancement
         - openssh
         - windows
+        - variant-windows
