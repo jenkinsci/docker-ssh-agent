@@ -31,3 +31,9 @@ jobs:
         run: updatecli pipeline apply --config ./updatecli/updatecli.d --values ./updatecli/values.github-action.yaml --values ./updatecli/values.temurin.yaml
         env:
           UPDATECLI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update JDK bump PR titles
+        env:
+          GH_TOKEN: ${{ secrets.UPDATECLI_GITHUB_TOKEN }}
+        run: |
+          .github/scripts/update-pr-titles.sh

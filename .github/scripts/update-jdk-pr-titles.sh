@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+
+pr_numbers="$(gh pr list \
+  --state open \
+  --json number,labels \
+  --jq '.[]
+    | select(any(.labels[]; .name == "dependencies"))
+    | select(any(.labels[]; .name | test("^jdk[0-9]+$")))
+    | select(all(.labels[]; .name != "pr-title-updated"))
+    | .number')"
+
+if [[ -n "${pr_numbers}" ]]; then
+  while read -r pr_number; do
+  pr_data=$(gh pr view "${pr_number}" --json title,body)
+
+  body="$(jq -r '.body' <<< "${pr_data}")"
+  architectures="$(grep '<summary>' <<< "${body}" | grep 'Bump' | sed -E 's|.*Installer URL for (.*)</summary>|\1|' | tr -d '\r')"
+  architecture_list=""
+  while IFS= read -r architecture; do
+    [[ -n "${architecture_list}" ]] && architecture_list+=", "
+    architecture_list+="\`${architecture}\`"
+  done <<< "${architectures}"
+
+  original_title="$(jq -r '.title' <<< "${pr_data}")"
+  title="${original_title} (${architecture_list})"
+
+  gh pr edit "${pr_number}" --title "${title}" --add-label "pr-title-updated"
+  done <<< "${pr_numbers}"
+else
+  echo 'No pull request with "dependencies" and "jdk<N>" labels not updated yet found'
+fi
