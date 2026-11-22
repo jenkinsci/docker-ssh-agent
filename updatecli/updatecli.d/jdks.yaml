@@ -47,8 +47,8 @@ targets:
       {{- $prefix := printf "jdk%d/%s/%s" $jdkRelease "windows" "amd64" }}
       {{- $archTitle := printf "%s/%s" "windows" "amd64" }}
       {{- if ne $adoptiumOS "windows" }}
-        {{- $prefix = printf "jdk%d/linux/%s/%s" $jdkRelease $dockerCPU (eq $adoptiumOS "alpine-linux" | ternary "musl" "glibc" ) }}
-        {{- $archTitle = printf "linux/%s/%s" (eq $adoptiumOS "alpine-linux" | ternary "musl" "glibc" ) $dockerCPU }}
+        {{- $prefix = printf "jdk%d/linux/%s/%s" $jdkRelease $dockerCPU (eq $adoptiumOS "alpine-linux" | ternary "musl" "glibc") }}
+        {{- $archTitle = printf "linux/%s/%s" (eq $adoptiumOS "alpine-linux" | ternary "musl" "glibc") $dockerCPU }}
       {{- end }}
   set_{{ $adoptiumOS }}_{{ $adoptiumCPU }}:
     name: Bump JDK{{ $jdkRelease }} Installer URL for {{ $archTitle }}
