@@ -37,7 +37,8 @@ jobs:
           UPDATECLI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update JDK bump PR titles
-        if: github.ref == 'refs/heads/master' && github.event.pull_request.head.repo.fork == false
+        # TODO: restore after testing
+        # if: github.ref == 'refs/heads/master' && github.event.pull_request.head.repo.fork == false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash .github/scripts/update-jdk-pr-titles.sh
