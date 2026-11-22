@@ -32,11 +32,8 @@ while read -r pr_number; do
     architecture_list+="\`${architecture}\`"
   done <<< "${architectures}"
 
-  original_title="$(jq -r '.title' <<< "${pr_data}")"
-  title="${original_title} (${architecture_list})"
+  title="$(jq -r '.title' <<< "${pr_data}") (${architecture_list})"
   updated_body="${body}<!-- pr-title-updated -->"
-
-  repo_with_owner="$(jq -r '.headRepository.nameWithOwner' <<< "${pr_data}")"
 
   gh pr edit "${pr_number}" --title "${title}" --body "${updated_body}"
 done <<< "${pr_numbers}"
