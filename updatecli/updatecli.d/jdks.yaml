@@ -71,4 +71,5 @@ actions:
       labels:
         - dependencies
         - jdk{{ $jdkRelease }}
+        - variant-jdk{{ $jdkRelease }}
 {{- end }}
