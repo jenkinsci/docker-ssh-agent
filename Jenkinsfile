@@ -100,7 +100,7 @@ imageTypesToBuild.each { imageType ->
                                     "VERSION=${env.TAG_NAME}",
                                 ]) {
                                     // This function is defined in the jenkins-infra/pipeline-library
-                                    infra.withDockerCredentials {
+                                    infra.withContainerRegistry {
                                         if (isUnix()) {
                                             sh 'make publish'
                                         } else {
